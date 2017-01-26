@@ -1,0 +1,4 @@
+*.pyc
+*.png
+*.pdf
+source/model_temp/

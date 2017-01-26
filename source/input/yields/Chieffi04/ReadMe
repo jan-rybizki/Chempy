@@ -1,0 +1,56 @@
+J/ApJ/608/405   Explosive yields of massive star (z=0-z_{Sun}_) (Chieffi+, 2004)
+================================================================================
+Explosive yields of massive stars from z=0 to z=z_{sun}_.
+    Chieffi A., Limongi M.
+   <Astrophys. J., 608, 405-410 (2004)>
+   =2004ApJ...608..405C
+================================================================================
+ADC_Keywords: Models, evolutionary ; Supernovae ; Abundances
+Keywords: nuclear reactions, nucleosynthesis, abundances - stars: evolution -
+          supernovae: general
+
+Abstract:
+    We present a new and homogeneous set of explosive yields for masses
+    13, 15, 20, 25, 30, and 35M_{sun}_ and metallicities Z=0, 10^-6^,
+    10^-4^, 10^-3^, 6x10^-3^, and 2x10^-2^. A wide network extending
+    up to Mo has been used in all computations. We show that at low
+    metallicities (Z<=10^-4^), the final yields do not depend
+    significantly on the initial chemical composition of the models, so a
+    scaled solar distribution may be safely assumed at all metallicities.
+    Moreover, no elements above Zn are produced by any mass in the grid up
+    to a metallicity ~10-3. These yields are available for any choice of
+    the mass cut on request.
+
+File Summary:
+--------------------------------------------------------------------------------
+ FileName   Lrecl  Records   Explanations
+--------------------------------------------------------------------------------
+ReadMe         80        .   This file
+yields.dat     80      894   Explosive yields (from table1)
+--------------------------------------------------------------------------------
+
+Byte-by-byte Description of file: yields.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units   Label     Explanations
+--------------------------------------------------------------------------------
+   1-  5  E5.1  ---     Z         Metallicity of the model
+   7- 12  E6.2  s       t         Date after explosion (0 or 2.510^4^s)
+  14- 16  I3    ---     A         Atomic mass of the element (1)
+  17- 20  A4    ---     El        Element name or parameter (1)
+  22- 30  E9.3  solMass M13El     Mass of element (A, El) if Mini=13solMass
+  32- 40  E9.3  solMass M15El     Mass of element (A, El) if Mini=15solMass
+  42- 50  E9.3  solMass M20El     Mass of element (A, El) if Mini=20solMass
+  52- 60  E9.3  solMass M25El     Mass of element (A, El) if Mini=25solMass
+  62- 70  E9.3  solMass M30El     Mass of element (A, El) if Mini=30solMass
+  72- 80  E9.3  solMass M35El     Mass of element (A, El) if Mini=35solMass
+--------------------------------------------------------------------------------
+Note (1): A=0 on lines containing ejected mass (El="eject")
+     or remnant mass (El="remn"). These columns otherwise
+     contain the atomic mass number and element symbol.
+--------------------------------------------------------------------------------
+
+History:
+  * 08-Jul-2004: From electronic version of the journal
+  * 03-Sep-2005: Transformed table1 to assign parameters in columns
+================================================================================
+(End)                  Greg Schwarz [AAS], Patricia Vannier [CDS]    08-Jul-2004

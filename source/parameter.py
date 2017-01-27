@@ -35,7 +35,7 @@ class ModelParameters(object):
 		t_1 = 8.2
 	elif basic_sfr_name == 'gamma_function':
 		mass_factor = 1.
-		S_0 = 45.07488
+		S_0 = 1#45.07488
 		a_parameter = 2
 		sfr_beginning = 0
 		sfr_scale = 3.5 # SFR peak in Gyr for a = 2

@@ -100,16 +100,16 @@ class ModelParameters(object):
 		chabrier_para2 = 716.4
 		chabrier_para3 = 0.25
 		high_mass_slope = -2.3
-
+		imf_parameter = (22.8978, 716.4, 0.25,-2.3)
 	if imf_type_name == 'Chabrier_1':
 		chabrier_para1 = 0.852464
 		chabrier_para2 = 0.237912
 		chabrier_para3 = 0.69
 		chabrier_para4 = 0.079
-
+		imf_parameter = (0.852464, 0.237912, 0.69, 0.079)
 	if imf_type_name == 'salpeter':
 		imf_slope = 2.35
-
+		imf_parameter = (2.35)
 	if imf_type_name == 'BrokenPowerLaw':
 		imf_break_1 = 0.5
 		imf_break_2 = 1.39
@@ -118,14 +118,14 @@ class ModelParameters(object):
 		imf_slope_2 = -1.49
 		imf_slope_3 = -3.02
 		imf_slope_4 = -2.3
-
+		imf_parameter = ((0.5,1.39,6),(-1.26,-1.49,-3.02,-2.3))
 	if imf_type_name == 'normed_3slope':	
 		imf_break_1 = 0.5
 		imf_break_2 = 1.0
 		imf_slope_1 = -1.3
 		imf_slope_2 = -2.2
 		imf_slope_3 = -2.7
-
+		imf_parameter = (-1.3,-2.2,-2.7,0.5,1.0)
 	name_infall_list = ['primordial','solar','simple','alpha']
 	name_infall_index = 1
 	name_infall = name_infall_list[name_infall_index]
@@ -168,17 +168,19 @@ class ModelParameters(object):
 		sn1a_time_delay = np.power(10,-0.8)
 		sn1a_exponent = 1.12
 		dummy = 0.0
+		sn1a_parameter = [N_0,sn1a_time_delay,sn1a_exponent,dummy]
 	if time_delay_functional_form == 'normal':
 		number_of_pn_exlopding = 0.003
 		sn1a_time_delay = 1.
 		sn1a_timescale = 3.2
 		sn1a_gauss_beginning = 0.25
+		sn1a_parameter = [number_of_pn_exlopding,sn1a_time_delay,sn1a_timescale,sn1a_gauss_beginning]
 	if time_delay_functional_form == 'gamma_function':
 		sn1a_norm = 0.0024 #number of sn1a exploding within end of simulation time per 1Msun
 		sn1a_a_parameter = 1.3
 		sn1a_beginning = 0
 		sn1a_scale = 3
-
+		sn1a_parameter = [sn1a_norm,sn1a_a_parameter,sn1a_beginning,sn1a_scale]
 	sn1ammin = 1#float(agbmmin) #Maoz Timedelay should be independent of sn1a_mmin and sn1a_mmax. N_0 just determines the number of SN1a exploding per 1Msun over the time of 15Gyr
 	sn1ammax = 8#float(sagbmmax)
 	#gas_at_start_parameters = (-0.7,0.4,0,-0.03)

@@ -197,7 +197,7 @@ class ModelParameters(object):
 	outflow_feedback_fraction = 0.5
 	## various output modes
 	check_processes = True
-	only_net_yields_in_process_tables = True
+	only_net_yields_in_process_tables = False
 	calculate_model = True #just loading the outcome of the last ssp if False
 	Verbose = False
 	#sigma_astro = 0.03 # astrophysical scatter added to the reported observational error
@@ -261,7 +261,8 @@ class ModelParameters(object):
 	element_names = ['O','Mg','Al','Si','P','Ca','Cr','Mn','Fe','Ni']## DR13
 	element_names = ['Fe', 'O', 'Na', 'Mg', 'Al', 'Si', 'Ca', 'Ti', 'Cr', 'Mn', 'Co', 'Ni', 'Zn']## Runs with arcturus
 	element_names = ['He','C', 'N', 'O', 'F','Ne','Na', 'Mg', 'Al', 'Si', 'P','S', 'Ar','K', 'Ca','Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni']#, 'Zn','Y', 'Ba']# Runs with sun
-	
+	elements_to_trace = ['Al', 'Ar', 'B', 'Be', 'C', 'Ca', 'Cl', 'Co', 'Cr', 'Cu', 'F', 'Fe', 'Ga', 'Ge', 'H', 'He', 'K', 'Li', 'Mg', 'Mn', 'N', 'Na', 'Ne', 'Ni', 'O', 'P', 'S', 'Sc', 'Si', 'Ti', 'V', 'Zn']
+
 	element_names_for_triangle_plot = ['Fe','Mg','Mn','C','Ca','Co','Na']
 	#'apogee','gas_reservoir','gas_at_end','stars_at_end','sn_ratio','cas','sol_norm','sfr','mock_abundances','plot_processes','alpha_corner','all_alpha','save_abundances','elements'
 	observational_constraints_index = ['apogee','gas_reservoir','stars_at_end','sn_ratio','gas_at_end','cas','sol_norm','arcturus']#'flexible_survey',
@@ -269,7 +270,7 @@ class ModelParameters(object):
 	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm','stars_at_end','cas','arcturus','elements', 'plot_processes']#'gas_at_end','sfr','stars_at_end'
 	observational_constraints_index = ['gas_reservoir','stars_at_end','sol_norm','arcturus','elements', 'plot_processes','cas']#'gas_at_end','sfr','stars_at_end'
 	#observational_constraints_index = ['sol_norm', 'sn_ratio', 'gas_reservoir','arcturus','cas','stars_at_end','plot_processes']
-	observational_constraints_index = ['gas_reservoir','sn_ratio','cas','sol_norm','arcturus','stars_at_end']
+	observational_constraints_index = ['gas_reservoir','sn_ratio','cas','sol_norm','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
 	arcturus_age = 7.1# 7.1 +1.5 -1.2
 	make_multi_zone = False
 	multi_zone_list = [['sol_norm','gas_reservoir','sn_ratio'], ['arcturus','gas_reservoir','sn_ratio']]

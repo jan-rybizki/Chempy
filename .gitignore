@@ -1,5 +1,6 @@
 *.pyc
 *.png
 *.pdf
+*.npy
 .ipynb*
 source/model_temp/

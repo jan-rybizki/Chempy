@@ -30,7 +30,6 @@ class PRIMORDIAL_INFALL(object):
 
     def primordial(self,dummy):
         self.symbols = np.hstack(self.elements)
-        
         self.fractions = np.zeros(len(self.symbols))
         self.fractions[np.where(self.symbols=='H')] = 0.76
         self.fractions[np.where(self.symbols=='He')] = 0.24

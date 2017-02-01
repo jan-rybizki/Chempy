@@ -14,9 +14,11 @@ class ABUNDANCE_MATRIX(object):
 		self.base = np.zeros(len(time))
 		self.infall_symbols = infall_symbols
 		self.infall_fractions = infall_fractions
+		## fractions of the corona gas (gas reservoir) at start
 		self.gas_at_start = gas_at_start * sum(sfr)#*self.dt #now normalised to total sfr#* (1./self.dt)
 		self.gas_at_start_symbols = gas_at_start_symbols
 		self.gas_at_start_fractions = gas_at_start_fractions
+		## fractions of the ISM at start
 		self.outflow_feedback_fraction = outflow_feedback_fraction
 		self.check_processes = check_processes
 		self.starformation_efficiency = starformation_efficiency * self.dt
@@ -24,6 +26,7 @@ class ABUNDANCE_MATRIX(object):
 		self.sfr_factor_for_cosmic_accretion = sfr_factor_for_cosmic_accretion
 		self.cosmic_accretion_elements = cosmic_accretion_elements
 		self.cosmic_accretion_element_fractions = cosmic_accretion_element_fractions
+		## fractions of the cosmic inflow into the corona gas (is the same at all times)
 		list_of_arrays = []
 		for i in range(len(list_of_elements)+len(self.additional)):
 			list_of_arrays.append(self.base)
@@ -44,19 +47,12 @@ class ABUNDANCE_MATRIX(object):
 		self.cube['infall'] = infall
 		if self.starformation_efficiency != 0.:
 			'''
-			this applies when using the Kennicut-Schmidt law (infall = sfr-related):
+			this applies when using the Kennicut-Schmidt law (infall = 'sfr-related'):
 			Infall at start is overwritten to the value required by the sfr with a specific starformation efficiency and infall should at least be as big as sfr
 			'''
 			gas_needed = max(self.sfr[0] * 1.0000001 ,np.power(self.sfr[0] / float(self.starformation_efficiency), 1./float(self.gas_power) )) ## the factor 1.00000001 is added because otherwise no mass for mixing will be left resulting in errors
 			self.cube['infall'][0] = gas_needed
 			self.infall[0] = gas_needed
-			#for i,item in enumerate(self.gas_at_start_symbols):
-			#	self.cube[item][0] = self.gas_at_start_fractions[i]*self.cube['gas'][0]	
-		# OLD PRESCRIPTION (the gas at start abundances were not taken into account)
-		#for i,item in enumerate(self.infall_symbols):
-		#	self.cube[item][0] += self.infall_fractions[i]*(self.infall[0] - self.sfr[0])		
-		#self.cube['gas'][0] += self.infall[0] - self.sfr[0]		
-		
 		# NEW PRESCRIPTION (separating the abundance fractions from infall and sfr such that first infall occurs and then stars are formed from that material
 		for i,item in enumerate(self.infall_symbols):
 			self.cube[item][0] += self.infall_fractions[i]*self.infall[0]		

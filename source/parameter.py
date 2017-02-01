@@ -100,7 +100,7 @@ class ModelParameters(object):
 		chabrier_para2 = 716.4
 		chabrier_para3 = 0.25
 		high_mass_slope = -2.3
-		imf_parameter = (22.8978, 716.4, 0.25,-2.3)
+		imf_parameter = (22.8978, 716.4, 0.25,-2.29)
 	if imf_type_name == 'Chabrier_1':
 		chabrier_para1 = 0.852464
 		chabrier_para2 = 0.237912

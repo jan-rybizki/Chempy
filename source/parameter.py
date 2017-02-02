@@ -19,6 +19,7 @@ class ModelParameters(object):
 	stochastic_IMF = False
 	number_of_models_overplotted = 1 ### with the positions from an mcmc run
 	testing_output = False
+	summary_pdf = False
 
 	only_one_SSP = False
 	if only_one_SSP:

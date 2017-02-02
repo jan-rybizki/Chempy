@@ -8,7 +8,7 @@ from numpy.lib.recfunctions import append_fields
 import time
 from data_to_test import elements_plot, arcturus, sol_norm, plot_processes, save_abundances,  cosmic_abundance_standard, ratio_function, star_function, gas_reservoir_metallicity
 import multiprocessing as mp
-from wrapper import SSP_wrap
+from wrapper import SSP_wrap, initialise_stuff, Chempy
 
 def gaussian_log(x,x0,xsig):
 	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
@@ -96,68 +96,15 @@ def cem_real(changing_parameter,a):
 
 	basic_solar = solar_abundances()
 	getattr(basic_solar, a.solar_abundance_name)()
+	elements_to_trace = a.elements_to_trace
 
+	### Model is calculated
 	if a.calculate_model:
-
-		basic_sfr = SFR(a.start,a.end,a.time_steps)
-		if a.basic_sfr_name == 'gamma_function':
-			getattr(basic_sfr, a.basic_sfr_name)(S0 = a.S_0 * a.mass_factor,a_parameter = a.a_parameter, loc = a.sfr_beginning, scale = a.sfr_scale)
-		elif a.basic_sfr_name == 'model_A':
-			basic_sfr.model_A(a.mass_factor*a.S_0,a.t_0,a.t_1)
-		elif a.basic_sfr_name == 'prescribed':
-			basic_sfr.prescribed(a.mass_factor, a.name_of_file)
-		elif a.basic_sfr_name == 'doubly_peaked':
-			basic_sfr.doubly_peaked(S0 = a.mass_factor*a.S_0, peak_ratio = a.peak_ratio, decay = a.sfr_decay, t0 = a.sfr_t0, peak1t0 = a.peak1t0, peak1sigma = a.peak1sigma)
-		basic_sfr.sfr = a.total_mass * np.divide(basic_sfr.sfr,sum(basic_sfr.sfr))
-
-		basic_infall = INFALL(np.copy(basic_sfr.t),np.copy(basic_sfr.sfr))
-		if a.basic_infall_name == 'exponential':
-			getattr(basic_infall, a.basic_infall_name)((a.infall_amplitude,a.tau_infall,a.infall_time_offset,a.c_infall,a.norm_infall))
-		elif a.basic_infall_name == 'gamma_function':
-			getattr(basic_infall, a.basic_infall_name)(mass_factor = a.norm_infall, a_parameter = a.infall_a_parameter, loc = a.infall_beginning, scale = a.infall_scale)
-		elif a.basic_infall_name == 'sfr_related':
-			getattr(basic_infall, a.basic_infall_name)()
-
-		elements_to_trace = a.elements_to_trace
-
-		basic_pri_gas_at_start = PRIMORDIAL_INFALL(list(elements_to_trace),np.copy(basic_solar.table))
-		basic_pri_gas_at_start.primordial(0)
-		
-		basic_primordial = PRIMORDIAL_INFALL(list(elements_to_trace),np.copy(basic_solar.table))
-		basic_primordial.primordial(0)
-
-		cube = ABUNDANCE_MATRIX(np.copy(basic_sfr.t),np.copy(basic_sfr.sfr),np.copy(basic_infall.infall),list(elements_to_trace),list(basic_primordial.symbols),list(basic_primordial.fractions),float(a.gas_at_start),list(basic_pri_gas_at_start.symbols),list(basic_pri_gas_at_start.fractions),float(a.gas_reservoir_mass_factor),float(a.outflow_feedback_fraction),a.check_processes,a.starformation_efficiency,a.gas_power, a.sfr_factor_for_cosmic_accretion, a.cosmic_accretion_elements,a.cosmic_accretion_element_fractions)
-		basic_ssp = SSP_wrap(a)
-		time_preload = (time.time() - start_time)
-		### Here the real chemical evolution is started and iterated over the SFH
-		for i in range(len(basic_sfr.t)-1):
-			j = len(basic_sfr.t)-i
-			element_fractions = []
-			for item in elements_to_trace:
-				element_fractions.append(np.copy(cube.cube[item][max(i-1,0)]/cube.cube['gas'][max(i-1,0)]))## gas element fractions from one time step before	
-			metallicity = float(cube.cube['Z'][i])
-			time_steps = np.copy(basic_sfr.t[:j])
-			basic_ssp.calculate_feedback(float(metallicity), list(elements_to_trace), list(element_fractions), np.copy(time_steps))
-			cube.advance_one_step(i+1,np.copy(basic_ssp.table),np.copy(basic_ssp.sn2_table),np.copy(basic_ssp.agb_table),np.copy(basic_ssp.sn1a_table))
-			if cube.cube['gas'][i] < 0:
-				print i, basic_sfr.t[i]
-				print 'gas became negative. returning -inf'
-				return -np.inf, [0]
-			if cube.gas_reservoir['gas'][i] < 0:
-				print 'gas_reservoir became negative. returning -inf'
-				return -np.inf, [0]
-		## Model is safed temporarily
-		time_calculation = (time.time() - start_time - time_preload)
-		abundances,elements,numbers = mass_fraction_to_abundances(np.copy(cube.cube),np.copy(basic_solar.table))
-		weights = cube.cube['sfr']
-		abundances = append_fields(abundances,'weights',weights)
-		abundances = np.array(abundances)
+		cube1, abundances, gas_reservoir = Chempy(a)
 		np.save('model_temp/%s_elements_to_trace' %(a.name_string), elements_to_trace)
-		np.save('model_temp/%s_gas_reservoir' %(a.name_string),cube.gas_reservoir)
-		np.save('model_temp/%s_cube' %(a.name_string),cube.cube)
+		np.save('model_temp/%s_gas_reservoir' %(a.name_string),gas_reservoir)
+		np.save('model_temp/%s_cube' %(a.name_string),cube1)
 		np.save('model_temp/%s_abundances' %(a.name_string),abundances)
-		cube1 = cube.cube
-		gas_reservoir = cube.gas_reservoir
 	else:
 		cube1 = np.load('model_temp/%s_cube.npy' %(a.name_string))
 		abundances = np.load('model_temp/%s_abundances.npy' %(a.name_string))
@@ -212,7 +159,7 @@ def cem_real(changing_parameter,a):
 	a.probability = [item for sublist in a.probability for item in sublist]
 	a.names += prior_names
 	if a.testing_output:
-		print a.names
+		#print a.names
 		np.save("name_list", a.names)
 	if np.isnan(sum(a.probability)):
 		return -np.inf, [0]

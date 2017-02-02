@@ -110,3 +110,32 @@ def Chempy(a):
 	abundances = np.array(abundances)
 
 	return cube.cube, abundances, cube.gas_reservoir
+
+def Chempy_gross(a):
+	from infall import PRIMORDIAL_INFALL
+	from time_integration import ABUNDANCE_MATRIX
+	from making_abundances import mass_fraction_to_abundances
+	from numpy.lib.recfunctions import append_fields	
+	basic_solar, basic_sfr, basic_infall = initialise_stuff(a)
+	elements_to_trace = a.elements_to_trace
+	basic_primordial = PRIMORDIAL_INFALL(list(elements_to_trace),np.copy(basic_solar.table))
+	basic_primordial.primordial(0)
+	cube = ABUNDANCE_MATRIX(np.copy(basic_sfr.t),np.copy(basic_sfr.sfr),np.copy(basic_infall.infall),list(elements_to_trace),list(basic_primordial.symbols),list(basic_primordial.fractions),float(a.gas_at_start),list(basic_primordial.symbols),list(basic_primordial.fractions),float(a.gas_reservoir_mass_factor),float(a.outflow_feedback_fraction),bool(a.check_processes),float(a.starformation_efficiency),float(a.gas_power), float(a.sfr_factor_for_cosmic_accretion), list(basic_primordial.symbols), list(basic_primordial.fractions))
+	basic_ssp = SSP_wrap(a)
+	for i in range(len(basic_sfr.t)-1):
+		j = len(basic_sfr.t)-i
+		metallicity = float(cube.cube['Z'][i])
+		solar_scaled_material = PRIMORDIAL_INFALL(list(elements_to_trace),np.copy(basic_solar.table))
+		solar_scaled_material.solar(np.log10(metallicity/basic_solar.z))
+		element_fractions = list(solar_scaled_material.fractions)
+		for item in elements_to_trace:
+			element_fractions.append(float(np.copy(cube.cube[item][max(i-1,0)]/cube.cube['gas'][max(i-1,0)])))## gas element fractions from one time step before	
+		time_steps = np.copy(basic_sfr.t[:j])
+		basic_ssp.calculate_feedback(float(metallicity), list(elements_to_trace), list(element_fractions), np.copy(time_steps))
+		cube.advance_one_step(i+1,np.copy(basic_ssp.table),np.copy(basic_ssp.sn2_table),np.copy(basic_ssp.agb_table),np.copy(basic_ssp.sn1a_table))
+	abundances,elements,numbers = mass_fraction_to_abundances(np.copy(cube.cube),np.copy(basic_solar.table))
+	weights = cube.cube['sfr']
+	abundances = append_fields(abundances,'weights',weights)
+	abundances = np.array(abundances)
+
+	return cube.cube, abundances, cube.gas_reservoir

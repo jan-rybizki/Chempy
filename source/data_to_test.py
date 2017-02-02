@@ -1,6 +1,36 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+def sample_stars(weight,selection,element1,element2,error1,error2,nsample):
+	weight = np.cumsum(weight*selection)
+	weight /= weight[-1]
+	sample = np.random.random(nsample)
+	sample = np.sort(sample)
+	stars = np.zeros_like(weight)
+	for i,item in enumerate(weight):
+		if i == 0:
+			count = len(sample[np.where(np.logical_and(sample>0.,sample<=item))])
+			stars[i] = count
+		else:
+			count = len(sample[np.where(np.logical_and(sample>weight[i-1],sample<=item))])
+			stars[i] = count
+	sun_feh = []
+	sun_mgfe = []
+	for i in range(len(weight)):
+		if stars[i] != 0:
+			for j in range(int(stars[i])):
+				sun_feh.append(element1[i])
+				sun_mgfe.append(element2[i])
+	sun_feh = np.array(sun_feh)
+	sun_mgfe = np.array(sun_mgfe)
+	perturbation = np.random.normal(0,error1,len(sun_feh))
+	sun_feh += perturbation
+	perturbation = np.random.normal(0,error2,len(sun_feh))
+	sun_mgfe += perturbation
+	return sun_feh,sun_mgfe
+
+
+
 def gaussian_1d_log(x,x0,xsig):
 	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
 

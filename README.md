@@ -9,7 +9,7 @@ Flexible one-zone open box chemical evolution modeling. Abundance fitting and st
 - Andreas Just (ZAH)
 
 ## Links
-- Arxiv link following
+- [Arxiv link following](https://www.overleaf.com/read/jypbdqqqrdnp)
 - An early version of Chempy is presented [here](http://nbn-resolving.de/urn:nbn:de:bsz:16-heidok-199349).
 
 ## Installing Chempy

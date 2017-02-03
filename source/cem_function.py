@@ -100,7 +100,9 @@ def cem_real(changing_parameter,a):
 
 	### Model is calculated
 	if a.calculate_model:
-		cube1, abundances, gas_reservoir = Chempy(a)
+		cube, abundances= Chempy(a)
+		cube1 = cube.cube
+		gas_reservoir = cube.gas_reservoir
 		np.save('model_temp/%s_elements_to_trace' %(a.name_string), elements_to_trace)
 		np.save('model_temp/%s_gas_reservoir' %(a.name_string),gas_reservoir)
 		np.save('model_temp/%s_cube' %(a.name_string),cube1)

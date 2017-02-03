@@ -117,7 +117,7 @@ def Chempy(a):
 	abundances = append_fields(abundances,'weights',weights)
 	abundances = np.array(abundances)
 
-	return cube.cube, abundances, cube.gas_reservoir
+	return cube, abundances
 
 def Chempy_gross(a):
 	from infall import PRIMORDIAL_INFALL
@@ -146,7 +146,7 @@ def Chempy_gross(a):
 	abundances = append_fields(abundances,'weights',weights)
 	abundances = np.array(abundances)
 
-	return cube.cube, abundances, cube.gas_reservoir
+	return cube, abundances
 
 def mcmc(a):
 	import time

@@ -1,29 +1,15 @@
-import sys,time,os,inspect
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
-import matplotlib
-import shutil
-import subprocess
-from os.path import isfile, join
-
-
-with_blobs = True
-producing_positions_for_plot = True
-how_many_plot_samples = 100
-how_many_MCMC_samples = 5000
-#how_many_MCMC_samples = 1000
-plot_mcmc_space = True
 
 
 
-directory = 'mcmc/0/'
+def restructure_chain(directory, parameter_names = 	[r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\mathrm{SFR}_\mathrm{peak}$',r'$\mathrm{x}_\mathrm{out}$',r'$\log_{10}\left(\mathrm{f}_\mathrm{corona}\right)$']):
 
-set_scale = False
-use_scale = True
+	producing_positions_for_plot = True
+	how_many_plot_samples = 100
+	how_many_MCMC_samples = 500
 
-def restructure_chain(directory, set_scale, use_scale):
-
+	with_blobs = True
 	positions = np.load('%sflatchain.npy' %(directory))
 	posterior = np.load('%sflatlnprobability.npy' %(directory))
 	mean_posterior = np.load('%sflatmeanposterior.npy' %(directory))
@@ -38,7 +24,7 @@ def restructure_chain(directory, set_scale, use_scale):
 	nwalkers = positions.shape[0]
 	dimensions = positions.shape[2]
 	iterations = positions.shape[1]
-	print 'we have %d iterations' %(iterations)
+	print 'The chain has a length of %d iterations, each iteration having %d evaluations/walkers' %(iterations,nwalkers)
 	if with_blobs:
 		assert nwalkers == blobs.shape[0]
 		assert iterations == blobs.shape[1]
@@ -57,14 +43,14 @@ def restructure_chain(directory, set_scale, use_scale):
 	plt.grid('on')
 	plt.savefig('%sposterior_evolution.png' %(directory))
 	plt.clf()
-	print np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1] 
+	#print np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1] 
 	if True:#np.mean(posterior, axis = 0)[0] < np.mean(posterior, axis = 0)[-1]:
-		print 'chain is inverted' ##Sometimes the chain is stored differently depending on the system
+		#print 'chain is inverted' ##Sometimes the chain is stored differently depending on the system
 		posterior = posterior[:,::-1]
 		positions = positions[:,::-1]
 		if with_blobs:
 			blobs = blobs[:,::-1]
-
+	print 'Mean posteriors at the beginning and the end of the chain:'
 	print np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1] 
 	
 	keeping = int(how_many_MCMC_samples / nwalkers)
@@ -72,7 +58,7 @@ def restructure_chain(directory, set_scale, use_scale):
 	posterior = posterior[:,:keeping]
 	if with_blobs:
 		blobs = blobs[:,:keeping,:]
-	print 'now the burn-in tail is cut out:'
+	print 'Mean posteriors after the burn-in tail is cut out:'
 	print np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1] 
 	### shaping back
 	positions = positions.reshape((-1, dimensions), order = 'F')
@@ -81,7 +67,7 @@ def restructure_chain(directory, set_scale, use_scale):
 		blobs = blobs.reshape((-1, blob_dimensions), order = 'F')
 
 
-	print 'after throwing out burn in %d iterations' %(len(posterior))
+	print 'We are left with a sample of %d posterior evaluations from the converged MCMC chain' %(len(posterior))
 	assert np.any(np.isinf(posterior)) == False
 
 	total_iterations = len(posterior)
@@ -104,7 +90,7 @@ def restructure_chain(directory, set_scale, use_scale):
 	posterior = posterior[cut]
 	if with_blobs:
 		blobs = blobs[cut]
-	print 'we have %d iterations good enough posterior' %(len(posterior))
+	print 'We have %d iterations good enough posterior, their posteriors range from' %(len(posterior))
 	if throw_out > 0:
 		print '%d runs of the stabilised MCMC had a posterior that was worse -15 ln' %(throw_out)
 	### Drawing 100 random posterior positions
@@ -134,10 +120,10 @@ def restructure_chain(directory, set_scale, use_scale):
 	np.save('best_parameter_values',positions_max)
 	np.save('%sbest_parameter_values' %(directory),positions_max)
 	print vmax,vmin
-	print 'vmax was obtained at: ', positions_max
-	print 'for plotting we use the best: ',len(posterior), ' values'
-	print 'unique posterior values: ', len(np.unique(posterior))
-
+	print 'Highest posterior was obtained at parameters: ', positions_max
+	#print 'for plotting we use the best: ',len(posterior), ' values'
+	print 'Number of unique posterior values: ', len(np.unique(posterior))
+	print 'Inferred marginalized parameter distributions are:'
 	x = np.array([np.mean(positions,axis = 0),np.std(positions,axis = 0)])
 	if with_blobs:
 		y = np.array([np.mean(blobs,axis = 0),np.std(blobs,axis = 0)])
@@ -158,7 +144,6 @@ def restructure_chain(directory, set_scale, use_scale):
 		plt.clf()
 
 
-	parameter_names = [r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\mathrm{SFR}_\mathrm{peak}$',r'$\mathrm{x}_\mathrm{out}$',r'$\log_{10}\left(\mathrm{f}_\mathrm{corona}\right)$']
 	np.save("%sparameter_names" %(directory), parameter_names)
 	
 	if len(parameter_names) != dimensions:
@@ -167,8 +152,8 @@ def restructure_chain(directory, set_scale, use_scale):
 		print parameter_names[j], positions[:,j].mean(), '+-', positions[:,j].std()
 
 
-	fig, axes = plt.subplots(nrows=nparameter+1, ncols=1,figsize=(14.69,30.27), dpi=100,sharex=True)
-	for i in range(nparameter):
+	fig, axes = plt.subplots(nrows=dimensions+1, ncols=1,figsize=(14.69,30.27), dpi=100,sharex=True)
+	for i in range(dimensions):
 		axes[i].plot(positions[:,i])
 		axes[i].set_ylabel(parameter_names[i])
 	axes[i+1].plot(posterior)
@@ -182,10 +167,9 @@ def restructure_chain(directory, set_scale, use_scale):
 	plt.clf()
 	plt.close()
 
-def plot_mcmc_chain(directory, set_scale):
-
+def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
+	import corner
 	plt.clf()
-	m=plt.cm.jet
 	text_size = 16
 	cor_text = 22
 	plt.rc('font', family='serif',size = text_size)
@@ -202,8 +186,8 @@ def plot_mcmc_chain(directory, set_scale):
 	          }
 	plt.rcParams.update(params)
 	positions = np.load('%sposteriorPDF.npy' %(directory))
-	positions_max = np.load('%sbest_parameter_values.npy' %(directory))
-	parameter_names = np.load("%sparameter_names" %(directory))
+	parameter_names = np.load("%sparameter_names.npy" %(directory))
+
 
 	nparameter = len(positions[0])
 	cor_matrix = np.zeros(shape = (nparameter,nparameter))
@@ -224,79 +208,189 @@ def plot_mcmc_chain(directory, set_scale):
 
 	alpha=0.5
 	alpha_more = 0.8
-	alpha_less = 0.2
+	alpha_less = 0.1
 	lw = 2
 	if set_scale:
 		borders = []
 	if use_scale:
-		borders = np.load('prior_borders.npy')
+		borders = np.load('mcmc/prior_borders.npy')
 	t = 0
-	if plot_mcmc_space:
-		for i in range(nparameter):
-			for j in range(nparameter):
+
+	for i in range(nparameter):
+		for j in range(nparameter):
+			axes[i,j].locator_params(nbins=4)
+			if j==1:
 				axes[i,j].locator_params(nbins=4)
-				if j==1:
-					axes[i,j].locator_params(nbins=4)
-				if i == j:
-					counts, edges = np.histogram(positions[:,j], bins=10)
-					max_count = float(np.max(counts))
-					counts = np.divide(counts,max_count)
-					axes[i,j].bar(left = edges[:-1], height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
-					if use_scale:
-						axes[i,j].set_xlim(borders[t][0])
-						axes[i,j].plot( borders[t][2], borders[t][3], c="k", linestyle = '--', alpha=1, lw=lw )
-						t += 1
-					else:
-						axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
-					axes[i,j].set_ylim(0,1.05)
-					if j != 0:
-						plt.setp(axes[i,j].get_yticklabels(), visible=False)
+			if i == j:
+				counts, edges = np.histogram(positions[:,j], bins=10)
+				max_count = float(np.max(counts))
+				counts = np.divide(counts,max_count)
+				axes[i,j].bar(left = edges[:-1], height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
+				if use_scale:
+					axes[i,j].set_xlim(borders[t][0])
+					axes[i,j].plot( borders[t][2], borders[t][3], c="k", linestyle = '--', alpha=1, lw=lw )
+					t += 1
+				else:
+					axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
+				axes[i,j].set_ylim(0,1.05)
+				if j != 0:
+					plt.setp(axes[i,j].get_yticklabels(), visible=False)
 
-					if set_scale:
-						borders.append([axes[i,j].get_xlim(),axes[i,j].get_ylim(),xgauss,ygauss])
+				if set_scale:
+					borders.append([axes[i,j].get_xlim(),axes[i,j].get_ylim(),xgauss,ygauss])
 
-					axes[i,j].vlines(np.percentile(positions[:,j],15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')    
-					axes[i,j].vlines(np.percentile(positions[:,j],100-15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')  
-					axes[i,j].vlines(np.percentile(positions[:,j],50),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha, linewidth = lw)
-					axes[i,j].text( 0.5, 1.03, r'$%.2f_{-%.2f}^{+%.2f}$'%(np.percentile(positions[:,j],50),np.percentile(positions[:,j],50)-np.percentile(positions[:,j],15.865),np.percentile(positions[:,j],100-15.865)-np.percentile(positions[:,j],50)),fontsize=text_size, ha="center" ,transform=axes[i,j].transAxes)
+				axes[i,j].vlines(np.percentile(positions[:,j],15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')    
+				axes[i,j].vlines(np.percentile(positions[:,j],100-15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')  
+				axes[i,j].vlines(np.percentile(positions[:,j],50),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha, linewidth = lw)
+				axes[i,j].text( 0.5, 1.03, r'$%.2f_{-%.2f}^{+%.2f}$'%(np.percentile(positions[:,j],50),np.percentile(positions[:,j],50)-np.percentile(positions[:,j],15.865),np.percentile(positions[:,j],100-15.865)-np.percentile(positions[:,j],50)),fontsize=text_size, ha="center" ,transform=axes[i,j].transAxes)
 
-				if i>j:
-					if j != 0:
-						plt.setp(axes[i,j].get_yticklabels(), visible=False)
-					
-					#corner.hist2d(positions[:,j],positions[:,i], ax = axes[i,j],bins = 15 , levels=(1-np.exp(-0.5),1-np.exp(-2.0),1-np.exp(-4.5)))
-					axes[i,j].plot(positions_max[:,j],positions_max[:,i],'kx',markersize = 10,mew=2.5)
-					im = axes[i,j].scatter(positions[:,j],positions[:,i],c=posterior,cmap=m,vmin=vmin,vmax=vmax,edgecolor='None',s=45,marker='o',alpha=alpha_less,rasterized=True)#,vmin=0,vmax=vmax)
+			if i>j:
+				if j != 0:
+					plt.setp(axes[i,j].get_yticklabels(), visible=False)
+				
+				corner.hist2d(positions[:,j],positions[:,i], ax = axes[i,j],bins = 15 , levels=(1-np.exp(-0.5),1-np.exp(-2.0),1-np.exp(-4.5)))
+				#axes[i,j].plot(positions_max[:,j],positions_max[:,i],'kx',markersize = 10,mew=2.5)
+				#im = axes[i,j].scatter(positions[:,j],positions[:,i],c='k',edgecolor='None',s=45,marker='o',alpha=alpha_less,rasterized=True)#,vmin=0,vmax=vmax)
+				#axes[i,j].hist2d(positions[:,j],positions[:,i],cmap = my_cmap, vmin=1)
 
-					if use_scale:
-						axes[i,j].set_xlim(borders[t][0])
-						axes[i,j].set_ylim(borders[t][1])
-						axes[i,j].plot( borders[t][2], borders[t][3], "k",linestyle = '--', alpha=1, lw = lw )
-						t += 1
-					else:
-						axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
-						axes[i,j].set_ylim(min(positions[:,i]),max(positions[:,i]))
+				if use_scale:
+					axes[i,j].set_xlim(borders[t][0])
+					axes[i,j].set_ylim(borders[t][1])
+					axes[i,j].plot( borders[t][2], borders[t][3], "k",linestyle = '--', alpha=1, lw = lw )
+					t += 1
+				else:
+					axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
+					axes[i,j].set_ylim(min(positions[:,i]),max(positions[:,i]))
 
 
-					if set_scale:
-						borders.append([axes[i,j].get_xlim(),axes[i,j].get_ylim(),xk,yk])
+				if set_scale:
+					borders.append([axes[i,j].get_xlim(),axes[i,j].get_ylim(),xk,yk])
 
-				if j>i:
-					correlation_coefficient = np.corrcoef((positions[:,i],positions[:,j]))
-					axes[i,j].text( 0.6, 0.5, "%.2f"%(correlation_coefficient[1,0]),fontsize=cor_text, ha="center" ,transform=axes[i,j].transAxes)	
-					axes[i,j].axis('off')
-				if i == nparameter-1:
-					axes[i,j].set_xlabel(parameter_names[j])
-				if j == 0:
-					axes[i,j].set_ylabel(parameter_names[i])
-		#if nparameter>3:
-		#	axes[0,3].set_title('vmax = %.2f, obtained at %s' %(vmax,str(positions_max)))
-		#	#axes[0,1].set_title('vmax = %.2f, obtained at %s and %d evals thrown out' %(vmax,str(positions_max),throw_out))
-		
-		fig.savefig('%sparameter_space_sorted.png' %(directory),dpi=300,bbox_inches='tight')
-		plt.clf()
+			if j>i:
+				correlation_coefficient = np.corrcoef((positions[:,i],positions[:,j]))
+				axes[i,j].text( 0.6, 0.5, "%.2f"%(correlation_coefficient[1,0]),fontsize=cor_text, ha="center" ,transform=axes[i,j].transAxes)	
+				axes[i,j].axis('off')
+			if i == nparameter-1:
+				axes[i,j].set_xlabel(parameter_names[j])
+			if j == 0:
+				axes[i,j].set_ylabel(parameter_names[i])
+	#if nparameter>3:
+	#	axes[0,3].set_title('vmax = %.2f, obtained at %s' %(vmax,str(positions_max)))
+	#	#axes[0,1].set_title('vmax = %.2f, obtained at %s and %d evals thrown out' %(vmax,str(positions_max),throw_out))
+	
+	fig.savefig('%sparameter_space_sorted.png' %(directory),dpi=300,bbox_inches='tight')
 
 	if set_scale:
 		np.save('%sprior_borders' %(directory), borders)
 		np.save('prior_borders', borders)
 
+
+
+def plot_element_correlation(directory):
+	import corner
+	names = np.load('%sname_list.npy' %(directory))
+	blobs = np.load('%sblobs_distribution.npy' %(directory))
+	positions = np.load('%sposteriorPDF.npy' %(directory))
+	posterior = np.load('%sposteriorvalues.npy' %(directory))
+
+	blobs = np.concatenate((blobs,positions,posterior.reshape(len(positions),1)),axis = 1)
+	names = np.append(names,['v-%s' %item for item in names[-2:]])#[r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\mathrm{SFR}_\mathrm{peak}$',r'$\mathrm{x}_\mathrm{out}$',r'$\log_{10}\left(\mathrm{f}_\mathrm{corona}\right)$']
+	names = np.append(names,'v-posterior')
+	element_names = ['He','C', 'N', 'O', 'F','Ne','Na', 'Mg', 'Al', 'Si', 'P','S', 'Ar','K', 'Ca','Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni']#, 'Zn','Y', 'Ba']# Runs with sun
+		
+	#element_names = ['C', 'N', 'O','Na','Mg',  'Al', 'Si', 'Mn', 'Fe', 'Ni','Y', 'Ba']## SSP run
+	element_names_for_triangle_plot = ['Fe','Mg','Mn','C','Ca','Co','Na']
+
+	element_names = ['He','C','N','O','Na','Mg','Al','Ca','Ti','Cr','Mn','Fe','Co','Ni']
+	element_names = ['O','Mg','Si','Fe']
+	#element_names = []
+	parameter_names = ['m-%s' %item for item in element_names]
+	parameter_names += [names[25]]
+
+	
+	
+	parameter_names = [names[-1]] + parameter_names
+	parameter_names += [names[-3]]
+	parameter_names += [names[-2]]
+	nparameter = len(parameter_names)
+
+	positions = np.zeros(shape=(positions.shape[0],nparameter))
+
+	print parameter_names
+
+	for i,item in enumerate(parameter_names):
+		positions[:,i] = blobs[:,np.where(names == item)[0][0]]
+
+	parameter_names = [item[2:] for item in parameter_names]
+	parameter_names[-2] = r'$\alpha_\mathrm{IMF}$'
+	parameter_names[-1] = r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$'
+	fig, axes = plt.subplots(nrows=nparameter, ncols=nparameter,figsize=(14.69,8.0), dpi=300)#,sharex=True, sharey=True)
+
+	left  = 0.1  # the left side of the subplots of the figure
+	right = 0.925    # the right side of the subplots of the figure
+	bottom = 0.075   # the bottom of the subplots of the figure
+	top = 0.97      # the top of the subplots of the figure
+	wspace = 0.0   # the amount of width reserved for blank space between subplots
+	hspace = 0.0   # the amount of height reserved for white space between subplots
+	plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
+
+	alpha=0.5
+	alpha_more = 0.8
+	alpha_less = 0.2
+	lw = 2
+	t = 0
+
+	text_size = 14
+	cor_text = 18
+	for i in range(nparameter):
+		for j in range(nparameter):
+			axes[i,j].locator_params(nbins=4)
+			if j==1:
+				axes[i,j].locator_params(nbins=4)
+			if i == j:
+				counts, edges = np.histogram(positions[:,j], bins=10)
+				max_count = float(np.max(counts))
+				counts = np.divide(counts,max_count)
+				axes[i,j].bar(left = edges[:-1], height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
+				axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
+				axes[i,j].set_ylim(0,1.05)
+				if j != 0:
+					plt.setp(axes[i,j].get_yticklabels(), visible=False)
+
+				axes[i,j].vlines(np.percentile(positions[:,j],15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')    
+				axes[i,j].vlines(np.percentile(positions[:,j],100-15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')  
+				axes[i,j].vlines(np.percentile(positions[:,j],50),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha, linewidth = lw)
+
+
+				axes[i,j].text( 0.5, 1.03, r'$%.2f_{-%.2f}^{+%.2f}$'%(np.percentile(positions[:,j],50),np.percentile(positions[:,j],50)-np.percentile(positions[:,j],15.865),np.percentile(positions[:,j],100-15.865)-np.percentile(positions[:,j],50)),fontsize=text_size, ha="center" ,transform=axes[i,j].transAxes)
+
+			if i>j:
+				if j != 0:
+					plt.setp(axes[i,j].get_yticklabels(), visible=False)
+				
+				corner.hist2d(positions[:,j],positions[:,i], ax = axes[i,j],bins = 15 , levels=(1-np.exp(-0.5),1-np.exp(-2.0),1-np.exp(-4.5)))
+
+				axes[i,j].set_ylim(-0.2,0.2)
+				if parameter_names[j] == '[He/H]':
+					axes[i,j].set_xlim(0.01,0.06)
+					#axes[i,j].plot(0.05,0.04,marker=r"$\odot$", mec = 'red')
+				
+				else:
+					axes[i,j].set_xlim(-0.2,0.2)
+					#axes[i,j].plot(0.04,0.04,marker=r"$\odot$", mec = 'red')
+				axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
+				axes[i,j].set_ylim(min(positions[:,i]),max(positions[:,i]))
+
+			if j>i:
+				correlation_coefficient = np.corrcoef((positions[:,i],positions[:,j]))
+				axes[i,j].text( 0.6, 0.5, "%.2f"%(correlation_coefficient[1,0]),fontsize=cor_text, ha="center" ,transform=axes[i,j].transAxes)	
+				axes[i,j].axis('off')
+			if i == nparameter-1:
+				axes[i,j].set_xlabel(parameter_names[j])
+			if j == 0:
+				axes[i,j].set_ylabel(parameter_names[i])
+
+	#axes[0,3].set_title('vmax = %.2f, obtained at %s and %d evals thrown out' %(vmax,str(positions_max),throw_out))
+	#axes[0,1].set_title('vmax = %.2f, obtained at %s and %d evals thrown out' %(vmax,str(positions_max),throw_out))
+
+	fig.savefig('%selement_correlations.png' %(directory),dpi=300,bbox_inches='tight')

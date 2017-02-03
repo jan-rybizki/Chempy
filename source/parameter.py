@@ -1,10 +1,6 @@
 import numpy as np
 
 
-def gaussian_log(x,x0,xsig):
-	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
-
-
 class ModelParameters(object):
 	# Which zero point of abundances shall be used. Asplund 2005 is corrected to VESTA abundances
 	solar_abundance_name_list = ['Lodders09','Asplund09','Asplund05_pure_solar','Asplund05_apogee_correction']
@@ -20,10 +16,8 @@ class ModelParameters(object):
 	number_of_models_overplotted = 1 ### with the positions from an mcmc run
 	testing_output = False
 	summary_pdf = False
+	name_string = 'single_suncasarc'#%d' %(time_steps)#'mass_analytic'#%d' %(total_mass/1e2)
 
-	only_one_SSP = False
-	if only_one_SSP:
-		metallicity_of_SSP = 0.0134
 	# SFR still model A from Just&Jahreiss 2010 should be changed
 	# arbitrary function can be implemented here
 	basic_sfr_name_list = ['model_A','gamma_function','prescribed', 'doubly_peaked']
@@ -52,7 +46,7 @@ class ModelParameters(object):
 		peak1t0 = 0.8
 		peak1sigma = 0.8
 
-	basic_infall_name_list = ["exponential","constant","sfr_related","peaked_sfr","just","simon",'sarah','gamma_function']
+	basic_infall_name_list = ["exponential","constant","sfr_related","peaked_sfr","gamma_function"]
 	basic_infall_index = 2
 	basic_infall_name = basic_infall_name_list[basic_infall_index]
 	starformation_efficiency = 0.
@@ -131,22 +125,15 @@ class ModelParameters(object):
 	name_infall_index = 1
 	name_infall = name_infall_list[name_infall_index]
 
-	if name_infall == 'solar':
-		begin_metallicity_dex = -0.35
-
 	interpolation_list = ['linear','logarithmic']
 	interpolation_index = 1
 	interpolation_scheme = interpolation_list[interpolation_index] ## could be a variant to change the interpolation scheme
 	stellar_lifetimes_list = ['Argast_2000','Raiteri_1996']
 	stellar_lifetimes_index = 0
 	stellar_lifetimes = stellar_lifetimes_list[stellar_lifetimes_index] ## which stellar lifetime approximation to use
-	with_extra_output = False # For the example SSP to get
 
 	sn2_to_hn = 0.5
 
-	sn2_method_list = ['IRA', 'discretised']
-	sn2_method_index = 1
-	sn2_method_name = sn2_method_list[sn2_method_index]
 	sn2mmin = 8.
 	sn2mmax = 100.
 
@@ -184,13 +171,8 @@ class ModelParameters(object):
 		sn1a_parameter = [sn1a_norm,sn1a_a_parameter,sn1a_beginning,sn1a_scale]
 	sn1ammin = 1#float(agbmmin) #Maoz Timedelay should be independent of sn1a_mmin and sn1a_mmax. N_0 just determines the number of SN1a exploding per 1Msun over the time of 15Gyr
 	sn1ammax = 8#float(sagbmmax)
-	#gas_at_start_parameters = (-0.7,0.4,0,-0.03)
-	iron_at_start_in_dex = -1.
-	gas_at_start = 0. #/40 yields the Msun/pc^2 value
+	gas_at_start = 0. #*dt yields the Msun/pc^2 value
 
-	gas_at_start_name_list = ['sn2','primordial']
-	gas_at_start_index = 1
-	gas_at_start_name = gas_at_start_name_list[gas_at_start_index]
 	gas_reservoir_mass_factor = np.power(10,0.3)#3.0
 	sfr_factor_for_cosmic_accretion = 1.
 	cosmic_accretion_elements = ['H','He']
@@ -200,46 +182,7 @@ class ModelParameters(object):
 	check_processes = True
 	only_net_yields_in_process_tables = False
 	calculate_model = True #just loading the outcome of the last ssp if False
-	Verbose = False
-	#sigma_astro = 0.03 # astrophysical scatter added to the reported observational error
 
-	Q = 2.
-	lnodds = -3.
-	astronomical_spread = 0.05
-	normalising_element = 'Fe' # to which elements the others are normalised to in the likelihood calculation
-	dr13 = True #switch between Dr13 and Dr12 cannon data
-	survey_name = 'APOGEE-Keith' # chose from RAVE4, APOGEE-DR12, APOGEE-DR13, APOGEE-Keith, GES-DR4, Cepheids, Bensby14
-	## Rave giants: 4250,5250,1.7,2.8, Rave dwarfs: 5250,7000,3.8,5.0, APOGEE RC: 4500,5200,2.,3.1
-	dist = [0.,10.] #in kpc
-	rgal = [7.5,8.5]
-	#rgal = [6.8,7.8]
-	#rgal = [8.8,9.8]
-
-	zgal = [-0.4,0.4]
-	form_factor = 'red-clump'
-
-	if form_factor == 'red-clump':
-		logg = [2.,3.1]
-		teff = [4500.,5200.]
-	elif form_factor == 'rave-red-clump':
-		logg = [1.7,2.8]
-		teff = [4250.,5250.]
-	elif form_factor == 'rave-dwarfs':
-		logg = [3.8,5.0]
-		teff = [5250.,7000.]
-	elif form_factor == 'all':
-		logg = [0,6.0]
-		teff = [2250.,16000.]
-	elif form_factor == 'uves-dwarfs':
-		logg = [3.5,4.5]
-		teff = [5500.,6500.]
-	#elif form_factor == 'uves-giants':
-	#	logg = [3.5,4.5]
-	#	teff = [5500.,6500.]
-	many_survey_plot = False
-	plot_model = True
-
-	name_string = 'single_suncasarc'#%d' %(time_steps)#'mass_analytic'#%d' %(total_mass/1e2)
 
 	nwalkers = 64
 	mburn = 1
@@ -248,54 +191,16 @@ class ModelParameters(object):
 	####### Evaluate model
 	#V,K,
 	# element lists
-	model_apogee_all_dr12 =  ['C','N','O','Na','Mg','Al','Si','S','K','Ca','Ti','V','Mn','Fe','Ni']
-	model_apogee_all_dr13 =  ['C','N','O','Na','Mg','Al','Si','S','K','Ca','Ti','V','Mn','Fe','Ni','P','Cr','Co','Cu','Rb']
-	apogee_keith_elements = ['Fe','C','N','O','Na','Mg','Al','Si','S','K','Ca','Ti','V','Mn','Ni','P','Cr','Co','Cu','Ba'] 
-	bensby_all_elements = ['O','Na','Mg','Al','Si','Ca','Ti','Cr','Fe','Ni','Zn','Y','Ba']
-	element_list_arcturus = ['Fe', 'C', 'O', 'Na', 'Mg', 'Al', 'Si', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Co', 'Ni', 'Zn']
-	element_list_cas = ['H','He','O','Mg','Si','Fe','Ne','C','N']
-	RAVE4_elements = ['Al','Si','Fe','Ti','Ni','Mg']
-	Cepheids_elements = ['Fe','Y','La','Ce','Nd','Eu','Na','Al','Mg','Si','Ca'] 
-	Ges4_elements = ['Fe','Mg','O']
-
-	element_names = ['O','Na','Mg','Al','Si','Ca','Ti','Cr','Fe','Ni','Zn','Y','Ba']## Bensby
-	element_names = ['O','Mg','Al','Si','P','Ca','Cr','Mn','Fe','Ni']## DR13
-	element_names = ['Fe', 'O', 'Na', 'Mg', 'Al', 'Si', 'Ca', 'Ti', 'Cr', 'Mn', 'Co', 'Ni', 'Zn']## Runs with arcturus
 	element_names = ['He','C', 'N', 'O', 'F','Ne','Na', 'Mg', 'Al', 'Si', 'P','S', 'Ar','K', 'Ca','Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni']#, 'Zn','Y', 'Ba']# Runs with sun
 	elements_to_trace = ['Al', 'Ar', 'B', 'Be', 'C', 'Ca', 'Cl', 'Co', 'Cr', 'Cu', 'F', 'Fe', 'Ga', 'Ge', 'H', 'He', 'K', 'Li', 'Mg', 'Mn', 'N', 'Na', 'Ne', 'Ni', 'O', 'P', 'S', 'Sc', 'Si', 'Ti', 'V', 'Zn']
-
-	element_names_for_triangle_plot = ['Fe','Mg','Mn','C','Ca','Co','Na']
-	#'apogee','gas_reservoir','gas_at_end','stars_at_end','sn_ratio','cas','sol_norm','sfr','mock_abundances','plot_processes','alpha_corner','all_alpha','save_abundances','elements'
-	observational_constraints_index = ['apogee','gas_reservoir','stars_at_end','sn_ratio','gas_at_end','cas','sol_norm','arcturus']#'flexible_survey',
-	observational_constraints_index = []#['plot_processes','sn_ratio','gas_reservoir','stars_at_end','cas','arcturus','sol_norm','elements']#['cas', 'sol_norm', 'arcturus','sn_ratio','gas_reservoir','stars_at_end']
-	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm','stars_at_end','cas','arcturus','elements', 'plot_processes']#'gas_at_end','sfr','stars_at_end'
-	observational_constraints_index = ['gas_reservoir','stars_at_end','sol_norm','arcturus','elements', 'plot_processes','cas']#'gas_at_end','sfr','stars_at_end'
-	#observational_constraints_index = ['sol_norm', 'sn_ratio', 'gas_reservoir','arcturus','cas','stars_at_end','plot_processes']
-	observational_constraints_index = ['gas_reservoir','sn_ratio','cas','sol_norm','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
+	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm']#,'cas','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
 	arcturus_age = 7.1# 7.1 +1.5 -1.2
-	make_multi_zone = False
-	multi_zone_list = [['sol_norm','gas_reservoir','sn_ratio'], ['arcturus','gas_reservoir','sn_ratio']]
 
 	produce_mock_data = False
 	use_mock_data = False
 	error_inflation = 1.
-	#observational_constraints_index = ['apogee','save_abundances','plot_processes']
+
 	# If some parameter is in to optimise there needs to be a prior and constraints defined
-	# Some names should not be changed or used for optimizing names. 'offset' and 'sigma' are such names
-	if False:
-		#error_parameters = [-2., 2., 0.05]#, 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2. ]
-		#error_parameters_to_optimize = ['lnodds','astronomical_spread','Q']#,,'sigma_O','sigma_Na','sigma_Mg','sigma_Al','sigma_Si','sigma_Ca','sigma_Ti','sigma_Cr','sigma_Fe','sigma_Ni','sigma_Zn','sigma_Y','sigma_Ba','Q_O','Q_Na','Q_Mg','Q_Al','Q_Si','Q_Ca','Q_Ti','Q_Cr','Q_Fe','Q_Ni','Q_Zn','Q_Y','Q_Ba']
-		#prior
-		error_parameters = [ -3., 2., 0.05]#, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]#, 0.05, 0.05]#, 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2. ]
-		#start_value
-		#error_parameters = [ -6.7, 2., 0.14, 0.1, 0.09, 0.16, 0.13, 0.04, 0.04, 0.15, 0.13, 0.09]#, 0.05, 0.05]#, 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2. ]
-		error_parameters_to_optimize = ['lnodds','Q','astronomical_spread']#'sigma_O','sigma_Mg','sigma_Al','sigma_Si','sigma_P','sigma_Ca','sigma_Cr','sigma_Mn','sigma_Fe','sigma_Ni']#,'sigma_Y','sigma_Ba']#,'Q_O','Q_Na','Q_Mg','Q_Al','Q_Si','Q_Ca','Q_Ti','Q_Cr','Q_Fe','Q_Ni','Q_Zn','Q_Y','Q_Ba']
-		#error_parameters = [ -2., 2., 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]#, 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2. ]
-		#error_parameters_to_optimize = ['lnodds','Q','sigma_O','sigma_Na','sigma_Mg','sigma_Al','sigma_Si','sigma_Ca','sigma_Ti','sigma_Cr','sigma_Fe','sigma_Ni','sigma_Zn','sigma_Y','sigma_Ba']#,'sigma_Y','sigma_Ba']#,'Q_O','Q_Na','Q_Mg','Q_Al','Q_Si','Q_Ca','Q_Ti','Q_Cr','Q_Fe','Q_Ni','Q_Zn','Q_Y','Q_Ba']
-	else:
-		error_parameters = []
-		error_parameters_to_optimize = []			
-	# Prior [-2.3 ,0.005 ,0.2 ,1.0 ,3.3,1.0, 3.5,0.5]
 	if True:
 		#prior
 		SSP_parameters =  [-2.29 ,-2.75 ,	-0.8 ]#,0.2]#, 0.7, 0.3, 0.0]
@@ -313,36 +218,9 @@ class ModelParameters(object):
 		ISM_parameters_to_optimize = []
 	assert len(ISM_parameters) == len(ISM_parameters_to_optimize)
 
-	if False:
-		yield_factors = [1.,1.,1., 1.,1.,1.,1.,1.,1.,1.,1.]
-		yields_factors_to_optimize = ['SN2_Mg','SN2_Si','SN2_S','SN2_Ca','SN2_C','SN2_N','SN2_Al','SN2_Na', 'SN2_K','SN2_Mn','SN2_Ni']
-		yield_factors = [1.,1.,1., 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1., 1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.]
-		yields_factors_to_optimize = ['SN2_O','SN2_Na','SN2_Mg','SN2_Al','SN2_Si','SN2_Ca','SN2_Ti','SN2_Cr', 'SN2_Mn', 'SN2_Fe','SN2_Co','SN2_Ni','SN2_Zn','SN1a_O','SN1a_Na','SN1a_Mg','SN1a_Al','SN1a_Si','SN1a_Ca','SN1a_Ti','SN1a_Cr', 'SN1a_Mn','SN1a_Fe','SN1a_Co','SN1a_Ni','SN1a_Zn']
-
-	else:
-		yield_factors = []
-		yields_factors_to_optimize = []
-	assert len(yield_factors) == len(yields_factors_to_optimize)
-	# Prior [0.0,0.,0., 0.,0.,0.,0.,0.,0.,0.,0.]
-	if False:
-		offsets = [0.0,0.0,0., 0.,0.,0.,0.,0.,0.,0.,0.]
-		offsets_to_optimize = ['offset_Mg','offset_Si','offset_S','offset_Ca','offset_C','offset_N','offset_Al','offset_Na', 'offset_K','offset_Mn','offset_Ni']
-	else:
-		offsets = []
-		offsets_to_optimize = []
-	assert len(offsets) == len(offsets_to_optimize) 
-	
-
-
-	p0 = np.hstack((error_parameters,SSP_parameters,ISM_parameters,yield_factors,offsets))
-	if make_multi_zone:
-		for i in range(len(multi_zone_list)):
-			p0 = np.hstack((p0,ISM_parameters))
-	to_optimize = np.array(error_parameters_to_optimize + SSP_parameters_to_optimize + ISM_parameters_to_optimize+yields_factors_to_optimize+offsets_to_optimize)
-	#p0 = np.load('mcmc/best_parameter_values.npy')[0]
-	#assert len(p0) == len(to_optimize)
+	p0 = np.hstack((SSP_parameters,ISM_parameters))
+	to_optimize = np.array(SSP_parameters_to_optimize + ISM_parameters_to_optimize)
 	ndim = len(to_optimize)
-	#print ndim
 
 	constraints = {
 	'high_mass_slope' : (-4.,-1.),
@@ -369,118 +247,10 @@ class ModelParameters(object):
 	'tau_infall' : (None,None),
 	'c_infall' : (None,None),
 	'gas_at_start' : (0.,2.),
-	'sigma_error_population' : (0.,10),
-	'fraction_error_population' : (0.,1.),
 	'gas_reservoir_mass_factor' : (0.,20.),
 	'infall_scale' : (0.0,end),
 	'sn1a_norm' : (0.,None),
 	'sn1a_scale' : (0.,None),
-	'sigma_astro' : (0.,None),
-	'epsilon' : (0.,1.),
-
-
-
-	'SN2_C'  : (0,150),
-	'SN2_N'  : (0,150),
-	'SN2_O'  : (0,150),
-	'SN2_Na' : (0,150),
-	'SN2_Mg' : (0,150),
-	'SN2_Al' : (0,150),
-	'SN2_Si' : (0,150),
-	'SN2_S'  : (0,150),
-	'SN2_P'  : (0,150),
-	'SN2_K'  : (0,150),
-	'SN2_Ca' : (0,150),
-	'SN2_Ti' : (0,150),
-	'SN2_V'  : (0,150),
-	'SN2_Cr' : (0,150),
-	'SN2_Co' : (0,150),
-	'SN2_Mn' : (0,150),
-	'SN2_Fe' : (0,150),
-	'SN2_Zn' : (0,150),
-	'SN2_Ni' : (0,150),
-
-
-	'SN1a_C'  : (0,150),
-	'SN1a_N'  : (0,150),
-	'SN1a_O'  : (0,150),
-	'SN1a_Na' : (0,150),
-	'SN1a_Mg' : (0,150),
-	'SN1a_Al' : (0,150),
-	'SN1a_Si' : (0,150),
-	'SN1a_S'  : (0,150),
-	'SN1a_P'  : (0,150),
-	'SN1a_K'  : (0,150),
-	'SN1a_Ca' : (0,150),
-	'SN1a_Ti' : (0,150),
-	'SN1a_V'  : (0,150),
-	'SN1a_Cr' : (0,150),
-	'SN1a_Co' : (0,150),
-	'SN1a_Mn' : (0,150),
-	'SN1a_Fe' : (0,150),
-	'SN1a_Zn' : (0,150),
-	'SN1a_Ni' : (0,150),
-
-	'agb_C'  : (0,150),
-	'agb_N'  : (0,150),
-	'agb_O'  : (0,150),
-	'agb_Na' : (0,150),
-	'agb_Mg' : (0,150),
-	'agb_Al' : (0,150),
-	'agb_Si' : (0,150),
-	'agb_S'  : (0,150),
-	'agb_Mn' : (0,150),
-	'agb_Fe' : (0,150),
-	'agb_Ni' : (0,150),
-
-	'offset_O'	: (-1,1), 
-	'offset_Mg' : (-1,1),
-	'offset_Si'	: (-1,1),
-	'offset_P'  : (-1,1),
-	'offset_S'	: (-1,1),
-	'offset_Ca'	: (-1,1),
-	'offset_C'  : (-1,1),
-	'offset_N'  : (-1,1),
-	'offset_Al' : (-1,1),
-	'offset_Na' : (-1,1),
-	'offset_K'  : (-1,1),
-	'offset_Cr' : (-1,1),
-	'offset_Mn' : (-1,1),
-	'offset_Fe' : (-1,1),
-	'offset_Ni' : (-1,1),
-	'offset_C+N': (-1,1),
-	'Q_O' : (1,None),
-	'Q_Na': (1,None),
-	'Q_Mg': (1,None),
-	'Q_Al': (1,None),
-	'Q_Si': (1,None),
-	'Q_Ca': (1,None),
-	'Q_Ti': (1,None),
-	'Q_Cr': (1,None),
-	'Q_Fe': (1,None),
-	'Q_Ni': (1,None),
-	'Q_Zn': (1,None),
-	'Q_Y' : (1,None),
-	'Q_Ba': (1,None),
-	'Q' 	: (1,None),
-	'lnodds': (None,0.),
-	'astronomical_spread': (0.,1.),
-	'sigma_O' : (0.,1.),
-	'sigma_Na': (0.,1.),
-	'sigma_Mg': (0.,1.),
-	'sigma_Al': (0.,1.),
-	'sigma_Si': (0.,1.),
-	'sigma_Ca': (0.,1.),
-	'sigma_Ti': (0.,1.),
-	'sigma_Cr': (0.,1.),
-	'sigma_Fe': (0.,1.),
-	'sigma_Ni': (0.,1.),
-	'sigma_Zn': (0.,1.),
-	'sigma_Y' : (0.,1.),
-	'sigma_Ba': (0.,1.),
-	'sigma_P': (0.,1.),
-	'sigma_K' : (0.,1.),
-	'sigma_Mn': (0.,1.),
 	}
 	# the prior entry is (mean,std,0)
 	# functional form 0 is a gaussian with log values and 1 is for fractions where the sigma distances are in factors from the mean (see cem_function.py)
@@ -497,32 +267,10 @@ class ModelParameters(object):
 
 	'a_parameter' : (3.,3.,0),
 	'infall_scale' : (3.3,0.5,0),
-	'lnodds': (-3.,0.2,0),
 	'gas_power': (1.5,0.2,0),
-	
-	
-	
-
 	'log10_sfr_factor_for_cosmic_accretion': (0.2,0.3,0),
 	'log10_a_parameter' : (0.3,0.2,0),
 	'log10_gas_power' : (0,0.15,0),
-
-	'offset_O'	: (0,0.2,0),
-	'offset_Mg' : (0,0.2,0),
-	'offset_Si'	: (0,0.2,0),
-	'offset_P'  : (0,0.2,0),
-	'offset_S'	: (0,0.2,0),
-	'offset_Ca'	: (0,0.2,0),
-	'offset_Cr' : (0,0.2,0),
-	'offset_C'  : (0,0.2,0),
-	'offset_N'  : (0,0.2,0),
-	'offset_Al' : (0,0.2,0),
-	'offset_Na' : (0,0.2,0),
-	'offset_K'  : (0,0.2,0),
-	'offset_Mn' : (0,0.2,0),
-	'offset_Fe' : (0,0.2,0),
-	'offset_Ni' : (0,0.2,0),
-	'offset_C+N': (0,0.2,0),
 	
 	## Priors on factors
 	'starformation_efficiency' : (0.5,3.,1), 
@@ -532,89 +280,4 @@ class ModelParameters(object):
 	'N_0' : (0.001,3.,1),
 	'gas_at_start' : (0.1,2.,1),
 	'gas_reservoir_mass_factor' : (3.,2.,1),
-	'Q' 	: (2.,1.2,1),
-	'Q_O'   : (2.,1.2,1),
-	'Q_Na'  : (2.,1.2,1),
-	'Q_Mg'  : (2.,1.2,1),
-	'Q_Al'  : (2.,1.2,1),
-	'Q_Si'  : (2.,1.2,1),
-	'Q_Ca'  : (2.,1.2,1),
-	'Q_Ti'  : (2.,1.2,1),
-	'Q_Cr'  : (2.,1.2,1),
-	'Q_Fe'  : (2.,1.2,1),
-	'Q_Ni'  : (2.,1.2,1),
-	'Q_Zn'  : (2.,1.2,1),
-	'Q_Y'   : (2.,1.2,1),
-	'Q_Ba'  : (2.,1.2,1),
-
-
-	'astronomical_spread': (0.05,2.,1),
-	'sigma_O'   : (0.05,2.,1),
-	'sigma_Na'  : (0.05,2.,1),
-	'sigma_Mg'  : (0.05,2.,1),
-	'sigma_Al'  : (0.05,2.,1),
-	'sigma_Si'  : (0.05,2.,1),
-	'sigma_Ca'  : (0.05,2.,1),
-	'sigma_Ti'  : (0.05,2.,1),
-	'sigma_Cr'  : (0.05,2.,1),
-	'sigma_Fe'  : (0.05,2.,1),
-	'sigma_Ni'  : (0.05,2.,1),
-	'sigma_Zn'  : (0.05,2.,1),
-	'sigma_Y'   : (0.05,2.,1),
-	'sigma_Ba'  : (0.05,2.,1),
-	'sigma_P'  : (0.05,2.,1),
-	'sigma_K'   : (0.05,2.,1),
-	'sigma_Mn'  : (0.05,2.,1),
-	
-	'SN2_C'  : (1,2.,1),
-	'SN2_N'  : (1,2.,1),
-	'SN2_O'  : (1,2.,1),
-	'SN2_Na' : (1,2.,1),
-	'SN2_Mg' : (1,2.,1),
-	'SN2_Al' : (1,2.,1),
-	'SN2_Si' : (1,2.,1),
-	'SN2_P'  : (1,2.,1),
-	'SN2_S'  : (1,2.,1),
-	'SN2_K'  : (1,2.,1),
-	'SN2_Ca' : (1,2.,1),
-	'SN2_Cr' : (1,2.,1),
-	'SN2_Co' : (1,2.,1),
-	'SN2_Ti' : (1,2.,1),
-	'SN2_V'  : (1,2.,1),
-	'SN2_Mn' : (1,2.,1),
-	'SN2_Fe' : (1,2.,1),
-	'SN2_Ni' : (1,2.,1),
-	'SN2_Zn' : (1,2.,1),
-
-	'SN1a_C'  : (1,2.,1),
-	'SN1a_N'  : (1,2.,1),
-	'SN1a_O'  : (1,2.,1),
-	'SN1a_Na' : (1,2.,1),
-	'SN1a_Mg' : (1,2.,1),
-	'SN1a_Al' : (1,2.,1),
-	'SN1a_Si' : (1,2.,1),
-	'SN1a_P'  : (1,2.,1),
-	'SN1a_S'  : (1,2.,1),
-	'SN1a_K'  : (1,2.,1),
-	'SN1a_Ca' : (1,2.,1),
-	'SN1a_Cr' : (1,2.,1),
-	'SN1a_Co' : (1,2.,1),
-	'SN1a_Ti' : (1,2.,1),
-	'SN1a_V'  : (1,2.,1),
-	'SN1a_Mn' : (1,2.,1),
-	'SN1a_Fe' : (1,2.,1),
-	'SN1a_Ni' : (1,2.,1),
-	'SN1a_Zn' : (1,2.,1),
-
-	'agb_C'  : (1,2.,1),
-	'agb_N'  : (1,2.,1),
-	'agb_O'  : (1,2.,1),
-	'agb_Na' : (1,2.,1),
-	'agb_Mg' : (1,2.,1),
-	'agb_Al' : (1,2.,1),
-	'agb_Si' : (1,2.,1),
-	'agb_S'  : (1,2.,1),
-	'agb_Mn' : (1,2.,1),
-	'agb_Fe' : (1,2.,1),
-	'agb_Ni' : (1,2.,1),
 	}

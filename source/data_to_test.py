@@ -35,7 +35,7 @@ def gaussian_1d_log(x,x0,xsig):
 	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
 
 
-def yield_plot(name_string, yield_class, solar_class,):
+def yield_plot(name_string, yield_class, solar_class, element):
 	elements = np.hstack(solar_class.all_elements)
 	solar_fe_fraction = float(solar_class.fractions[np.where(elements == 'Fe')])
 	solar_element_fraction = float(solar_class.fractions[np.where(elements == element)])

@@ -155,29 +155,3 @@ class INFALL(object):
  
     def sfr_related(self, ):
         self.infall = np.zeros_like(self.sfr)
-
-    def just(self, paramet = (1.)):
-        sfr_norm = paramet
-        norm = sum(self.sfr)*sfr_norm
-        data=np.loadtxt('input/model/zevolv02.dat',skip_header=3) 
-        sfr,t,infall=[],[],[]
-        for item in data:
-            t.append(item[0])
-            sfr.append(item[1])
-            infall.append(item[4]+item[10])
-        norm *= sum(infall)/sum(sfr)
-        self.infall=np.array(infall)
-        self.infall=np.hstack((self.infall[0],self.infall))
-        self.infall = np.divide(self.infall*norm,sum(self.infall))
-    def simon(self,paramet = (1.)):
-        sfr_norm = paramet
-        norm = sum(self.sfr)*sfr_norm
-        self.infall = np.load('input/Simon/alphainfall.npy')
-        self.infall=np.hstack((self.infall[0],self.infall))
-        self.infall = np.divide(self.infall*norm,sum(self.infall))
-    def sarah(self,paramet = (1.)):
-        sfr_norm = paramet
-        norm = sum(self.sfr)*sfr_norm
-        self.infall = np.load('input/Simon/fall.npy')
-        self.infall=np.hstack((self.infall[0],self.infall))
-        self.infall = np.divide(self.infall*norm,sum(self.infall))

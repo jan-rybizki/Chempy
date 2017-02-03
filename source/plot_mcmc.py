@@ -322,6 +322,7 @@ def plot_element_correlation(directory):
 		positions[:,i] = blobs[:,np.where(names == item)[0][0]]
 
 	parameter_names = [item[2:] for item in parameter_names]
+	### only to make the tutorial look nice. Uncomment the next two lines if you want to use your own example
 	parameter_names[-2] = r'$\alpha_\mathrm{IMF}$'
 	parameter_names[-1] = r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$'
 	fig, axes = plt.subplots(nrows=nparameter, ncols=nparameter,figsize=(14.69,8.0), dpi=300)#,sharex=True, sharey=True)

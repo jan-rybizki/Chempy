@@ -11,9 +11,6 @@ def one_chain(args):
 	backup = np.array(a.to_optimize)
 	result = -np.inf
 	while result == -np.inf:
-		if a.make_multi_zone:
-			for i in range(len(a.multi_zone_list)):
-				a.to_optimize = np.hstack((a.to_optimize,a.to_optimize[-len(a.ISM_parameters):]))
 		for j,name in enumerate(a.to_optimize):
 			#(mean, std) = a.priors.get(name)
 			mean = startpoint[j]

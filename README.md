@@ -20,4 +20,4 @@ Flexible one-zone open box chemical evolution modeling. Abundance fitting and st
 clone https://github.com/jan-rybizki/Chempy.git
 ```
 ## Getting started
-The jupyter [tutorial](https://github.com/jan-rybizki/Chempy/tree/master/tutorials) illustrates the basic usage of Chempy and can be run on your local machine (you have to start it from within the tutorial folder) or just inspected in this github repository.
+The jupyter [tutorial](https://github.com/jan-rybizki/Chempy/tree/master/tutorials) illustrates the basic usage of Chempy and basic concepts of galactic chemical evolution modeling. It can be run on your local machine (you have to ```jupyter notebook``` from within the tutorial folder) or just inspected in this github repository.

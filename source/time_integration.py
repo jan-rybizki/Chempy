@@ -160,11 +160,11 @@ class ABUNDANCE_MATRIX(object):
 			if infall_needed < 0. :
 				infall_needed = 0.
 			if infall_needed > self.gas_reservoir['gas'][index]:
-				print 'gas reservoir is empty'
+				print('gas reservoir is empty')
 				infall_needed = float(self.gas_reservoir['gas'][index])
 			## for few parameter values of gas_power the infall_needed value could be too small
 			if infall_needed + gas_there <= self.sfr[index]:
-				print 'too few gas requested'
+				print('too few gas requested')
 				infall_needed = self.sfr[index] - gas_there
 			self.infall[index] = float(infall_needed)
 			self.cube['infall'][index] = float(infall_needed)

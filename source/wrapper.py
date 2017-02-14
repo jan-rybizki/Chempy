@@ -105,11 +105,11 @@ def Chempy(a):
 		basic_ssp.calculate_feedback(float(metallicity), list(elements_to_trace), list(element_fractions), np.copy(time_steps))
 		cube.advance_one_step(i+1,np.copy(basic_ssp.table),np.copy(basic_ssp.sn2_table),np.copy(basic_ssp.agb_table),np.copy(basic_ssp.sn1a_table))
 		if cube.cube['gas'][i] < 0:
-			print i, basic_sfr.t[i]
-			print 'gas became negative. returning -inf'
+			print(i, basic_sfr.t[i])
+			print('gas became negative. returning -inf')
 			return -np.inf, [0]
 		if cube.gas_reservoir['gas'][i] < 0:
-			print 'gas_reservoir became negative. returning -inf'
+			print('gas_reservoir became negative. returning -inf')
 			return -np.inf, [0]
 
 	abundances,elements,numbers = mass_fraction_to_abundances(np.copy(cube.cube),np.copy(basic_solar.table))
@@ -158,7 +158,7 @@ def mcmc(a):
 	start1 = time.time()
 	directory = 'mcmc/0/'
 	if os.path.exists(directory):
-		print '%s already existed. Content might be overwritten' %(directory)
+		print('%s already existed. Content might be overwritten' %(directory))
 	else:
 		os.makedirs(directory)
 	
@@ -177,7 +177,7 @@ def mcmc(a):
 	posterior_list = []
 	posterior_std_list = []
 	for i in range(a.m):
-		print 'step ', i+1 , 'of ',a.m, 
+		print('step ', i+1 , 'of ',a.m)
 		pos, prob, state, blobs = sampler.run_mcmc(pos, a.save_state_every, rstate0=state, lnprob0=prob, blobs0 = blobs, storechain = True)
 		np.save('%s/flatchain' %(directory),sampler.chain)
 		np.save('%s/flatlnprobability' %(directory),sampler.lnprobability)
@@ -187,13 +187,13 @@ def mcmc(a):
 		posterior_std_list.append(np.std(posterior, axis = 0)[-1])
 		np.save('%s/flatmeanposterior' %(directory), posterior_list)
 		np.save('%s/flatstdposterior' %(directory), posterior_std_list)
-		print np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1]
+		print(np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1])
 		
 		if i>202:
-			print 'posterior -1, -100, -200',np.mean(posterior, axis = 0)[-1], np.mean(posterior, axis = 0)[-100], np.mean(posterior, axis = 0)[-200]
-			print 'posterior 0, 100, 200',np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[100], np.mean(posterior, axis = 0)[200]
+			print('posterior -1, -100, -200',np.mean(posterior, axis = 0)[-1], np.mean(posterior, axis = 0)[-100], np.mean(posterior, axis = 0)[-200])
+			print('posterior 0, 100, 200',np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[100], np.mean(posterior, axis = 0)[200])
 		#print("Mean acceptance fraction:", sampler.acceptance_fraction)
 		elapsed1 = (time.time() - start1)
-		print 'calculation so far took', elapsed1, ' seconds'
+		print('calculation so far took', elapsed1, ' seconds')
 		if i>300 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < 0.5 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < 0.5:
 			break

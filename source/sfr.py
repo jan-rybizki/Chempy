@@ -23,8 +23,7 @@ class SFR(object):
             age_distribution_model = x[age_column]
 
             return np.interp(time,time_model,age_distribution_model)
-
-    	self.sfr = (self.t + t0)/(self.t**2 + t1**2)**2
+        self.sfr = (self.t + t0)/(self.t**2 + t1**2)**2
         self.sfr = np.divide(self.sfr,sum(self.sfr)/(np.divide(1.,self.dt)*S0))
   
     def doubly_peaked(self,S0 = 45.07488, peak_ratio = 1., decay = 2., t0 = 2., peak1t0 = 0.5, peak1sigma = 0.5):

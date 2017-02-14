@@ -69,11 +69,20 @@ class SN1a_feedback(object):
 		'''
 		Iwamoto99 yields building up on Nomoto84
 		'''
-		tdtype =   [('species','|S4'),('W7',float),('W70',float),('WDD1',float),('WDD2',float),('WDD3',float),('CDD1',float),('CDD2',float)]
+		import numpy.lib.recfunctions as rcfuncs
+
+		tdtype =   [('species1','|S4'),('W7',float),('W70',float),('WDD1',float),('WDD2',float),('WDD3',float),('CDD1',float),('CDD2',float)]
 		metallicity_list = [0.02,0.0]
 		self.metallicities = metallicity_list
 		self.masses = [1.38]
 		y = np.genfromtxt('input/yields/Iwamoto/sn1a_yields.txt',dtype = tdtype, names = None)
+		## Python3 need transformation between bytes and strings
+		element_list2 = []
+		for j,jtem in enumerate(y['species1']):
+			element_list2.append(jtem.decode('utf8'))
+		y = rcfuncs.append_fields(y,'species',element_list2,usemask = False)
+
+
 		################################
 		without_radioactive_isotopes=True
 		if without_radioactive_isotopes:### without radioactive isotopes it should be used this way because the radioactive nuclides are already calculated in here
@@ -159,7 +168,7 @@ class SN1a_feedback(object):
 		indexing['Cu'] = copper_list
 		indexing['Zn'] = zinc_list
 		
-		self.elements = indexing.keys()        
+		self.elements = list(indexing.keys())        
 		
 
 		#################################
@@ -170,7 +179,7 @@ class SN1a_feedback(object):
 			elif metallicity == 0.0:
 				model = 'W70'
 			else:
-				print 'this metallicity is not represented in the Iwamoto yields. They only have solar (0.02) and zero (0.0001)'
+				print('this metallicity is not represented in the Iwamoto yields. They only have solar (0.02) and zero (0.0001)')
 			additional_keys = ['Mass', 'mass_in_remnants']
 			names = additional_keys + self.elements
 			base = np.zeros(len(self.masses))
@@ -287,7 +296,7 @@ class SN2_feedback(object):
 		y = np.genfromtxt('%s/yields.dat' %(DATADIR), dtype = tdtype, names = None)
 		metallicity_list = np.unique(y['metallicity'])
 		self.metallicities = np.sort(metallicity_list)
-		number_of_species = len(y)/len(self.metallicities)
+		number_of_species = int(len(y)/len(self.metallicities))
 		tables = []
 		for i, item in enumerate(self.metallicities):
 			tables.append(y[(i*number_of_species):((i+1)*number_of_species)])
@@ -296,10 +305,14 @@ class SN2_feedback(object):
 		for i in range(len(tables)):
 			tables[i] = tables[i][np.where(tables[i]['date_after_explosion']==0)]
 		element_list = tables[0]['species'][3:]
+		# For python 3 the bytes need to be changed into strings
+		element_list2 = []
+		for i, item in enumerate(element_list):
+			element_list2.append(item.decode('utf8'))
+		element_list = np.array(element_list2)
 		indexing = [re.split(r'(\d+)', s)[1:] for s in element_list]
 		element_position = []
 		for i,item in enumerate(element_list):
-			#print i, item, indexing[i][0], indexing[i][1]
 			element_position.append(indexing[i][1])
 		self.elements = list(np.unique(element_position))
 		masses = tables[0].dtype.names[3:]
@@ -327,10 +340,8 @@ class SN2_feedback(object):
 					for t,ttem in enumerate(element_position):
 						if ttem == item:
 							yield_tables_final_structure_subtable[item][j] += yields_for_one_metallicity[str(jtem)][t+3] / float(jtem)
-							#print j,jtem,i,item,t,ttem,yields_for_one_metallicity[str(jtem)][t+3] / float(jtem)
 			# remnant + yields of all elements is less than the total mass. In the next loop the wind mass is calculated.
 			name_list = list(yield_tables_final_structure_subtable.dtype.names[3:]) + ['mass_in_remnants']
-			#print name_list
 			for i in range(len(yield_tables_final_structure_subtable)):
 				tmp = []
 				for j,jtem in enumerate(name_list):
@@ -352,11 +363,13 @@ class SN2_feedback(object):
 		same with z=0.02 but other elements are implemented in the right way:[ 3.27070753,  8.99349996,  6.12286813,  3.1179861 ,  1.96401573] vs. [3,8.75,5.71,2.7,1.6]
 		we have a switch to change between the two different methods (rapid/delay explosion)
 		'''
-		tdtype =   [('empty',int),('element','|S3'),('165',float),('200',float),('300',float),('500',float),('1500',float),('2000',float),('2500',float)]
-		tdtype2 =   [('empty',int),('element','|S3'),('165',float),('200',float),('300',float),('500',float),('1500',float),('2000',float),('2500',float),('3200',float),('6000',float)]
+		import numpy.lib.recfunctions as rcfuncs
+
+		tdtype =   [('empty',int),('element1','|S3'),('165',float),('200',float),('300',float),('500',float),('1500',float),('2000',float),('2500',float)]
+		tdtype2 =   [('empty',int),('element1','|S3'),('165',float),('200',float),('300',float),('500',float),('1500',float),('2000',float),('2500',float),('3200',float),('6000',float)]
 		
-		expdtype =   [('empty',int),('element','|S3'),('15_delay',float),('15_rapid',float),('20_delay',float),('20_rapid',float),('25_delay',float),('25_rapid',float)]
-		expdtype2 =   [('empty',int),('element','|S3'),('15_delay',float),('15_rapid',float),('20_delay',float),('20_rapid',float),('25_delay',float),('32_delay',float),('32_rapid',float),('60_delay',float)]
+		expdtype =   [('empty',int),('element1','|S3'),('15_delay',float),('15_rapid',float),('20_delay',float),('20_rapid',float),('25_delay',float),('25_rapid',float)]
+		expdtype2 =   [('empty',int),('element1','|S3'),('15_delay',float),('15_rapid',float),('20_delay',float),('20_rapid',float),('25_delay',float),('32_delay',float),('32_rapid',float),('60_delay',float)]
 		
 		yield_tables = {}
 		self.metallicities = [0.02,0.01]
@@ -379,11 +392,16 @@ class SN2_feedback(object):
 				y['20_%s' %(which_sn_model_to_use)] += z['2000']
 				y['25_%s' %(which_sn_model_to_use)] += z['2500']
 				
+			# For python 3 the bytes need to be changed into strings
+			element_list2 = []
+			for j,item in enumerate(y['element1']):
+					element_list2.append(item.decode('utf8'))
+			y = rcfuncs.append_fields(y,'element',element_list2,usemask = False)
+			
 			yield_tables[self.metallicities[i]] = y
-			#print y[0]
-			#print z[0]
 		
 		self.elements = list(yield_tables[0.02]['element']) 
+		# For python 3 the bytes need to be changed into strings
 		self.masses = np.array((15,20,25,32,60))
 
 		######
@@ -399,7 +417,7 @@ class SN2_feedback(object):
 			else:
 				base = np.zeros(len(self.masses)-2)
 			list_of_arrays = []
-			
+
 			for i in range(len(names)):
 				list_of_arrays.append(base)
 			yield_tables_final_structure_subtable = np.core.records.fromarrays(list_of_arrays,names=names)
@@ -482,6 +500,8 @@ class SN2_feedback(object):
 		'''
 		Nomoto2013 sn2 yields from 13Msun onwards
 		'''
+		import numpy.lib.recfunctions as rcfuncs
+
 		dt = np.dtype('a13,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8')
 		yield_tables = {}
 		self.metallicities = [0.0500,0.0200,0.0080,0.0040,0.0010]
@@ -561,11 +581,16 @@ class SN2_feedback(object):
 		indexing['Ga'] = gallium_list
 		indexing['Ge'] = germanium_list
 
-		self.elements = indexing.keys()
+		self.elements = list(indexing.keys())
 		### restructuring the tables such that it looks like the sn2 dictionary: basic_agb[metallicicty][element]
 		yield_tables_final_structure = {}
 		for metallicity_index,metallicity in enumerate(self.metallicities):
 			yields_for_one_metallicity = yield_tables_dict[metallicity]
+			# For python 3 the bytes need to be changed into strings
+			element_list2 = []
+			for j,item in enumerate(yields_for_one_metallicity['M']):
+					element_list2.append(item.decode('utf8'))
+			yields_for_one_metallicity = rcfuncs.append_fields(yields_for_one_metallicity,'element',element_list2,usemask = False)
 			additional_keys = ['Mass','mass_in_remnants','unprocessed_mass_in_winds']
 			names = additional_keys + self.elements
 			base = np.zeros(len(self.masses))
@@ -577,7 +602,6 @@ class SN2_feedback(object):
 			yield_tables_final_structure_subtable['Mass'] = self.masses
 			#yield_tables_final_structure_subtable['mass_in_remnants'] = yields_for_one_metallicity['M']
 			temp1 = np.zeros(len(self.masses))
-			#print len(temp1),len(line_of_one_element),line_of_one_element[0]
 			temp1[0] = yields_for_one_metallicity[0][21]
 			temp1[1] = yields_for_one_metallicity[0][22]
 			temp1[2] = yields_for_one_metallicity[0][23]
@@ -587,14 +611,12 @@ class SN2_feedback(object):
 			temp1[6] = yields_for_one_metallicity[0][27]
 
 			yield_tables_final_structure_subtable['mass_in_remnants'] = np.divide(temp1,self.masses)
-			#print yield_tables_final_structure_subtable['mass_in_remnants']
 			for i,item in enumerate(self.elements):
 				yield_tables_final_structure_subtable[item] = 0
 				for j,jtem in enumerate(indexing[item]):
 						################### here we can change the yield that we need for processing. normalising 'ejected_mass' with the initial mass to get relative masses
-						line_of_one_element = yields_for_one_metallicity[np.where(yields_for_one_metallicity['M']==jtem)][0]
+						line_of_one_element = yields_for_one_metallicity[np.where(yields_for_one_metallicity['element']==jtem)][0]
 						temp1 = np.zeros(len(self.masses))
-						#print len(temp1),len(line_of_one_element),line_of_one_element[0]
 						temp1[0] = line_of_one_element[21]
 						temp1[1] = line_of_one_element[22]
 						temp1[2] = line_of_one_element[23]
@@ -603,8 +625,7 @@ class SN2_feedback(object):
 						temp1[5] = line_of_one_element[26]
 						temp1[6] = line_of_one_element[27]
 						yield_tables_final_structure_subtable[item] += np.divide(temp1,self.masses)
-						#print metallicity, item, yield_tables_final_structure_subtable[item]
-
+						
 			yield_tables_final_structure_subtable['unprocessed_mass_in_winds'][0] = (1-yield_tables_final_structure_subtable['mass_in_remnants'][0]-sum(yield_tables_final_structure_subtable[self.elements][0]))#yields_for_one_metallicity[0][21]#
 			yield_tables_final_structure_subtable['unprocessed_mass_in_winds'][1] = (1-yield_tables_final_structure_subtable['mass_in_remnants'][1]-sum(yield_tables_final_structure_subtable[self.elements][1]))#yields_for_one_metallicity[0][22]#
 			yield_tables_final_structure_subtable['unprocessed_mass_in_winds'][2] = (1-yield_tables_final_structure_subtable['mass_in_remnants'][2]-sum(yield_tables_final_structure_subtable[self.elements][2]))#yields_for_one_metallicity[0][23]#divided by mass because 'mass in remnant' is also normalised
@@ -791,7 +812,6 @@ class AGB_feedback(object):
 						################### here we can change the yield that we need for processing. normalising 'ejected_mass' with the initial mass to get relative masses
 						line_of_one_element = yields_for_one_metallicity[np.where(yields_for_one_metallicity['M']==jtem)][0]
 						temp1 = np.zeros(len(self.masses))
-						#print len(temp1),len(line_of_one_element),line_of_one_element[0]
 						for s in range(len(self.masses)): 
 							temp1[s] = line_of_one_element[s+2]
 						yield_tables_final_structure_subtable[item] += np.divide(temp1,self.masses)
@@ -806,12 +826,20 @@ class AGB_feedback(object):
 		'''
 		loading the Nugrid intermediate mass stellar yields NuGrid stellar data set. I. Stellar yields from H to Bi for stars with metallicities Z = 0.02 and Z = 0.01
 		'''
-		tdtype =   [('empty',int),('element','|S3'),('165',float),('200',float),('300',float),('500',float),('1500',float),('2000',float),('2500',float)]
+		import numpy.lib.recfunctions as rcfuncs
+		tdtype =   [('empty',int),('element1','|S3'),('165',float),('200',float),('300',float),('500',float),('1500',float),('2000',float),('2500',float)]
 		yield_tables = {}
 		self.metallicities = [0.02,0.01]
 
 		for i,metallicity_index in enumerate([2,1]): 
 			y = np.genfromtxt('input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_winds.txt' %(metallicity_index,metallicity_index),dtype = tdtype,names = None,skip_header = 3, delimiter = '&', autostrip = True)
+
+			## Python3 need transformation between bytes and strings
+			element_list2 = []
+			for j,jtem in enumerate(y['element1']):
+					element_list2.append(jtem.decode('utf8'))
+			y = rcfuncs.append_fields(y,'element',element_list2,usemask = False)
+			
 			yield_tables[self.metallicities[i]] = y
 		
 		
@@ -860,6 +888,8 @@ class AGB_feedback(object):
 		'''
 		loading the yield table of Karakas 2010.
 		'''
+		import numpy.lib.recfunctions as rcfuncs
+
 		DATADIR = 'input/yields/Karakas2010'
 		if not os.path.exists(DATADIR):
 			os.mkdir(DATADIR)
@@ -888,7 +918,7 @@ class AGB_feedback(object):
 
 
 
-		tdtype =   [('imass',float),('metallicity',float),('fmass',float),('species','|S4'),('A',int),('net_yield',float),('ejected_mass',float),('initial_wind',float),('average_wind',float),('initial_mass_fraction',float),('production_factor',float)]
+		tdtype =   [('imass',float),('metallicity',float),('fmass',float),('species1','|S4'),('A',int),('net_yield',float),('ejected_mass',float),('initial_wind',float),('average_wind',float),('initial_mass_fraction',float),('production_factor',float)]
 		metallicity_list = [0.02, 0.008, 0.004 ,0.0001]
 		self.metallicities = metallicity_list
 		
@@ -897,6 +927,13 @@ class AGB_feedback(object):
 		tables = []
 		for i,item in enumerate(metallicity_list):
 			y = np.genfromtxt('%s/tablea%d.dat' %(DATADIR,i+2), dtype = tdtype, names = None)
+			## Python3 need transformation between bytes and strings
+			element_list2 = []
+			for j,jtem in enumerate(y['species1']):
+					element_list2.append(jtem.decode('utf8'))
+			y = rcfuncs.append_fields(y,'species',element_list2,usemask = False)
+
+
 			tables.append(y)
 		
 
@@ -949,7 +986,7 @@ class AGB_feedback(object):
 
 		#indexing['S_el'] = ni_to_bi
 		
-		self.elements = indexing.keys()
+		self.elements = list(indexing.keys())
 		#### little fix for karakas tablea5.dat: 6.0 M_sun is written two times. We chose the first one
 		#tables[3]['imass'][-77:] = 6.5 # this is the fix if the second 6msun line was interpreted as 6.5 msun
 		tables[3] = tables[3][:-77]
@@ -1011,6 +1048,10 @@ class AGB_feedback(object):
 		"""
 		load the Karakas 2016 yields send by Amanda and Fishlock 2014 for Z = 0.001. With slight inconsistencies in the mass normalisation and not sure which Asplund2009 solar abundances she uses
 		"""
+		import numpy.lib.recfunctions as rcfuncs
+		import sys
+
+
 		list_of_metallicities = [0.001,0.007, 0.014, 0.03 ]
 		self.metallicities = list_of_metallicities
 		data_path = 'input/yields/Karakas2016/'
@@ -1018,14 +1059,38 @@ class AGB_feedback(object):
 		for metallicity in list_of_metallicities:
 			metallicity_name = str(metallicity)[2:]
 			if metallicity == 0.001:
-				dt = np.dtype([('element', '|S4'), ('atomic_number', np.int),('yield', np.float),('mass_lost', np.float),('mass_0', np.float),('xi', np.float),('x0', np.float),('log_xi_x0', np.float)])
+				dt = np.dtype([('element1', '|S4'), ('atomic_number', np.int),('yield', np.float),('mass_lost', np.float),('mass_0', np.float),('xi', np.float),('x0', np.float),('log_xi_x0', np.float)])
 			else:
-				dt = np.dtype([('element', '|S4'), ('atomic_number', np.int),('log_e', np.float),('xh', np.float),('xfe', np.float),('xi', np.float),('massi', np.float)])
+				dt = np.dtype([('element1', '|S4'), ('atomic_number', np.int),('log_e', np.float),('xh', np.float),('xfe', np.float),('xi', np.float),('massi', np.float)])
 			### yield
 			y = np.genfromtxt('%syield_z%s.dat' %(data_path,metallicity_name), dtype=dt)
-			dt = np.dtype([('element', '|S4'), ('atomic_number', np.int),('log_e', np.float),('xh', np.float),('xfe', np.float),('xo', np.float),('xi', np.float)])
+			
+			## Python3 need transformation between bytes and strings
+			if sys.version[0] == '3':
+				element_list2 = []
+				for j,jtem in enumerate(y['element1']):
+						element_list2.append(jtem.decode('utf8'))
+				y = rcfuncs.append_fields(y,'element',element_list2,usemask = False)
+			elif sys.version[0] == '2':
+				y = rcfuncs.append_fields(y,'element',y['element1'],usemask = False)
+			else:
+				print('not a valid python version')
+
+
+			dt = np.dtype([('element1', '|S4'), ('atomic_number', np.int),('log_e', np.float),('xh', np.float),('xfe', np.float),('xo', np.float),('xi', np.float)])
 			### surface
 			s = np.genfromtxt('%ssurf_z%s.dat' %(data_path,metallicity_name), dtype=dt)
+			## Python3 need transformation between bytes and strings
+			if sys.version[0] == '3':
+				element_list2 = []
+				for j,jtem in enumerate(s['element1']):
+						element_list2.append(jtem.decode('utf8'))
+				s = rcfuncs.append_fields(s,'element',element_list2,usemask = False)
+			elif sys.version[0] == '2':
+				s = rcfuncs.append_fields(s,'element',s['element1'],usemask = False)
+			else:
+				print('not a valid python version')
+
 			t =  np.where(s['element']== 'p')
 			len_elements = t[0][2]-1
 			elements = list(s['element'][:len_elements])
@@ -1088,7 +1153,6 @@ class AGB_feedback(object):
 			table_for_one_metallicity['mass_in_remnants'] = np.array(list_of_remnant)
 			for i,item in enumerate(elements):
 				for j,jtem in enumerate(list_of_masses):
-					#print item,jtem,y['element'][i+j*len_elements],y['xi'][i+j*len_elements], table_for_one_metallicity['Mass'][j]
 					table_for_one_metallicity[item][j] = y['xi'][i+j*len_elements]
 			for i,item in enumerate(table_for_one_metallicity["Mass"]):
 				table_for_one_metallicity['mass_in_remnants'][i] /= item
@@ -1107,6 +1171,9 @@ class AGB_feedback(object):
 		'''
 		loading the yield table of Karakas 2010.
 		'''
+		import numpy.lib.recfunctions as rcfuncs
+
+
 		DATADIR = 'input/yields/Karakas2010'
 		if not os.path.exists(DATADIR):
 			os.mkdir(DATADIR)
@@ -1135,7 +1202,7 @@ class AGB_feedback(object):
 
 
 
-		tdtype =   [('imass',float),('metallicity',float),('fmass',float),('species','|S4'),('A',int),('net_yield',float),('ejected_mass',float),('initial_wind',float),('average_wind',float),('initial_mass_fraction',float),('production_factor',float)]
+		tdtype =   [('imass',float),('metallicity',float),('fmass',float),('species1','|S4'),('A',int),('net_yield',float),('ejected_mass',float),('initial_wind',float),('average_wind',float),('initial_mass_fraction',float),('production_factor',float)]
 		metallicity_list = [0.02, 0.008, 0.004 ,0.0001]
 		self.metallicities = metallicity_list
 		
@@ -1144,6 +1211,13 @@ class AGB_feedback(object):
 		tables = []
 		for i,item in enumerate(metallicity_list):
 			y = np.genfromtxt('%s/tablea%d.dat' %(DATADIR,i+2), dtype = tdtype, names = None)
+			## Python3 need transformation between bytes and strings
+			element_list2 = []
+			for j,jtem in enumerate(y['species1']):
+					element_list2.append(jtem.decode('utf8'))
+			y = rcfuncs.append_fields(y,'species',element_list2,usemask = False)
+
+
 			tables.append(y)
 		
 
@@ -1196,7 +1270,7 @@ class AGB_feedback(object):
 
 		#indexing['S_el'] = ni_to_bi
 		
-		self.elements = indexing.keys()
+		self.elements = list(indexing.keys())
 		#### little fix for karakas tablea5.dat: 6.0 M_sun is written two times. We chose the first one
 		#tables[3]['imass'][-77:] = 6.5 # this is the fix if the second 6msun line was interpreted as 6.5 msun
 		tables[3] = tables[3][:-77]
@@ -1299,6 +1373,8 @@ class Hypernova_feedback(object):
 		'''
 		Nomoto2013 sn2 yields from 13Msun onwards
 		'''
+		import numpy.lib.recfunctions as rcfuncs
+
 		dt = np.dtype('a13,f8,f8,f8,f8')
 		yield_tables = {}
 		self.metallicities = [0.0500,0.0200,0.0080,0.0040,0.0010]
@@ -1380,11 +1456,17 @@ class Hypernova_feedback(object):
 		indexing['Ga'] = gallium_list
 		indexing['Ge'] = germanium_list
 
-		self.elements = indexing.keys()
+		self.elements = list(indexing.keys())
 		### restructuring the tables such that it looks like the sn2 dictionary: basic_agb[metallicicty][element]
 		yield_tables_final_structure = {}
 		for metallicity_index,metallicity in enumerate(self.metallicities):
 			yields_for_one_metallicity = yield_tables_dict[metallicity]
+			## Python3 need transformation between bytes and strings
+			element_list2 = []
+			for j,item in enumerate(yields_for_one_metallicity['M']):
+					element_list2.append(item.decode('utf8'))
+			yields_for_one_metallicity = rcfuncs.append_fields(yields_for_one_metallicity,'element',element_list2,usemask = False)
+
 			additional_keys = ['Mass','mass_in_remnants','unprocessed_mass_in_winds']
 			names = additional_keys + self.elements
 			base = np.zeros(len(self.masses))
@@ -1403,15 +1485,13 @@ class Hypernova_feedback(object):
 				yield_tables_final_structure_subtable[item] = 0
 				for j,jtem in enumerate(indexing[item]):
 						################### here we can change the yield that we need for processing. normalising 'ejected_mass' with the initial mass to get relative masses
-						line_of_one_element = yields_for_one_metallicity[np.where(yields_for_one_metallicity['M']==jtem)][0]
+						line_of_one_element = yields_for_one_metallicity[np.where(yields_for_one_metallicity['element']==jtem)][0]
 						temp1 = np.zeros(len(self.masses))
-						#print len(temp1),len(line_of_one_element),line_of_one_element[0]
 						for i in range(len(self.masses)):
 							temp1[i] = line_of_one_element[i+1]
 						yield_tables_final_structure_subtable[item] += np.divide(temp1,self.masses)
 
 			for i in range(len(self.masses)):
 				yield_tables_final_structure_subtable['unprocessed_mass_in_winds'][i] = (1-yield_tables_final_structure_subtable['mass_in_remnants'][i]-sum(yield_tables_final_structure_subtable[self.elements][i]))#yields_for_one_metallicity[0][21]#			
-			#print yield_tables_final_structure_subtable['unprocessed_mass_in_winds']
 			yield_tables_final_structure[metallicity] = yield_tables_final_structure_subtable#[::-1]
 		self.table = yield_tables_final_structure

@@ -92,7 +92,7 @@ class IMF(object):
     def BrokenPowerLaw(self, paramet):
         breaks,slopes = paramet
         if len(breaks) != len(slopes)-1:
-            print "error in the precription of the power law. It needs one more slope than break value"
+            print("error in the precription of the power law. It needs one more slope than break value")
         else:
             dn = np.zeros_like(self.x)
             self.breaks = breaks
@@ -129,14 +129,14 @@ class IMF(object):
     	### Stochastic sampling is realised by fixing the number of expected stars and then drawing from the probability distribution of the number density
         ### Statistical properties are tested for this sampling and are safe: number of stars and masses converge.
         number_of_stars = int(round(sum(self.dn) * mass))
-    	self.dm_copy = np.copy(self.dm)
-    	self.dn_copy = np.copy(self.dn)
+        self.dm_copy = np.copy(self.dm)
+        self.dn_copy = np.copy(self.dn)
 
     	#self.dn_copy = np.divide(self.dn_copy,sum(self.dn_copy))
-    	random_number = np.random.uniform(low = 0.0, high = sum(self.dn_copy), size = number_of_stars)
-    	self.dm = np.zeros_like(self.dm)
-    	self.dn = np.zeros_like(self.dn)
-    	'''
+        random_number = np.random.uniform(low = 0.0, high = sum(self.dn_copy), size = number_of_stars)
+        self.dm = np.zeros_like(self.dm)
+        self.dn = np.zeros_like(self.dn)
+        '''
         ### This could be favourable if the number of stars drawn is low compared to the imf resolution
     	for i in range(number_of_stars):
     		### the next line randomly draws a mass according to the number distribution of stars
@@ -147,14 +147,13 @@ class IMF(object):
     		self.dm[cut[0]] += x1 + self.dx/2.
     		t.append(x1 + self.dx/2.)
     	'''
-    	counting = np.cumsum(self.dn_copy)
-    	for i in range(len(counting)-1):
-    		if i == 0:
-    			cut = np.where(np.logical_and(random_number>0.,random_number<=counting[i]))
-    		else:
-    			cut = np.where(np.logical_and(random_number>counting[i-1],random_number<=counting[i]))
-    		number_of_stars_in_mass_bin = len(random_number[cut])
-    		#self.dn[i] = number_of_stars_in_mass_bin
-    		self.dm[i] = number_of_stars_in_mass_bin * self.x[i] #+ self.dx/2.)
+        counting = np.cumsum(self.dn_copy)
+        for i in range(len(counting)-1):
+            if i == 0:
+                cut = np.where(np.logical_and(random_number>0.,random_number<=counting[i]))
+            else:
+                cut = np.where(np.logical_and(random_number>counting[i-1],random_number<=counting[i]))
+            number_of_stars_in_mass_bin = len(random_number[cut])
+            self.dm[i] = number_of_stars_in_mass_bin * self.x[i]
         self.dm = np.divide(self.dm,sum(self.dm))
         self.dn = np.divide(self.dm,self.x)

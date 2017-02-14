@@ -156,6 +156,7 @@ def elements_plot(name_string,agb, sn2, sn1a,elements_to_trace, all_elements,max
 	ax.set_xlabel('element number')
 	ax.set_ylabel('groups of elements')
 
+
 	apogee = ['C','N','O','Na','Mg','Al','Si','S','K','Ca','Ti','V','Mn','Ni']
 	s_process = ['Sr','Y','Zr','Nb','Mo','Sn','Ba','La','Ce','Nd','W','Pb']
 	r_process = ['Ge','Ru','Rh','Pd','Ag','Pr','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu','Hf','Ta','Re','Os','Ir','Pt','Au','Bi','Th','U']
@@ -178,7 +179,7 @@ def elements_plot(name_string,agb, sn2, sn1a,elements_to_trace, all_elements,max
 	ax.text(-2, -1, 'r-process', fontsize=15)
 	ax.text(-2, -2, 'Big Bang', fontsize=15)
 	ax.text(-2, 2, 'Apogee', fontsize=15)
-	for i, item in enumerate(all_elements["Symbol"]):
+	for i, item in enumerate(all_elements['Symbol']):
 		ax.text(all_elements['Number'][i], 3, item, fontsize=15,bbox={'facecolor':'red', 'alpha':0.5, 'pad':10}, clip_on=True)
 		if item in elements_to_trace:
 			ax.text(all_elements['Number'][i], 4, "X", fontsize=15, clip_on=True)		

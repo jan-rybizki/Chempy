@@ -63,7 +63,7 @@ class PRIMORDIAL_INFALL(object):
         other_elements gives the enhancement of other elements relative to iron peak elements
         helium gives the enhancement of helium relative to solar
         '''    
-        print "This alphainfall is depracted do not use it"
+        print("This alphainfall is depracted do not use it")
         fe,alpha,other_elements,helium = paramet
         self.symbols = [] 
         self.abundances = []

@@ -1,12 +1,18 @@
 import numpy as np 
 from making_abundances import abundance_to_mass_fraction
-
+import numpy.lib.recfunctions as rcfuncs
 
 
 class solar_abundances(object):
 	def __init__(self):    
 		self.table = np.load('input/elemental_table.npy')
-		self.all_elements = list(self.table['Symbol'])
+		## Python3 need transformation between bytes and strings
+		element_list = []
+		for j,jtem in enumerate(self.table['Symbol']):
+			element_list.append(jtem.decode('utf8'))
+		self.all_elements = element_list
+		self.table = rcfuncs.drop_fields(self.table,'Symbol',usemask = False)
+		self.table = rcfuncs.append_fields(self.table,'Symbol',element_list,usemask = False)
 		self.all_element_numbers = list(self.table['Number'])
 		self.all_element_masses = list(self.table['Mass'])
 		self.dimensions = ['Symbol','Number','Mass']

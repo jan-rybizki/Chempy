@@ -637,7 +637,7 @@ class AGB_feedback(object):
 		###
 		yield_tables_final_structure = {}
 		for metallicity in self.metallicities:
-			x = np.genfromtxt('input/yields/Ventura2013/0.018.txt',names=True)
+			x = np.genfromtxt('input/yields/Ventura2013/%s.txt' %(str(metallicity)),names=True)
 			additional_keys = ['Mass', 'mass_in_remnants','unprocessed_mass_in_winds']
 			names = additional_keys + self.elements
 			base = np.zeros(len(x['Mass']))

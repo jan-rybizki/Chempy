@@ -33,7 +33,7 @@ def cem(changing_parameter,a):
 	try:
 		posterior, blobs = cem_real(changing_parameter,a)
 		return posterior, blobs
-	except Exception, ex:
+	except Exception as ex:
 		import traceback; traceback.print_exc()
 		return -np.inf, [0]
 
@@ -60,16 +60,16 @@ def cem_real(changing_parameter,a):
 		(lower, upper) = a.constraints.get(name)
 		val = getattr(a, name)
 		if lower is not None and val<lower:
-			print '%s lower border is violated' %(name)
+			print('%s lower border is violated' %(name))
 			return -np.inf, [0]
 		if upper is not None and val>upper:
-			print '%s upper border is violated' %(name)
+			print('%s upper border is violated' %(name))
 			return -np.inf, [0]
 
 	if not a.testing_output:
-		print changing_parameter,mp.current_process()._identity[0]#,a.observational_constraints_index
+		print(changing_parameter,mp.current_process()._identity[0])#,a.observational_constraints_index
 	else:
-		print changing_parameter
+		print(changing_parameter)
 	
 	### So that the parameter can be plotted in linear space
 	if 'log10_N_0' in a.to_optimize:
@@ -166,7 +166,7 @@ def cem_real(changing_parameter,a):
 	if np.isnan(sum(a.probability)):
 		return -np.inf, [0]
 	if a.testing_output:
-		print 'l: ', sum(a.probability), 'pr: ', sum(a.prior), 'po: ', sum(a.prior) + sum(a.probability)#, mp.current_process()._identity[0]
+		print('l: ', sum(a.probability), 'pr: ', sum(a.prior), 'po: ', sum(a.prior) + sum(a.probability))#, mp.current_process()._identity[0]
 	else:
-		print 'l: ', sum(a.probability), 'pr: ', sum(a.prior), 'po: ', sum(a.prior) + sum(a.probability),'|', mp.current_process()._identity[0]
+		print('l: ', sum(a.probability), 'pr: ', sum(a.prior), 'po: ', sum(a.prior) + sum(a.probability),'|', mp.current_process()._identity[0])
 	return sum(a.probability) + sum(a.prior), np.hstack((a.probability,a.abundance_list,a.prior))

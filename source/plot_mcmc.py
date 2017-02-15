@@ -18,13 +18,13 @@ def restructure_chain(directory, parameter_names = 	[r'$\alpha_\mathrm{IMF}$',r'
 		blobs = np.load('%sflatblobs.npy' %(directory))
 		blobs = np.swapaxes(blobs,0,1)
 	if len(blobs.shape)!=3:
-		print 'blob shape = ', blobs.shape, 'probably some runs did not return results and were stored anyway.'
+		print('blob shape = ', blobs.shape, 'probably some runs did not return results and were stored anyway.')
 		with_blobs = False
 
 	nwalkers = positions.shape[0]
 	dimensions = positions.shape[2]
 	iterations = positions.shape[1]
-	print 'The chain has a length of %d iterations, each iteration having %d evaluations/walkers' %(iterations,nwalkers)
+	print('The chain has a length of %d iterations, each iteration having %d evaluations/walkers' %(iterations,nwalkers))
 	if with_blobs:
 		assert nwalkers == blobs.shape[0]
 		assert iterations == blobs.shape[1]
@@ -50,16 +50,16 @@ def restructure_chain(directory, parameter_names = 	[r'$\alpha_\mathrm{IMF}$',r'
 		positions = positions[:,::-1]
 		if with_blobs:
 			blobs = blobs[:,::-1]
-	print 'Mean posteriors at the beginning and the end of the chain:'
-	print np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1] 
+	print('Mean posteriors at the beginning and the end of the chain:')
+	print(np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1])
 	
 	keeping = int(how_many_MCMC_samples / nwalkers)
 	positions = positions[:,:keeping, :]
 	posterior = posterior[:,:keeping]
 	if with_blobs:
 		blobs = blobs[:,:keeping,:]
-	print 'Mean posteriors after the burn-in tail is cut out:'
-	print np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1] 
+	print('Mean posteriors after the burn-in tail is cut out:')
+	print(np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1])
 	### shaping back
 	positions = positions.reshape((-1, dimensions), order = 'F')
 	posterior = posterior.reshape(-1, order = 'F')
@@ -67,7 +67,7 @@ def restructure_chain(directory, parameter_names = 	[r'$\alpha_\mathrm{IMF}$',r'
 		blobs = blobs.reshape((-1, blob_dimensions), order = 'F')
 
 
-	print 'We are left with a sample of %d posterior evaluations from the converged MCMC chain' %(len(posterior))
+	print('We are left with a sample of %d posterior evaluations from the converged MCMC chain' %(len(posterior)))
 	assert np.any(np.isinf(posterior)) == False
 
 	total_iterations = len(posterior)
@@ -90,9 +90,9 @@ def restructure_chain(directory, parameter_names = 	[r'$\alpha_\mathrm{IMF}$',r'
 	posterior = posterior[cut]
 	if with_blobs:
 		blobs = blobs[cut]
-	print 'We have %d iterations good enough posterior, their posteriors range from' %(len(posterior))
+	print('We have %d iterations good enough posterior, their posteriors range from' %(len(posterior)))
 	if throw_out > 0:
-		print '%d runs of the stabilised MCMC had a posterior that was worse -15 ln' %(throw_out)
+		print('%d runs of the stabilised MCMC had a posterior that was worse -15 ln' %(throw_out))
 	### Drawing 100 random posterior positions
 	if producing_positions_for_plot:
 		random_indices = np.random.choice(a = np.arange(len(positions)),size = how_many_plot_samples,replace = False)
@@ -119,11 +119,11 @@ def restructure_chain(directory, parameter_names = 	[r'$\alpha_\mathrm{IMF}$',r'
 	vmin = np.min(posterior)
 	np.save('best_parameter_values',positions_max)
 	np.save('%sbest_parameter_values' %(directory),positions_max)
-	print vmax,vmin
-	print 'Highest posterior was obtained at parameters: ', positions_max
+	print(vmax,vmin)
+	print('Highest posterior was obtained at parameters: ', positions_max)
 	#print 'for plotting we use the best: ',len(posterior), ' values'
-	print 'Number of unique posterior values: ', len(np.unique(posterior))
-	print 'Inferred marginalized parameter distributions are:'
+	print('Number of unique posterior values: ', len(np.unique(posterior)))
+	print('Inferred marginalized parameter distributions are:')
 	x = np.array([np.mean(positions,axis = 0),np.std(positions,axis = 0)])
 	if with_blobs:
 		y = np.array([np.mean(blobs,axis = 0),np.std(blobs,axis = 0)])
@@ -149,7 +149,7 @@ def restructure_chain(directory, parameter_names = 	[r'$\alpha_\mathrm{IMF}$',r'
 	if len(parameter_names) != dimensions:
 		raise Exception('parameter_names not equally numbered as parameter in chain')
 	for j in range(len(parameter_names)):
-		print parameter_names[j], positions[:,j].mean(), '+-', positions[:,j].std()
+		print(parameter_names[j], positions[:,j].mean(), '+-', positions[:,j].std())
 
 
 	fig, axes = plt.subplots(nrows=dimensions+1, ncols=1,figsize=(14.69,30.27), dpi=100,sharex=True)
@@ -213,7 +213,7 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
 	if set_scale:
 		borders = []
 	if use_scale:
-		borders = np.load('mcmc/prior_borders.npy')
+		borders = np.load('mcmc/prior_borders.npy', encoding='bytes')
 	t = 0
 
 	for i in range(nparameter):
@@ -316,7 +316,7 @@ def plot_element_correlation(directory):
 
 	positions = np.zeros(shape=(positions.shape[0],nparameter))
 
-	print parameter_names
+	print(parameter_names)
 
 	for i,item in enumerate(parameter_names):
 		positions[:,i] = blobs[:,np.where(names == item)[0][0]]

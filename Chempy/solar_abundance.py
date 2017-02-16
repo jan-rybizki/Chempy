@@ -1,13 +1,18 @@
-import numpy as np
-from .making_abundances import abundance_to_mass_fraction
+import numpy as np 
+from making_abundances import abundance_to_mass_fraction
+import numpy.lib.recfunctions as rcfuncs
 from . import localpath
 
-
-
 class solar_abundances(object):
-	def __init__(self):
-		self.table = np.load(localpath + '/input/elemental_table.npy')
-		self.all_elements = list(self.table['Symbol'])
+	def __init__(self):    
+		self.table = np.load(localpath + 'input/elemental_table.npy')
+		## Python3 need transformation between bytes and strings
+		element_list = []
+		for j,jtem in enumerate(self.table['Symbol']):
+			element_list.append(jtem.decode('utf8'))
+		self.all_elements = element_list
+		self.table = rcfuncs.drop_fields(self.table,'Symbol',usemask = False)
+		self.table = rcfuncs.append_fields(self.table,'Symbol',element_list,usemask = False)
 		self.all_element_numbers = list(self.table['Number'])
 		self.all_element_masses = list(self.table['Mass'])
 		self.dimensions = ['Symbol','Number','Mass']
@@ -60,7 +65,7 @@ class solar_abundances(object):
 		0.92,0.10,0.84,0.10,0.85,-0.12,0.85,0.26,1.40,1.38,1.62,0.92,1.17,\
 		0.90,1.75,0.65,0.02,-0.54]
 
-
+		
 		errors = [0, 1, 5, 3, 4, 5, 5, 5 , 6, 10, 4, 4, 3,\
 		3, 3, 3, 6, 13, 9, 4, 4, 5, 8, 4, 4, 4,\
 		7, 4, 4, 5, 9, 10, 4, 3, 6, 6, 10, 7, 5,\
@@ -70,7 +75,7 @@ class solar_abundances(object):
 		20, 10, 4, 10, 3]
 
 		errors = list(np.array(errors)*0.01)
-
+		
 		numbers = [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11, 12,  13,\
 		14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,\
 		27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,\
@@ -78,10 +83,10 @@ class solar_abundances(object):
 		54, 55, 56, 57, 58, 59, 60, 62, 63, 64, 65, 66, 67,\
 		68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,\
 		81, 82, 83, 90, 92]
-
+		
 		for i,item in enumerate(numbers):
 			self.table['photospheric'][np.where(self.table['Number']==item)] = abundances[i]
-			self.table['error'][np.where(self.table['Number']==item)] = errors[i]
+			self.table['error'][np.where(self.table['Number']==item)] = errors[i]		
 		self.fractions = abundance_to_mass_fraction(np.hstack(self.all_elements),np.hstack(self.all_element_masses),self.table['photospheric'],self.table['photospheric'],np.hstack(self.all_elements))
 
 		self.x = self.fractions[0]
@@ -112,7 +117,7 @@ class solar_abundances(object):
 
 		errors = list(np.array(errors)*0.01)
 
-
+		
 		numbers = [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11, 12,  13,\
 		14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,\
 		27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,\
@@ -120,7 +125,7 @@ class solar_abundances(object):
 		54, 55, 56, 57, 58, 59, 60, 62, 63, 64, 65, 66, 67,\
 		68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,\
 		81, 82, 83, 90, 92]
-
+		
 		for i,item in enumerate(numbers):
 			self.table['photospheric'][np.where(self.table['Number']==item)] = abundances[i]
 			self.table['error'][np.where(self.table['Number']==item)] = errors[i]
@@ -134,19 +139,19 @@ class solar_abundances(object):
 		"""
 		After an email from Carlos Allende Prieto only the synthetic spectra are made with Asplund 2005. If trying to normalise to zero we need to see the results of a solar twin with the apogee pipeline.
 		Carlos send me the results for Vesta
-		C  				N  				O  			Na 			Mg 			Al
+		C  				N  				O  			Na 			Mg 			Al 
 		0.0349240    0.0772880   0.00191380    0.0307620    0.0467750 -0.0318830
-   		Si 					S  			K  			Ca 			Ti 			V
+   		Si 					S  			K  			Ca 			Ti 			V  
    		0.00338050     0.235970   -0.0714790  -0.00784230 -0.0997200     0.105860
     	Mn 				Fe 				Ni
     	0.0379600    0.0133580   0.00974230
 
     	For C, N, O, Mg, Si, S, Ca and Ti, the abundances are [X/METALS] (where
 		METALS is [Fe/H] measured from all metal lines, and as listed above [M/H]=0.026).
-		For the rest of the elements (Na, Al, K, V, Mg, Fe and Ni), the entries are [X/H].
+		For the rest of the elements (Na, Al, K, V, Mg, Fe and Ni), the entries are [X/H]. 
 
 		For example, the Vesta carbon abundance we derive is [C/H]=[C/METALS]-[METALS/H]=0.035 - 0.026 = 0.009, and since the Asplund et al. value for the Sun is log(epsilon)+12=8.39, ours is 8.39+0.009=8.40.
-
+		
 		if we do this for all the elements we arrive at new normalisations:
 					metals              Vesta offset  Asplund05 corrected Asplund09
 		C  = 0.035 - 0.026 = 0.009  --> C  = 0.009  + 8.39 = 		8.40  ~ 8.43
@@ -167,7 +172,7 @@ class solar_abundances(object):
 		Ni 				   = 0.010  --> Ni = 0.010  + 6.23 = 		6.24  ~ 6.22
 
 
-		However, one needs to keep in mind that the vast majority of APOGEE stars are in the range 3500<Teff<4500 K (and most are giants), so they are cooler than the Sun, and systematic errors between then Sun and them are most likely.
+		However, one needs to keep in mind that the vast majority of APOGEE stars are in the range 3500<Teff<4500 K (and most are giants), so they are cooler than the Sun, and systematic errors between then Sun and them are most likely. 
 		"""
 						#									O 8.69             Mg 7.60 Fe 7.50
 		abundances = [12.00,10.93,1.05,1.38,2.70,8.40,7.83,8.64,4.56,7.84,6.20,7.55,6.34,\
@@ -188,7 +193,7 @@ class solar_abundances(object):
 		20, 10, 4, 10, 3]
 
 		errors = list(np.array(errors)*0.01)
-
+		
 		numbers = [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11, 12,  13,\
 		14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,\
 		27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,\
@@ -196,7 +201,7 @@ class solar_abundances(object):
 		54, 55, 56, 57, 58, 59, 60, 62, 63, 64, 65, 66, 67,\
 		68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,\
 		81, 82, 83, 90, 92]
-
+		
 		for i,item in enumerate(numbers):
 			self.table['photospheric'][np.where(self.table['Number']==item)] = abundances[i]
 			self.table['error'][np.where(self.table['Number']==item)] = errors[i]

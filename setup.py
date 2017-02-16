@@ -1,4 +1,9 @@
 from setuptools import setup, find_packages
+import os
+
+result = [os.path.join(dp, f) for dp, dn, filenames in os.walk('Chempy/input') for f in filenames if (os.path.isfile(os.path.join(dp, f)) & ('~' not in f))]
+for i,item in enumerate(result):
+	result[i] = item[7:]
 
 def readme():
     with open('README.md') as f:
@@ -12,6 +17,8 @@ setup(name = "Chempy",
     author_email = "",
     url = "https://github.com/jan-rybizki/Chempy",
     packages = find_packages(),
+    package_dir = {'Chempy' : 'Chempy'},
+    package_data = {'Chempy' : result},
     classifiers=[
       'Development Status :: 3 - Alpha',
       'Intended Audience :: Science/Research',

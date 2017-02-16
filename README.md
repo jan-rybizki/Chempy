@@ -1,12 +1,19 @@
 # Chempy
 Flexible one-zone open box chemical evolution modeling. Abundance fitting and stellar feedback calculation
 
+## Installation
+
+```
+pip install 'git+ssh://git@github.com/jan-rybizki/Chempy'
+```
+
 ## Authors
 - Jan Rybizki (MPIA, rybizki@mpia.de)
 
 ## Collaborators
 - Hans-Walter Rix (MPIA)
 - Andreas Just (ZAH)
+- Morgan Fouesneau (MPIA)
 
 ## Links
 - [Paper on overleaf](https://www.overleaf.com/read/jypbdqqqrdnp), Arxiv link following

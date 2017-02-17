@@ -1,9 +1,19 @@
 import numpy as np 
 
-def normalise(array):
-    return(np.divide(array,sum(array)))
-
 def slope_imf(x,p1,p2,p3,kn1,kn2):
+    '''
+    Is calculating a three slope IMF
+    INPUT:
+
+    x = An array of masses for which the IMF should be calculated
+    p1..p3 = the slopes of the power law
+    kn1, kn2 = Where the breaks of the power law are
+
+    OUTPUT:
+    
+    An array of frequencies matching the mass base array x
+    '''
+    
     if(x > kn2):
         t = (pow(kn2,p2)/pow(kn2,p3))*pow(x,p3+1)
     elif (x < kn1):
@@ -12,11 +22,18 @@ def slope_imf(x,p1,p2,p3,kn1,kn2):
         t = pow(x,p2+1)
     return t
 
+
 def lifetime(m,Z):
     """
     here we will calculate the MS lifetime of the star after Argast et al., 2000, A&A, 356, 873
+    INPUT:
+    
     m = mass in Msun
+    
     Z = metallicity in Zsun
+    
+
+    OUTPUT:
     returns the lifetime of the star in Gyrs
     """
     lm = np.log10(m)
@@ -29,9 +46,21 @@ def lifetime(m,Z):
 
 class IMF(object):
     '''
-    This object represents the IMF normed to 1 in units of M_sun. dn gives the number and dm the masses for each mass interval x
+    This class represents the IMF normed to 1 in units of M_sun. 
+    
+    Input for initialisation:
+
+    mmin = minimal mass of the IMF
+    mmax = maximal mass of the IMF
+    intervals = how many steps inbetween mmin and mmax should be given
+    
+    Then one of the IMF functions can be used
+    
+    self.x = mass base
+    self.dn = the number of stars at x 
+    self.dm = the masses for each mass interval x
     '''
-    def __init__(self, mmin, mmax, intervals):
+    def __init__(self, mmin = 0.08 , mmax = 100., intervals = 5000):
         self.mmin = mmin
         self.mmax = mmax
         self.intervals = intervals
@@ -39,6 +68,9 @@ class IMF(object):
         self.dx = self.x[1]-self.x[0]
 
     def normed_3slope(self,paramet = (-1.3,-2.2,-2.7,0.5,1.0)):
+        '''
+        Three slope IMF, Kroupa 1993 as a default
+        '''
         s1,s2,s3,k1,k2 = paramet
         u = np.zeros_like(self.x)
         v = np.zeros_like(self.x)
@@ -80,6 +112,11 @@ class IMF(object):
         return(self.dm,self.dn)
 
     def salpeter(self, alpha = (2.35)):
+        '''
+        Salpeter IMF
+
+        Input the slope of the IMF
+        '''
         self.alpha = alpha
         temp = np.power(self.x,-self.alpha)
         norm = sum(temp)
@@ -112,11 +149,17 @@ class IMF(object):
             self.dn = np.divide(self.dm,self.x)
 
     def imf_mass_fraction(self,mlow,mup):
+        '''
+        Calculates the mass fraction of the IMF sitting between mlow and mup
+        '''
         norm = sum(self.dm)
         cut = np.where(np.logical_and(self.x>=mlow,self.x<mup))
         fraction = np.divide(sum(self.dm[cut]),norm)
         return(fraction)
     def imf_number_fraction(self,mlow,mup):
+        '''
+        Calculating the number fraction of stars of the IMF sitting between mlow and mup
+        '''
         norm = sum(self.dn)
         cut = np.where(np.logical_and(self.x>=mlow,self.x<mup))
         fraction = np.divide(sum(self.dn[cut]),norm)
@@ -126,8 +169,13 @@ class IMF(object):
         number = sum(self.dn[cut])
         return(number)
     def stochastic_sampling(self, mass):
-    	### Stochastic sampling is realised by fixing the number of expected stars and then drawing from the probability distribution of the number density
-        ### Statistical properties are tested for this sampling and are safe: number of stars and masses converge.
+    	'''
+        The analytic IMF will be resampled according to the mass of the SSP.
+        The IMF will still be normalised to 1
+
+        Stochastic sampling is realised by fixing the number of expected stars and then drawing from the probability distribution of the number density
+        Statistical properties are tested for this sampling and are safe: number of stars and masses converge.
+        '''
         number_of_stars = int(round(sum(self.dn) * mass))
         self.dm_copy = np.copy(self.dm)
         self.dn_copy = np.copy(self.dn)

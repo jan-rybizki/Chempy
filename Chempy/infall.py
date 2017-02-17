@@ -1,5 +1,5 @@
 import numpy as np
-from making_abundances import abundance_to_mass_fraction_normed_to_solar,abundance_to_mass_fraction
+from .making_abundances import abundance_to_mass_fraction_normed_to_solar,abundance_to_mass_fraction
 
 class PRIMORDIAL_INFALL(object):
     def __init__(self,elements,solar_table):

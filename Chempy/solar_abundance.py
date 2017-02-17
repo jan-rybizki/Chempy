@@ -1,5 +1,5 @@
 import numpy as np 
-from making_abundances import abundance_to_mass_fraction
+from .making_abundances import abundance_to_mass_fraction
 import numpy.lib.recfunctions as rcfuncs
 from . import localpath
 

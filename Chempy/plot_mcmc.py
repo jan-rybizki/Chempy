@@ -1,15 +1,26 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from . import localpath
 
-
-
-def restructure_chain(directory, parameter_names = 	[r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\mathrm{SFR}_\mathrm{peak}$',r'$\mathrm{x}_\mathrm{out}$',r'$\log_{10}\left(\mathrm{f}_\mathrm{corona}\right)$']):
+def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\mathrm{SFR}_\mathrm{peak}$',r'$\mathrm{x}_\mathrm{out}$',r'$\log_{10}\left(\mathrm{f}_\mathrm{corona}\right)$']):
 
 	producing_positions_for_plot = True
 	how_many_plot_samples = 100
 	how_many_MCMC_samples = 500
-
+		
 	with_blobs = True
+	change_back = False
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+		import shutil
+		src = localpath + 'mcmc/'
+		src_files = os.listdir(src)
+		for file_name in src_files:
+    			full_file_name = os.path.join(src, file_name)
+    			if (os.path.isfile(full_file_name)):
+        			shutil.copy(full_file_name, directory)	
+
+		print('You have no mcmc folder. Looking for the example in the Chempy folder.')
 	positions = np.load('%sflatchain.npy' %(directory))
 	posterior = np.load('%sflatlnprobability.npy' %(directory))
 	mean_posterior = np.load('%sflatmeanposterior.npy' %(directory))

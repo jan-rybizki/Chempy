@@ -1,14 +1,15 @@
 import numpy as np
-from sfr import SFR
-from infall import INFALL, PRIMORDIAL_INFALL
-from time_integration import ABUNDANCE_MATRIX
-from solar_abundance import solar_abundances
-from making_abundances import mass_fraction_to_abundances
+import os
+from .sfr import SFR
+from .infall import INFALL, PRIMORDIAL_INFALL
+from .time_integration import ABUNDANCE_MATRIX
+from .solar_abundance import solar_abundances
+from .making_abundances import mass_fraction_to_abundances
 from numpy.lib.recfunctions import append_fields
 import time
-from data_to_test import elements_plot, arcturus, sol_norm, plot_processes, save_abundances,  cosmic_abundance_standard, ratio_function, star_function, gas_reservoir_metallicity
+from .data_to_test import elements_plot, arcturus, sol_norm, plot_processes, save_abundances,  cosmic_abundance_standard, ratio_function, star_function, gas_reservoir_metallicity
 import multiprocessing as mp
-from wrapper import SSP_wrap, initialise_stuff, Chempy
+from .wrapper import SSP_wrap, initialise_stuff, Chempy
 
 def gaussian_log(x,x0,xsig):
 	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
@@ -103,15 +104,20 @@ def cem_real(changing_parameter,a):
 		cube, abundances= Chempy(a)
 		cube1 = cube.cube
 		gas_reservoir = cube.gas_reservoir
-		np.save('model_temp/%s_elements_to_trace' %(a.name_string), elements_to_trace)
-		np.save('model_temp/%s_gas_reservoir' %(a.name_string),gas_reservoir)
-		np.save('model_temp/%s_cube' %(a.name_string),cube1)
-		np.save('model_temp/%s_abundances' %(a.name_string),abundances)
+		directory = 'model_temp/'
+		if os.path.exists(directory):
+			print(directory, ' already exists. Content might be overwritten')
+		else:
+			os.makedirs(directory)
+		np.save(directory + '%s_elements_to_trace' %(a.name_string), elements_to_trace)
+		np.save(directory + '%s_gas_reservoir' %(a.name_string),gas_reservoir)
+		np.save(directory + '%s_cube' %(a.name_string),cube1)
+		np.save(directory + '%s_abundances' %(a.name_string),abundances)
 	else:
-		cube1 = np.load('model_temp/%s_cube.npy' %(a.name_string))
-		abundances = np.load('model_temp/%s_abundances.npy' %(a.name_string))
-		gas_reservoir = np.load('model_temp/%s_gas_reservoir.npy' %(a.name_string))
-		elements_to_trace = np.load('model_temp/%s_elements_to_trace.npy' %(a.name_string))
+		cube1 = np.load(directory + '%s_cube.npy' %(a.name_string))
+		abundances = np.load(directory + '%s_abundances.npy' %(a.name_string))
+		gas_reservoir = np.load(directory + '%s_gas_reservoir.npy' %(a.name_string))
+		elements_to_trace = np.load(directory + '%s_elements_to_trace.npy' %(a.name_string))
 
 
 	### LIKELIHOOD is being calculated
@@ -162,7 +168,7 @@ def cem_real(changing_parameter,a):
 	a.names += prior_names
 	if a.testing_output:
 		#print a.names
-		np.save("name_list", a.names)
+		np.save("blobs_name_list", a.names)
 	if np.isnan(sum(a.probability)):
 		return -np.inf, [0]
 	if a.testing_output:

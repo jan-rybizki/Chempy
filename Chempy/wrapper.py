@@ -1,10 +1,7 @@
 import numpy as np 
-from weighted_yield import SSP, lifetime_Argast, lifetime_Raiteri
-from imf import IMF
-from yields import SN2_feedback
-from yields import AGB_feedback
-from yields import SN1a_feedback
-from yields import Hypernova_feedback
+from .weighted_yield import SSP, lifetime_Argast, lifetime_Raiteri
+from .imf import IMF
+from .yields import SN2_feedback, AGB_feedback, SN1a_feedback, Hypernova_feedback
 
 class SSP_wrap():
 	def __init__(self, a):
@@ -55,9 +52,9 @@ class SSP_wrap():
 
 def initialise_stuff(a):
 
-	from solar_abundance import solar_abundances
-	from sfr import SFR 
-	from infall import INFALL
+	from .solar_abundance import solar_abundances
+	from .sfr import SFR 
+	from .infall import INFALL
 
 	basic_solar = solar_abundances()
 	getattr(basic_solar, a.solar_abundance_name)()
@@ -85,9 +82,9 @@ def initialise_stuff(a):
 	return basic_solar, basic_sfr, basic_infall
 
 def Chempy(a):
-	from infall import PRIMORDIAL_INFALL
-	from time_integration import ABUNDANCE_MATRIX
-	from making_abundances import mass_fraction_to_abundances
+	from .infall import PRIMORDIAL_INFALL
+	from .time_integration import ABUNDANCE_MATRIX
+	from .making_abundances import mass_fraction_to_abundances
 	from numpy.lib.recfunctions import append_fields	
 	basic_solar, basic_sfr, basic_infall = initialise_stuff(a)
 	elements_to_trace = a.elements_to_trace
@@ -152,11 +149,11 @@ def mcmc(a):
 	import time
 	import os
 	import multiprocessing as mp
-	from optimization import creating_chain, posterior_probability
+	from .optimization import creating_chain, posterior_probability
 	import emcee
 
 	start1 = time.time()
-	directory = 'mcmc/0/'
+	directory = 'mcmc/'
 	if os.path.exists(directory):
 		print('%s already existed. Content might be overwritten' %(directory))
 	else:

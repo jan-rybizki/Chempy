@@ -2,6 +2,11 @@ from setuptools import setup, find_packages
 import os
 
 result = [os.path.join(dp, f) for dp, dn, filenames in os.walk('Chempy/input') for f in filenames if (os.path.isfile(os.path.join(dp, f)) & ('~' not in f))]
+
+result1 = [os.path.join(dp, f) for dp, dn, filenames in os.walk('Chempy/mcmc') for f in filenames if (os.path.isfile(os.path.join(dp,f)) & ('~' not in f))]
+
+result += result1
+
 for i,item in enumerate(result):
 	result[i] = item[7:]
 

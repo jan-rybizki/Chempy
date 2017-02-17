@@ -3,6 +3,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import os,os.path
 import re
 from numpy.lib.recfunctions import append_fields
+from . import localpath
 
 class SN1a_feedback(object):
 	def __init__(self):    
@@ -22,7 +23,7 @@ class SN1a_feedback(object):
 		"""
 		Seitenzahl 2013 from Ivo txt
 		"""
-		y = np.genfromtxt('input/yields/Seitenzahl2013/0.02.txt', names = True, dtype = None)
+		y = np.genfromtxt(localpath + 'input/yields/Seitenzahl2013/0.02.txt', names = True, dtype = None)
 		self.metallicities = list([0.02])
 		self.masses = list([1.4004633930489443])
 		names = list(y.dtype.names)
@@ -44,7 +45,7 @@ class SN1a_feedback(object):
 		"""
 		Thilemann 2003 yields as compiled in Travaglio 2004
 		"""	
-		y = np.genfromtxt('input/yields/Thielemann2003/0.02.txt', names = True, dtype = None)
+		y = np.genfromtxt(localpath + 'input/yields/Thielemann2003/0.02.txt', names = True, dtype = None)
 
 		metallicity_list = [0.02]
 		self.metallicities = metallicity_list
@@ -75,7 +76,7 @@ class SN1a_feedback(object):
 		metallicity_list = [0.02,0.0]
 		self.metallicities = metallicity_list
 		self.masses = [1.38]
-		y = np.genfromtxt('input/yields/Iwamoto/sn1a_yields.txt',dtype = tdtype, names = None)
+		y = np.genfromtxt(localpath + 'input/yields/Iwamoto/sn1a_yields.txt',dtype = tdtype, names = None)
 		## Python3 need transformation between bytes and strings
 		element_list2 = []
 		for j,jtem in enumerate(y['species1']):
@@ -212,7 +213,7 @@ class SN2_feedback(object):
 		loading the yield table from Portinari1998.
 		'''
 		self.metallicities = [0.0004,0.004,0.008,0.02,0.05]
-		x = np.genfromtxt('input/yields/Portinari_1998/0.02.txt',names=True)
+		x = np.genfromtxt(localpath + 'input/yields/Portinari_1998/0.02.txt',names=True)
 		self.masses = list(x['Mass'])
 		self.elements = list(x.dtype.names[3:])
 		
@@ -227,7 +228,7 @@ class SN2_feedback(object):
 			yield_tables_final_structure_subtable = np.core.records.fromarrays(list_of_arrays,names=names)
 			yield_tables_final_structure_subtable['Mass'] = np.array(self.masses)
 			
-			x = np.genfromtxt('input/yields/Portinari_1998/%s.txt' %(metallicity),names=True)	
+			x = np.genfromtxt(localpath + 'input/yields/Portinari_1998/%s.txt' %(metallicity),names=True)	
 			for item in self.elements:
 				yield_tables_final_structure_subtable[item] = np.divide(x[item],x['Mass'])
 			yield_tables_final_structure_subtable['mass_in_remnants'] = np.divide(x['Mass'] - x['ejected_mass'], x['Mass'])
@@ -247,7 +248,7 @@ class SN2_feedback(object):
 		where all elements are for Z=Zsun and values for Msun > 40 have been stayed the same as for Msun=40.
 		Values from 11-25 Msun used case A from WW95 and 30-40 Msun used case B.
 		'''
-		y = np.genfromtxt('input/yields/Francois04/francois_yields.txt',names=True)
+		y = np.genfromtxt(localpath + 'input/yields/Francois04/francois_yields.txt',names=True)
 		self.elements = list(y.dtype.names[1:])
 		self.masses = y[y.dtype.names[0]]
 		self.metallicities = [0.02]
@@ -264,7 +265,7 @@ class SN2_feedback(object):
 		'''
 		loading the yield table of chieffi04.
 		'''
-		DATADIR = 'input/yields/Chieffi04'
+		DATADIR = localpath + 'input/yields/Chieffi04'
 		if not os.path.exists(DATADIR):
 			os.mkdir(DATADIR)
 
@@ -378,16 +379,16 @@ class SN2_feedback(object):
 
 		for i,metallicity_index in enumerate([2,1]): 
 			if i == 0:
-				z = np.genfromtxt('input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_winds.txt' %(metallicity_index,metallicity_index),dtype = tdtype2,names = None,skip_header = 3, delimiter = '&', autostrip = True)
-				y = np.genfromtxt('input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_exp.txt' %(metallicity_index,metallicity_index),dtype = expdtype2,names = None,skip_header = 3, delimiter = '&', autostrip = True)
+				z = np.genfromtxt(localpath + 'input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_winds.txt' %(metallicity_index,metallicity_index),dtype = tdtype2,names = None,skip_header = 3, delimiter = '&', autostrip = True)
+				y = np.genfromtxt(localpath + 'input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_exp.txt' %(metallicity_index,metallicity_index),dtype = expdtype2,names = None,skip_header = 3, delimiter = '&', autostrip = True)
 				y['15_%s' %(which_sn_model_to_use)] += z['1500']
 				y['20_%s' %(which_sn_model_to_use)] += z['2000']
 				y['25_delay'] += z['2500']
 				y['32_%s' %(which_sn_model_to_use)] += z['3200']
 				y['60_delay'] += z['6000']
 			else:
-				z = np.genfromtxt('input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_winds.txt' %(metallicity_index,metallicity_index),dtype = tdtype,names = None,skip_header = 3, delimiter = '&', autostrip = True)
-				y = np.genfromtxt('input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_exp.txt' %(metallicity_index,metallicity_index),dtype = expdtype,names = None,skip_header = 3, delimiter = '&', autostrip = True)
+				z = np.genfromtxt(localpath +'input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_winds.txt' %(metallicity_index,metallicity_index),dtype = tdtype,names = None,skip_header = 3, delimiter = '&', autostrip = True)
+				y = np.genfromtxt(localpath + 'input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_exp.txt' %(metallicity_index,metallicity_index),dtype = expdtype,names = None,skip_header = 3, delimiter = '&', autostrip = True)
 				y['15_%s' %(which_sn_model_to_use)] += z['1500']
 				y['20_%s' %(which_sn_model_to_use)] += z['2000']
 				y['25_%s' %(which_sn_model_to_use)] += z['2500']
@@ -506,11 +507,11 @@ class SN2_feedback(object):
 		yield_tables = {}
 		self.metallicities = [0.0500,0.0200,0.0080,0.0040,0.0010]
 		self.masses = np.array((13,15,18,20,25,30,40))
-		z = np.genfromtxt('input/yields/Nomoto2013/nomoto_2013_z=0.0200.dat',dtype=dt,names = True)
+		z = np.genfromtxt(localpath + 'input/yields/Nomoto2013/nomoto_2013_z=0.0200.dat',dtype=dt,names = True)
 		
 		yield_tables_dict = {}
 		for item in self.metallicities:
-			z = np.genfromtxt('input/yields/Nomoto2013/nomoto_2013_z=%.4f.dat' %(item),dtype=dt,names = True)
+			z = np.genfromtxt(localpath + 'input/yields/Nomoto2013/nomoto_2013_z=%.4f.dat' %(item),dtype=dt,names = True)
 			yield_tables_dict[item]=z
 
 		hydrogen_list = ['H__1','H__2']
@@ -652,13 +653,13 @@ class AGB_feedback(object):
 		Ventura 2013 net yields from Paolo himself
 		"""
 		self.metallicities = [0.04,0.018,0.008,0.004,0.001,0.0003]
-		x = np.genfromtxt('input/yields/Ventura2013/0.018.txt',names=True)
+		x = np.genfromtxt(localpath + 'input/yields/Ventura2013/0.018.txt',names=True)
 		self.masses = x['Mass']
 		self.elements = ['H', 'He', 'Li','C','N','O','F','Ne','Na','Mg','Al','Si']
 		###
 		yield_tables_final_structure = {}
 		for metallicity in self.metallicities:
-			x = np.genfromtxt('input/yields/Ventura2013/%s.txt' %(str(metallicity)),names=True)
+			x = np.genfromtxt(localpath + 'input/yields/Ventura2013/%s.txt' %(str(metallicity)),names=True)
 			additional_keys = ['Mass', 'mass_in_remnants','unprocessed_mass_in_winds']
 			names = additional_keys + self.elements
 			base = np.zeros(len(x['Mass']))
@@ -715,11 +716,11 @@ class AGB_feedback(object):
 		yield_tables = {}
 		self.metallicities = [0.0500,0.0200,0.0080,0.0040,0.0010]
 		self.masses = np.array((1.,1.2,1.5,1.8,1.9,2.0,2.2,2.5,3.0,3.5,4.0,4.5,5.0,5.5,6.0))#,6.5,7.0,8.0,10.))
-		z = np.genfromtxt('input/yields/Nomoto2013/nomoto_2013_z=0.0200.dat',dtype=dt,names = True)
+		z = np.genfromtxt(localpath + 'input/yields/Nomoto2013/nomoto_2013_z=0.0200.dat',dtype=dt,names = True)
 		
 		yield_tables_dict = {}
 		for item in self.metallicities:
-			z = np.genfromtxt('input/yields/Nomoto2013/nomoto_2013_z=%.4f.dat' %(item),dtype=dt,names = True)
+			z = np.genfromtxt(localpath + 'input/yields/Nomoto2013/nomoto_2013_z=%.4f.dat' %(item),dtype=dt,names = True)
 			yield_tables_dict[item]=z
 		#########################
 		hydrogen_list = ['H__1','H__2']
@@ -832,7 +833,7 @@ class AGB_feedback(object):
 		self.metallicities = [0.02,0.01]
 
 		for i,metallicity_index in enumerate([2,1]): 
-			y = np.genfromtxt('input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_winds.txt' %(metallicity_index,metallicity_index),dtype = tdtype,names = None,skip_header = 3, delimiter = '&', autostrip = True)
+			y = np.genfromtxt(localpath + 'input/yields/NuGrid_AGB_SNII_2013/set1p%d/element_table_set1.%d_yields_winds.txt' %(metallicity_index,metallicity_index),dtype = tdtype,names = None,skip_header = 3, delimiter = '&', autostrip = True)
 
 			## Python3 need transformation between bytes and strings
 			element_list2 = []
@@ -890,7 +891,7 @@ class AGB_feedback(object):
 		'''
 		import numpy.lib.recfunctions as rcfuncs
 
-		DATADIR = 'input/yields/Karakas2010'
+		DATADIR = localpath + 'input/yields/Karakas2010'
 		if not os.path.exists(DATADIR):
 			os.mkdir(DATADIR)
 
@@ -1054,7 +1055,7 @@ class AGB_feedback(object):
 
 		list_of_metallicities = [0.001,0.007, 0.014, 0.03 ]
 		self.metallicities = list_of_metallicities
-		data_path = 'input/yields/Karakas2016/'
+		data_path = localpath + 'input/yields/Karakas2016/'
 		yield_tables = {}
 		for metallicity in list_of_metallicities:
 			metallicity_name = str(metallicity)[2:]
@@ -1174,7 +1175,7 @@ class AGB_feedback(object):
 		import numpy.lib.recfunctions as rcfuncs
 
 
-		DATADIR = 'input/yields/Karakas2010'
+		DATADIR = localpath + 'input/yields/Karakas2010'
 		if not os.path.exists(DATADIR):
 			os.mkdir(DATADIR)
 
@@ -1379,11 +1380,11 @@ class Hypernova_feedback(object):
 		yield_tables = {}
 		self.metallicities = [0.0500,0.0200,0.0080,0.0040,0.0010]
 		self.masses = np.array((20,25,30,40))
-		z = np.genfromtxt('input/yields/Nomoto2013/hn_z=0.0200.dat',dtype=dt,names = True)
+		z = np.genfromtxt(localpath + 'input/yields/Nomoto2013/hn_z=0.0200.dat',dtype=dt,names = True)
 		
 		yield_tables_dict = {}
 		for item in self.metallicities:
-			z = np.genfromtxt('input/yields/Nomoto2013/hn_z=%.4f.dat' %(item),dtype=dt,names = True)
+			z = np.genfromtxt(localpath + 'input/yields/Nomoto2013/hn_z=%.4f.dat' %(item),dtype=dt,names = True)
 			yield_tables_dict[item]=z
 		#########################
 		hydrogen_list = ['H__1','H__2']

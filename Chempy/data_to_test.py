@@ -62,7 +62,7 @@ def yield_plot(name_string, yield_class, solar_class, element):
 			ax.scatter(metallicity, alpha_enhancement, s=20, c=None, marker=u'o', cmap=None, norm=None, vmin=None, vmax=None, alpha=None, linewidths=None, verts=None, edgecolors=None)
 			ax.text(metallicity, alpha_enhancement, mass)
 
-	plt.savefig('output/yields_%s.png' %(name_string),bbox_inches='tight')
+	plt.savefig('yields_%s.png' %(name_string),bbox_inches='tight')
 
 def yield_comparison_plot(yield_name1, yield_name2, yield_class, yield_class2, solar_class, element):
 	elements = np.hstack(solar_class.all_elements)
@@ -106,7 +106,7 @@ def yield_comparison_plot(yield_name1, yield_name2, yield_class, yield_class2, s
 			ax.scatter(metallicity, alpha_enhancement, s=20*mass, c='r', marker=u'o', cmap=None, norm=None, vmin=None, vmax=None, alpha=0.5, linewidths=None, verts=None, edgecolors=None)
 			ax.annotate(xy = (metallicity, alpha_enhancement), s = mass, color = 'r')
 
-	plt.savefig('output/yields_comparison_%s_vs_%s_for_%s.png' %(yield_name1,yield_name2,element),bbox_inches='tight')
+	plt.savefig('yields_comparison_%s_vs_%s_for_%s.png' %(yield_name1,yield_name2,element),bbox_inches='tight')
 
 def fractional_yield_comparison_plot(yield_name1, yield_name2, yield_class, yield_class2, solar_class, element):
 	plt.clf()
@@ -145,7 +145,7 @@ def fractional_yield_comparison_plot(yield_name1, yield_name2, yield_class, yiel
 			ax.scatter(metallicity, fractional_feedback, s=20*mass, c='r', marker=u'o', cmap=None, norm=None, vmin=None, vmax=None, alpha=0.5, linewidths=None, verts=None, edgecolors=None)
 			ax.annotate(xy = (metallicity, fractional_feedback), s = mass, color = 'r')
 
-	plt.savefig('output/fractional_yields_comparison_%s_vs_%s_for_%s.png' %(yield_name1,yield_name2,element),bbox_inches='tight')
+	plt.savefig('fractional_yields_comparison_%s_vs_%s_for_%s.png' %(yield_name1,yield_name2,element),bbox_inches='tight')
 
 
 def elements_plot(name_string,agb, sn2, sn1a,elements_to_trace, all_elements,max_entry):
@@ -204,7 +204,7 @@ def elements_plot(name_string,agb, sn2, sn1a,elements_to_trace, all_elements,max
 		if item in apogee:
 			ax.text(all_elements['Number'][i], 2, "X", fontsize=15, clip_on=True)		
 
-	plt.savefig('output/elements_%s.png' %(name_string),bbox_inches='tight')
+	plt.savefig('elements_%s.png' %(name_string),bbox_inches='tight')
 	return [0.]
 
 def cosmic_abundance_standard(summary_pdf,name_string,abundances,cube,elements_to_trace,solar,number_of_models_overplotted,produce_mock_data,use_mock_data,error_inflation):
@@ -282,7 +282,7 @@ def cosmic_abundance_standard(summary_pdf,name_string,abundances,cube,elements_t
 		plt.xlabel("Element")
 		plt.title('ln(probability) of fulfilling cas= %.2f' %(probability))	
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
-		plt.savefig('output/cas_%s.png' %(name_string))
+		plt.savefig('cas_%s.png' %(name_string))
 	return probabilities, model_abundances, elements_list
 
 def sol_norm(summary_pdf,name_string,abundances,cube,elements_to_trace, element_names, sol_table, number_of_models_overplotted,produce_mock_data,use_mock_data,error_inflation):
@@ -377,7 +377,7 @@ def sol_norm(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 		plt.xlabel("Element")
 		plt.title('joint probability of agreeing with the sun (normed to pmax) = %.2f' %(probability))	
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
-		plt.savefig('output/sol_norm_%s.png' %(name_string))
+		plt.savefig('sol_norm_%s.png' %(name_string))
 	return probabilities, abundance_list, elements_to_trace
 
 
@@ -476,7 +476,7 @@ def arcturus(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 		plt.xlabel("Element")
 		plt.title('joint probability of agreeing with the sun (normed to pmax) = %.2f' %(probability))	
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
-		plt.savefig('output/arcturus_%s.png' %(name_string))
+		plt.savefig('arcturus_%s.png' %(name_string))
 
 	return probabilities, abundance_list, elements_in_common
 
@@ -546,7 +546,7 @@ def gas_reservoir_metallicity(summary_pdf,name_string,abundances,cube,elements_t
 		plt.xlabel("time in Gyr")
 		plt.title('ln(probability) gas content (normed to pmax) = %.2f' %(probability))	
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
-		plt.savefig('output/gas_reservoir_%s.png' %(name_string))
+		plt.savefig('gas_reservoir_%s.png' %(name_string))
 
 	return [probability],[gas_reservoir['Z'][-1]/solZ],['Corona metallicity']
 
@@ -620,7 +620,7 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 		plt.xlabel("time in Gyr")
 		plt.title('ln(probability) of sn ratio (normed to pmax) = %.2f' %(probability))	
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
-		plt.savefig('output/sn_ratio_%s.png' %(name_string))
+		plt.savefig('sn_ratio_%s.png' %(name_string))
 
 
 		plt.clf()
@@ -643,7 +643,7 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 		plt.xlabel("time in Gyr")
 		plt.yscale('log')
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
-		plt.savefig('output/total_number_of_sn%s.png' %(name_string))
+		plt.savefig('total_number_of_sn%s.png' %(name_string))
 	return [probability],[np.log10(np.divide(np.diff(cube['sn2'])[1:],np.diff(cube['sn1a'])[1:])[-1])],['SN-ratio']
 
 def star_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas_reservoir,number_of_models_overplotted):
@@ -731,7 +731,7 @@ def star_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas_
 		plt.xlabel("time in Gyr")
 		plt.title('ln(probability) star content (normed to pmax) = %.2f' %(probability))	
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
-		plt.savefig('output/stars_%s.png' %(name_string))
+		plt.savefig('stars_%s.png' %(name_string))
 
 		plt.clf()
 		fig = plt.figure(figsize=(11.69,8.27), dpi=100)
@@ -751,7 +751,7 @@ def star_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas_
 		plt.xlabel("time in Gyr")
 		plt.title('ln(probability) star content (normed to pmax) = %.2f' %(probability))	
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
-		plt.savefig('output/infall_%s.png' %(name_string))
+		plt.savefig('infall_%s.png' %(name_string))
 	return [0.]
 
 
@@ -821,7 +821,7 @@ def plot_processes(summary_pdf,name_string,sn2_cube,sn1a_cube,agb_cube,elements,
 			lines = [l1,l2,l3,l4]
 			labels = ['sn2', 'sn1a', 'agb', 'total']
 			plt.legend(lines, labels,loc='upper right',numpoints=1).get_frame().set_alpha(0.5)
-			plt.savefig('output/processes_%s.png' %(name_string))
+			plt.savefig('processes_%s.png' %(name_string))
 		else:
 			plt.clf()
 			fig = plt.figure(figsize=(11.69,8.27), dpi=100)
@@ -838,7 +838,7 @@ def plot_processes(summary_pdf,name_string,sn2_cube,sn1a_cube,agb_cube,elements,
 			plt.ylabel("total feedback (arbitrary units)")
 			plt.xlabel("element")
 			plt.legend(loc='upper right',numpoints=1).get_frame().set_alpha(0.5)
-			plt.savefig('output/processes_%s.png' %(name_string))
+			plt.savefig('processes_%s.png' %(name_string))
 
 	return [probability]
 

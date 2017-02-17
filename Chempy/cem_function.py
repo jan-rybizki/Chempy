@@ -168,7 +168,7 @@ def cem_real(changing_parameter,a):
 	a.names += prior_names
 	if a.testing_output:
 		#print a.names
-		np.save("blobs_name_list", a.names)
+		np.save("model_temp/blobs_name_list", a.names)
 	if np.isnan(sum(a.probability)):
 		return -np.inf, [0]
 	if a.testing_output:

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 from . import localpath
 
 def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\mathrm{SFR}_\mathrm{peak}$',r'$\mathrm{x}_\mathrm{out}$',r'$\log_{10}\left(\mathrm{f}_\mathrm{corona}\right)$']):
@@ -20,7 +21,7 @@ def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'
     			if (os.path.isfile(full_file_name)):
         			shutil.copy(full_file_name, directory)	
 
-		print('You have no mcmc folder. Looking for the example in the Chempy folder.')
+		print('You have no mcmc folder. Copying the example from the Chempy folder.')
 	positions = np.load('%sflatchain.npy' %(directory))
 	posterior = np.load('%sflatlnprobability.npy' %(directory))
 	mean_posterior = np.load('%sflatmeanposterior.npy' %(directory))
@@ -111,7 +112,6 @@ def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'
 		plot_posterior = posterior[random_indices]
 		if with_blobs:
 			plot_blobs = blobs[random_indices]
-		np.save('positions_for_plotting',plot_positions)
 		np.save('%spositions_for_plotting' %(directory),plot_positions)
 
 
@@ -128,7 +128,6 @@ def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'
 
 	vmax = np.max(posterior)
 	vmin = np.min(posterior)
-	np.save('best_parameter_values',positions_max)
 	np.save('%sbest_parameter_values' %(directory),positions_max)
 	print(vmax,vmin)
 	print('Highest posterior was obtained at parameters: ', positions_max)
@@ -224,7 +223,7 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
 	if set_scale:
 		borders = []
 	if use_scale:
-		borders = np.load('mcmc/prior_borders.npy', encoding='bytes')
+		borders = np.load(directory + 'prior_borders.npy', encoding='bytes')
 	t = 0
 
 	for i in range(nparameter):
@@ -293,7 +292,6 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
 
 	if set_scale:
 		np.save('%sprior_borders' %(directory), borders)
-		np.save('prior_borders', borders)
 
 
 

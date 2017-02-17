@@ -624,26 +624,6 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 
 
 		plt.clf()
-		fig = plt.figure(figsize=(11.69,8.27), dpi=100)
-		ax = fig.add_subplot(111)
-		plt.plot(cube['time'],cube['sn2'],color = 'b', label = 'sn2 of the model')
-		plt.plot(cube['time'],cube['sn1a'],color = 'g', label = 'sn1a of the model')
-		
-		if number_of_models_overplotted > 1:
-			for item in old1:
-				plt.plot(cube['time'],item,linestyle='-', color = 'b', alpha = 0.2)
-			for item in old2:
-				plt.plot(cube['time'],item,linestyle='-', color = 'g', alpha = 0.2)
-
-
-		plt.annotate(xy=(cube['time'][-1],cube['sn2'][-1]),s= '%.2f' %(cube['sn2'][-1]))
-		plt.annotate(xy=(cube['time'][-1],cube['sn1a'][-1]),s= '%.2f' %(cube['sn1a'][-1]))
-		plt.grid("on")
-		plt.ylabel("# sn")
-		plt.xlabel("time in Gyr")
-		plt.yscale('log')
-		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
-		plt.savefig('total_number_of_sn%s.png' %(name_string))
 	return [probability],[np.log10(np.divide(np.diff(cube['sn2'])[1:],np.diff(cube['sn1a'])[1:])[-1])],['SN-ratio']
 
 def star_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas_reservoir,number_of_models_overplotted):

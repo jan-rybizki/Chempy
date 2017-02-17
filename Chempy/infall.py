@@ -4,7 +4,13 @@ from .making_abundances import abundance_to_mass_fraction_normed_to_solar,abunda
 class PRIMORDIAL_INFALL(object):
     def __init__(self,elements,solar_table):
         '''
-        here the chemical abundance of the infalling gas is given
+        This class calculates the chemical abundance fractions and can be used to provide primordial or solar scaled material for infall or gas composition at the beginning of the simulation
+
+        INPUT upon initialisation are a list of elements and the solar table from the solar_abundance class.
+
+        The elements are actually sorted by their element number
+
+
         '''
         self.elements = np.hstack(elements)
         element_names = list(solar_table['Symbol'])
@@ -28,7 +34,10 @@ class PRIMORDIAL_INFALL(object):
         self.all_fractions = abundance_to_mass_fraction(self.all_elements,self.masses,self.all_abundances,self.all_abundances,self.all_elements)
       
 
-    def primordial(self,dummy):
+    def primordial(self,):
+        '''
+        This returns primordial abundance fractions.
+        '''
         self.symbols = np.hstack(self.elements)
         self.fractions = np.zeros(len(self.symbols))
         self.fractions[np.where(self.symbols=='H')] = 0.76
@@ -36,7 +45,11 @@ class PRIMORDIAL_INFALL(object):
         
     def solar(self,metallicity_in_dex):
         '''
-        solar values 
+        solar values scaled to a specific metallicity
+
+        INPUT 
+
+        metallicity in dex
         '''
         self.symbols = []
         self.abundances = []
@@ -56,32 +69,13 @@ class PRIMORDIAL_INFALL(object):
                 tmp += self.fractions[i]
         self.fractions[np.where(self.symbols == 'H')] = 1-tmp
         
-    def alpha(self,paramet = (-3.,0.4,0.,-0.03)):
-        '''
-        solar values but with scaled down metallicity fe gives the abundances for metals relative to solar in dex
-        alpha gives the enhancement of alpha elements to the other metals also in dex
-        other_elements gives the enhancement of other elements relative to iron peak elements
-        helium gives the enhancement of helium relative to solar
-        '''    
-        print("This alphainfall is depracted do not use it")
-        fe,alpha,other_elements,helium = paramet
-        self.symbols = [] 
-        self.abundances = []
-        for i, item in enumerate(self.elements):
-            if item in ['C','O','Mg','Si','S','Ca','Ti']:
-                self.abundances.append(fe + alpha)
-            elif item in ['Sc','V','Cr','Mn','Fe','Co','Ni','Zn']:
-                self.abundances.append(fe)
-            elif item in ['H']:
-                self.abundances.append(0.)
-            elif item in ['He']:
-                self.abundances.append(helium)
-            else:
-                self.abundances.append(fe + other_elements)
-            self.symbols.append(item)
-        self.fractions = abundance_to_mass_fraction_normed_to_solar(self.all_elements,self.masses,self.all_abundances,self.abundances,self.symbols)
 
     def sn2(self,paramet):
+        '''
+        This can be used to produce alpha enhanced initial abundances
+
+        the fractions of the CC SN feedback and the iron abundance in dex needs to be specified
+        '''
         sn2_fractions,iron_dex = paramet
         self.symbols = self.elements 
 
@@ -94,20 +88,22 @@ class PRIMORDIAL_INFALL(object):
         self.fractions[np.where(self.elements == 'H')] = 1 - sum(self.fractions[np.where(self.elements != 'H')])
         self.z = sum(self.fractions[np.where(np.logical_and(self.elements != 'H',self.elements != 'He'))])
 
-    def simple(self,dummy):
-        '''
-        just listing the elements and their abundances relativ to solar
-        '''
-
-
-
 class INFALL(object):
-    
+    '''
+    This class provides the infall mass over time and is matched to the SFR class
+    '''
     def __init__(self, t, sfr):
-        """t is time in Gyr over which infall takes place as a numpy array
-        sfr is the star formation rate, fback is the stellar feedback
-        add is the parameter needed for 'optimized' and const is needed for Matteucchi.
-        Passed here already since it makes implementation with getattr in model.py easier"""
+        """
+        Upon initialisation the timesteps and the sfr need to be provided
+
+        Input:
+
+        t = timesteps
+        sfr = the SFR for the timesteps
+        
+        t is time in Gyr over which infall takes place as a numpy array
+        sfr is the star formation rate
+        """
         self.t = t
         self.sfr = sfr
 
@@ -143,15 +139,22 @@ class INFALL(object):
         self.infall = np.divide(self.infall*norm,sum(self.infall))
 
 
-    def exponential(self, paramet = (10., -0.24, 0, 0, 1.)):
-        """Exponential gas infall rate in Msun/pc^2/Gyr.
-        The exponent is b * t + c, whole thing multiplied by a and shifted by d.
-        Default is b = -0.15 and a = 7; rest 0 (slow decrease starting at 7)"""
-        a, b, c, d, e = paramet
+    def exponential(self, paramet = ( -0.24, 0, 0, 1.)):
+        """
+        Exponential gas infall rate in Msun/pc^2/Gyr.
+        The exponent is b * t + c, whole thing shifted by d and normalised by e to the SFR.
+        Default is b = -0.15 and a = 7; rest 0 (slow decrease starting at 7)
+        
+        a is not needed anymore since 
+        """
+        b, c, d, e = paramet
         sfr_norm = e
         norm = sum(self.sfr)*sfr_norm
-        self.infall =  a * np.exp(b * self.t + c) + d
+        self.infall =  np.exp(b * self.t + c) + d
         self.infall = np.divide(self.infall*norm,sum(self.infall))
  
     def sfr_related(self, ):
+        '''
+        the infall will be calculated during the Chempy run according to the star formation efficiency usually following a Kennicut-Schmidt law
+        '''
         self.infall = np.zeros_like(self.sfr)

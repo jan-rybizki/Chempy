@@ -139,18 +139,16 @@ class INFALL(object):
         self.infall = np.divide(self.infall*norm,sum(self.infall))
 
 
-    def exponential(self, paramet = ( -0.24, 0, 0, 1.)):
+    def exponential(self, paramet = ( -0.24, 0., 1.)):
         """
         Exponential gas infall rate in Msun/pc^2/Gyr.
-        The exponent is b * t + c, whole thing shifted by d and normalised by e to the SFR.
-        Default is b = -0.15 and a = 7; rest 0 (slow decrease starting at 7)
-        
-        a is not needed anymore since 
+        The exponent is b * t + c, whole thing shifted up by d and normalised by e to the SFR.
+        Default is b = -0.15 and e = 1, rest 0
         """
-        b, c, d, e = paramet
+        b, d, e = paramet
         sfr_norm = e
         norm = sum(self.sfr)*sfr_norm
-        self.infall =  np.exp(b * self.t + c) + d
+        self.infall = np.exp(b * self.t ) + d
         self.infall = np.divide(self.infall*norm,sum(self.infall))
  
     def sfr_related(self, ):

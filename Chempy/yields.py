@@ -206,11 +206,12 @@ class SN1a_feedback(object):
 class SN2_feedback(object):
 	def __init__(self):
 		"""
-		this is the object that holds the feedback table for SNII
+		This is the object that holds the feedback table for CC-SN.
+                Different tables can be loaded by the methods.
 		"""
 	def Portinari(self):
 		'''
-		loading the yield table from Portinari1998.
+		Loading the yield table from Portinari1998.
 		'''
 		self.metallicities = [0.0004,0.004,0.008,0.02,0.05]
 		x = np.genfromtxt(localpath + 'input/yields/Portinari_1998/0.02.txt',names=True)
@@ -244,7 +245,7 @@ class SN2_feedback(object):
 
 	def francois(self):
 		'''
-		loading the yield table of Francois et. al. 2004. Taken from the paper table 1 and 2 and added O H He from WW95 table 5A and 5B
+		Loading the yield table of Francois et. al. 2004. Taken from the paper table 1 and 2 and added O H He from WW95 table 5A and 5B
 		where all elements are for Z=Zsun and values for Msun > 40 have been stayed the same as for Msun=40.
 		Values from 11-25 Msun used case A from WW95 and 30-40 Msun used case B.
 		'''
@@ -263,7 +264,7 @@ class SN2_feedback(object):
 	def chieffi04(self):
 
 		'''
-		loading the yield table of chieffi04.
+		Loading the yield table of chieffi04.
 		'''
 		DATADIR = localpath + 'input/yields/Chieffi04'
 		if not os.path.exists(DATADIR):
@@ -466,7 +467,8 @@ class SN2_feedback(object):
 
 	def one_parameter(self, elements, element_fractions):
 		"""
-		One potential problem is that sn2 feedback has a large fraction of Neon ~ 0.01, the next one missing is Argon but that only has 0.05%. This might spoil the metallicity derivation a bit.
+		This function was introduced in order to find best-fit yield sets where each element has just a single yield (no metallicity or mass dependence).
+                One potential problem is that sn2 feedback has a large fraction of Neon ~ 0.01, the next one missing is Argon but that only has 0.05%. This might spoil the metallicity derivation a bit.
 		Another problem: He and the remnant mass fraction is not constrained in the APOGEE data. Maybe these can be constrained externally by yield sets or cosmic abundance standard or solar abundances.
 		"""
 		self.metallicities = [0.01]
@@ -646,7 +648,8 @@ class SN2_feedback(object):
 class AGB_feedback(object):
 	def __init__(self):   
 		"""
-		this is the object that holds the feedback table for agb stars
+		This is the object that holds the feedback table for agb stars.
+                The different methods load different tables from the literature. They are in the input/yields/ folder.
 		"""
 	def Ventura(self):
 		"""

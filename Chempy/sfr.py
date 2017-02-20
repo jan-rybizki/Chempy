@@ -1,7 +1,20 @@
 import numpy as np
 class SFR(object):
-
+    '''
+    The SFR class holds the star formation history and the time-steps of Chempy
+    '''
     def __init__(self,start,end,time_steps):
+        '''
+        Upon initialization the time steps need to be provided
+
+        INPUT:
+        start = beginning of the simulation
+        end = end of the simulation
+        time_steps = number of time_steps
+
+        OUTPUT:
+        dt, timespan and t will be exposed by the class.
+        '''
         self.start = start
         self.end = end
         self.time_steps = time_steps
@@ -10,6 +23,9 @@ class SFR(object):
         self.timespan = self.end - self.start
 
     def model_A(self,S0 = 45.07488,t0 = 5.6,t1 = 8.2):
+        '''
+        This was the method to load the Just Jahreiss 2010 Model A from txt
+        '''
         #Model A SFR from Just & Jahreiss 2010
         
         ## this function can be used to read in the model A at different radii
@@ -27,6 +43,9 @@ class SFR(object):
         self.sfr = np.divide(self.sfr,sum(self.sfr)/(np.divide(1.,self.dt)*S0))
   
     def doubly_peaked(self,S0 = 45.07488, peak_ratio = 1., decay = 2., t0 = 2., peak1t0 = 0.5, peak1sigma = 0.5):
+        '''
+        a doubly peaked SFR with quite a few parameters
+        '''
         from scipy import signal
         from scipy.stats import norm, expon
         peak1 = norm.pdf(self.t,loc = peak1t0, scale = peak1sigma)
@@ -47,8 +66,10 @@ class SFR(object):
         self.sfr[np.where(self.sfr == 0.)] = np.min(self.sfr[np.where(self.sfr != 0.)])*0.01 ## So that no 0 sfr is there because sfr-related infall prescription fails in that case
         self.sfr = np.divide(self.sfr,sum(self.sfr)/(np.divide(1.,self.dt)*S0))
     def prescribed(self, mass_factor,name_of_file):
-        # a method to read in prescribed SFR from textfile
-        # x time is given in log years. our time is in linear Gyrs
+        '''
+        a method to read in prescribed SFR from textfile
+        x time is given in log years. our time is in linear Gyrs
+        '''
         x = np.genfromtxt(name_of_file, names = True)
         x['time_l'] = np.power(10,x['time_l'])
         x['time_u'] = np.power(10,x['time_u'])

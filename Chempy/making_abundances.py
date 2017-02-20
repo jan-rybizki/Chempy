@@ -3,7 +3,19 @@ import numpy as np
 
 
 def mass_fraction_to_abundances(cube, solar_abundances):
-	element_names = list(set(solar_abundances['Symbol']).intersection(cube.dtype.names))
+	'''
+        calculating the abundances in dex from mass fractions
+
+        INPUT:
+        cube = cube table instance
+        solar_abundances = solar abundance table instance
+
+        OUTPUT:
+        abundances
+        element_names
+        element_numbers
+        '''
+        element_names = list(set(solar_abundances['Symbol']).intersection(cube.dtype.names))
 	element_number = []
 	element_masses = []
 	for item in element_names:
@@ -39,7 +51,20 @@ def mass_fraction_to_abundances(cube, solar_abundances):
 	return (cube_abundances,element_names,element_number)
 
 def abundance_to_mass_fraction(all_elements,all_masses,all_abundances,abundances,symbols):
-	fractions = []
+	'''
+        Calculating mass fractions from abundances.
+
+        INPUT:
+        all_elements = list of all elements from solar abundance instance
+        all_masses = list of corresponding masses from solar abundances
+        all_abundances = solar abundances (not needed)
+        abundances = the abundances
+        symbols = a list of the elemental symbols corresponding to the abundances
+
+        OUTPUT:
+        the fractions as an array
+        '''
+        fractions = []
 	for i,item in enumerate(symbols):
 		fractions.append(abundances[i])
 		fractions[i] -= 12
@@ -51,6 +76,19 @@ def abundance_to_mass_fraction(all_elements,all_masses,all_abundances,abundances
 	return np.hstack(fractions)
 
 def abundance_to_mass_fraction_normed_to_solar(all_elements,all_masses,all_abundances,abundances,symbols):
+	'''
+        Calculating mass fractions normed to solar from abundances.
+
+        INPUT:
+        all_elements = list of all elements from solar abundance instance
+        all_masses = list of corresponding masses from solar abundances
+        all_abundances = solar abundances (not needed)
+        abundances = the abundances
+        symbols = a list of the elemental symbols corresponding to the abundances
+
+        OUTPUT:
+        the fractions as an array
+        '''
 	fractions = []
 	for i,item in enumerate(symbols):
 		fractions.append(abundances[i] + all_abundances[np.where(all_elements == item)])

@@ -4,7 +4,13 @@ import numpy.lib.recfunctions as rcfuncs
 from . import localpath
 
 class solar_abundances(object):
-	def __init__(self):    
+	'''
+        The solar abundances class. Holds information on the element names, symbols, mass numbers and photospheric abundances.
+        '''
+        def __init__(self):    
+                '''
+                Upon initialization the element names and numbers and masses are loaded and the solar table loaded. The values are filled after using one of the methods which will load solar abundance literature values into the table.
+                '''
 		self.table = np.load(localpath + 'input/elemental_table.npy')
 		## Python3 need transformation between bytes and strings
 		element_list = []
@@ -21,6 +27,9 @@ class solar_abundances(object):
 		self.base = np.zeros(len(self.all_elements))
 
 	def Lodders09(self):#								    O 8.73              Mg 7.54 Fe 7.46
+                '''
+                Photospheric abundances and errors are loaded from Lodders+ 2009. Also the elment fractions are calculated together with X, Y and Z the Hydrogen, Helium and metallicity fraction.
+                '''
 		abundances = [12.00,10.93,3.28,1.32,2.81,8.39,7.86,8.73,4.44,8.05,6.29,7.54,6.46,\
 		7.53,5.45,7.16,5.25,6.50,5.11,6.31,3.07,4.93,3.99,5.65,5.50,7.46,\
 		4.90,6.22,4.27,4.65,3.10,3.59,2.32,3.36,2.56,3.28,2.38,2.90,2.20,\
@@ -57,6 +66,9 @@ class solar_abundances(object):
 		self.errors = errors
 
 	def Asplund09(self):#									O 8.69             Mg 7.60 Fe 7.50
+                '''
+                Photospheric abundances and errors are loaded from Asplund+ 2009. Also the elment fractions are calculated together with X, Y and Z the Hydrogen, Helium and metallicity fraction.
+                '''
 		abundances = [12.00,10.93,3.26,1.30,2.79,8.43,7.83,8.69,4.42,7.93,6.24,7.60,6.45,\
 		7.51,5.41,7.12,5.23,6.40,5.03,6.34,3.15,4.95,3.93,5.64,5.43,7.50,\
 		4.99,6.22,4.19,4.56,3.04,3.65,2.30,3.34,2.54,3.25,2.52,2.87,2.21,\
@@ -94,10 +106,11 @@ class solar_abundances(object):
 		self.z = sum(self.fractions[2:])
 
 	def Asplund05_pure_solar(self):
-		"""
-		It is not sure for which elements from Asplund+ 2005 the apogee consortium has used the photospheric or the meteoritic abundances.
+                '''
+                Photospheric abundances and errors are loaded from Asplund+ 2005. Also the elment fractions are calculated together with X, Y and Z the Hydrogen, Helium and metallicity fraction.
+                It is not sure for which elements from Asplund+ 2005 the apogee consortium has used the photospheric or the meteoritic abundances.
 		Therefore I try here to use only the photospheric except for elements without photospheric values.
-		"""
+		'''
 						#									O 8.69             Mg 7.60 Fe 7.50
 		abundances = [12.00,10.93,1.05,1.38,2.70,8.39,7.78,8.66,4.56,7.84,6.17,7.53,6.37,\
 		7.51,5.36,7.14,5.50,6.18,5.08,6.31,3.05,4.90,4.00,5.64,5.39,7.45,\
@@ -136,7 +149,12 @@ class solar_abundances(object):
 		self.z = sum(self.fractions[2:])
 
 	def Asplund05_apogee_correction(self):
-		"""
+                '''
+                Photospheric abundances and errors are loaded from Asplund+ 2005 but corrected for the APOGEE scale. Also the elment fractions are calculated together with X, Y and Z the Hydrogen, Helium and metallicity fraction.
+                It is not sure for which elements from Asplund+ 2005 the apogee consortium has used the photospheric or the meteoritic abundances.
+		Therefore I try here to use only the photospheric except for elements without photospheric values.
+		'''
+                """
 		After an email from Carlos Allende Prieto only the synthetic spectra are made with Asplund 2005. If trying to normalise to zero we need to see the results of a solar twin with the apogee pipeline.
 		Carlos send me the results for Vesta
 		C  				N  				O  			Na 			Mg 			Al 

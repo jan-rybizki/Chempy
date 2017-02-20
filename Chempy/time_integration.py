@@ -1,8 +1,43 @@
 import numpy as np 
 
 class ABUNDANCE_MATRIX(object):
-
+        '''
+        This class contains all information necessary to characterize the chemical evolution of the open-box one-zone Chempy model.
+        It calculates the mass flow between the different components. And can advance the chemical evolution when the enrichment from the SSP is provided.
+        '''
 	def __init__(self, time, sfr, infall, list_of_elements,infall_symbols,infall_fractions,gas_at_start,gas_at_start_symbols,gas_at_start_fractions,gas_reservoir_mass_factor,outflow_feedback_fraction,check_processes,starformation_efficiency,gas_power, sfr_factor_for_cosmic_accretion, cosmic_accretion_elements, cosmic_accretion_element_fractions):
+                '''
+                Upon initialization the provided information is stored and initial conditions as provided by the other chempy classes are calculated.
+                The class assigns all the information into different tables that can be queeried.
+                most importantly self.cube contains the ISM evolution self.gas_reservoir the corona evolution and self.sn2/sn1a/agb_feedback the enrichment from the individual nucleosynthetic processes.
+
+                INPUT:
+	        time = the time-steps
+                sfr = the corresponding star formation rate
+                infall = the infall at that time (can be 0 when 'sfr_related' is chosen)
+                list_of_elements = which elements to trace (a list of Symbols)
+                infall_symbols = list of element symbols for the infall
+                infall_fractions = the corresponding elemental fractions
+                gas_at_start = how much gas at start do we have (default = 0)
+                gas_at_start_symbols = list of elements at beginnin
+                gas_at_start_fractions = the corresponding fractions
+                gas_reservoir_mass_factor = how much more mass does the corona has compared to the integrated SFR
+                outflow_feedback_fraction = how much enrichment goes into the corona (in fraction, the rest goes into the ISM)
+                check_processes = boolean, should the individual nucleosynthetic processes be tracked (usually not necessary during the MCMC but useful when exporing a single parameter configuration)
+                starformation_efficiency = the SFE for a linear Kennicut-Schmidt law
+                gas_power = The Schmidt_exponent (default = 1, i.e. linear)
+                sfr_factor_for_cosmic_accretion = how much more gas should be infalling in the corona compared to the SFR
+                cosmic_accretion_elements = element list of this cosmic infall
+                cosmic_accretion_element_fractions = the corresponding fractions (all element fractions are usually primordial)
+
+                OUTPUT:
+                a few structured arrays will be created most notably:
+                .cube = ISM evolution
+                .gas_reservoir = corona evolution
+                .sn2_feedback = CC-SN feedback
+                .sn1a_feedback = SN Ia feedback
+                .agb_feedback = AGB feedback
+                '''
 		self.time = time
 		self.dt = time[1] - time[0]
 		self.sfr = sfr#np.divide(sfr,sum(sfr))
@@ -111,9 +146,16 @@ class ABUNDANCE_MATRIX(object):
 
 		
 	def advance_one_step(self,index,ssp_yield,sn2_yield,agb_yield,sn1a_yield):
-		# Taking the latest SSPs feedback table and calculating together with the old feedback tables the new yields and statuses
-		#print ssp_yield["O"][0:3]
-		#print sn2_yield["O"][0:3] + agb_yield["O"][0:3] + sn1a_yield["O"][0:3]
+                '''
+                This method advances the chemical evolution one time-step.
+
+                INPUT: 
+                index = which time step
+                ssp_yield = yield of the ssp
+                sn2_yield = yield of sn2 only
+                agb_yield = yield of agb only
+                sn1a_yield = yield of sn1a only
+                '''
 		### This aligns the SSP yield such that it becomes a simple vector multiplication with a little memory overhead
 		# self.all_feedback has the following data structure: [element][time_index_of_the_born_ssp][time_index_of_this_ssp_giving_back_the_elements_mass]
 		

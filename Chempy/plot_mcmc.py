@@ -4,7 +4,17 @@ import os
 from . import localpath
 
 def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\mathrm{SFR}_\mathrm{peak}$',r'$\mathrm{x}_\mathrm{out}$',r'$\log_{10}\left(\mathrm{f}_\mathrm{corona}\right)$']):
+        '''
+        This function restructures the chains and blobs coming from the emcee routine so that we have a flattened posterior PDF in the end.
+        The following files need to be there: flatchain, flatlnprobability, flatmeanposterior and flatstdposterior. flatblobs is optional
 
+        INPUT:
+        directory = name of the folder where the files are located
+        parameter_names = the names of the parameters which where explored in the MCMC
+
+        OUTPUT:
+        a few convergence figures and arrays will be saved into directory
+        '''
 	producing_positions_for_plot = True
 	how_many_plot_samples = 100
 	how_many_MCMC_samples = 500
@@ -178,7 +188,12 @@ def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'
 	plt.close()
 
 def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
-	import corner
+	'''
+        This routine takes the output from 'restructure_chain' function and plots the result in a corner plot
+        set_scale and use_scale can be used to put different PDFs on the same scale, in the sense that the plot is shown with the same axis range.
+        In the paper this is used to plot the Posterior in comparison to the prior distribution.
+        '''
+        import corner
 	plt.clf()
 	text_size = 16
 	cor_text = 22
@@ -296,7 +311,11 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
 
 
 def plot_element_correlation(directory):
-	import corner
+	'''
+        This is an experimental plotting routine. It can read the mcmc folder content and plot element / parameter / posterior correlations.
+        For that the name-list of the blobs needs to be provided which can be generated running Chempy in the 'testing_output' mode.
+        '''
+        import corner
 	names = np.load('%sname_list.npy' %(directory))
 	blobs = np.load('%sblobs_distribution.npy' %(directory))
 	positions = np.load('%sposteriorPDF.npy' %(directory))

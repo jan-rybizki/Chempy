@@ -12,14 +12,14 @@ import multiprocessing as mp
 from .wrapper import SSP_wrap, initialise_stuff, Chempy
 
 def gaussian_log(x,x0,xsig):
-        '''
-        function to calculate the gaussian probability (its normed to Pmax and given in log)
-        
-        INPUT:
-        x = where is the data point or parameter value
-        x0 = mu
-        xsig = sigma
-        '''
+	'''
+	function to calculate the gaussian probability (its normed to Pmax and given in log)
+	
+	INPUT:
+	x = where is the data point or parameter value
+	x0 = mu
+	xsig = sigma
+	'''
 	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
 
 def lognorm_log(x,mu,factor):
@@ -39,29 +39,29 @@ def lognorm_log(x,mu,factor):
 
 def cem(changing_parameter,a):
 	'''
-        This is the function calculating the chemical evolution for a specific parameter set (changing_parameter) and for a specific observational constraint specified in a (e.g. 'solar_norm' calculates the likelihood of solar abundances coming out of the model). It returns the posterior and a list of blobs. It can be used by an MCMC.
-        This function actually encapsulates the real cem function in order to capture exceptions and in that case return -inf. This makes the MCMC runs much more stable
-        INPUT: 
-        changing_parameters = parameter values of the free parameters as an array
-        a = model parameters specified in parameter.py. There are also the names of free parameters specified here
+	This is the function calculating the chemical evolution for a specific parameter set (changing_parameter) and for a specific observational constraint specified in a (e.g. 'solar_norm' calculates the likelihood of solar abundances coming out of the model). It returns the posterior and a list of blobs. It can be used by an MCMC.
+	This function actually encapsulates the real cem function in order to capture exceptions and in that case return -inf. This makes the MCMC runs much more stable
 
-        OUTPUT:
-        log posterior, array of blobs
+	INPUT: 
+	changing_parameters = parameter values of the free parameters as an array
+	a = model parameters specified in parameter.py. There are also the names of free parameters specified here
 
-        the blobs contain the prior values, the likelihoods and the actual values of each predicted data point (e.g. elemental abundance value)
-        '''
-        try:
+	OUTPUT:
+	log posterior, array of blobs
+	the blobs contain the prior values, the likelihoods and the actual values of each predicted data point (e.g. elemental abundance value)
+	'''
+	try:
 		posterior, blobs = cem_real(changing_parameter,a)
 		return posterior, blobs
 	except Exception as ex:
 		import traceback; traceback.print_exc()
-		return -np.inf, [0]
+	return -np.inf, [0]
 
 def cem_real(changing_parameter,a):
 	'''
-        real chempy function. description can be found in cem
-        '''
-        for i,item in enumerate(a.to_optimize):
+	real chempy function. description can be found in cem
+	'''
+	for i,item in enumerate(a.to_optimize):
 		setattr(a, item, changing_parameter[i])
 		val = getattr(a, item)
 

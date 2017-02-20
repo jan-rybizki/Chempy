@@ -4,18 +4,18 @@ import numpy as np
 
 def imf_mass_fraction_non_nativ(imf_dm,imf_x,mlow,mup):
 	'''
-        Function to determine the mass fraction of the IMF between two masses
+	Function to determine the mass fraction of the IMF between two masses
 
-        INPUT:
-        imf_dm = imf_class.dm
-        imf_x = imf_class.x
-        mlow = lower mass
-        mup = upper mass
+	INPUT:
+	imf_dm = imf_class.dm
+	imf_x = imf_class.x
+	mlow = lower mass
+	mup = upper mass
 
-        OUTPUT:
-        the mass fraction in this mass range
-        '''
-        cut = np.where(np.logical_and(imf_x>=mlow,imf_x<mup))
+	OUTPUT:
+	the mass fraction in this mass range
+	'''
+	cut = np.where(np.logical_and(imf_x>=mlow,imf_x<mup))
 	fraction = sum(imf_dm[cut])
 	
 	return(fraction)
@@ -52,27 +52,27 @@ def lifetime_Raiteri(m,Z):
 	return np.divide(np.power(10,tmp),1e9)
 
 class SSP(object):
-        '''
-        The simple stellar population class can calculate the enrichment over time for an SSP from a few assumptions and input yield tables.
-        '''
+	'''
+	The simple stellar population class can calculate the enrichment over time for an SSP from a few assumptions and input yield tables.
+	'''
 	def __init__(self,output, z, imf_x, imf_dm, imf_dn, time_steps, elements_to_trace,  stellar_lifetimes, interpolation_scheme,only_net_yields_in_process_tables):
-                '''
-                Upon initialisation the table for the SSP evolution and enrichment over time is created. Interpolation from yield tables in mass is made linear.
+		'''
+		Upon initialisation the table for the SSP evolution and enrichment over time is created. Interpolation from yield tables in mass is made linear.
 
-                INPUT:
-	        output = bool, should output be plotted
-                z = metallicity of the SSP in Z, not normed to solar
-                imf_x = class_imf.x
-                imf_dm = class_imf.dm
-                imf_dn = class_imf.dn
-                time_steps = time_steps usually coming from class_sfr.t
-                elements_to_trace = which elements should be traced
-                stellar_lifetimes = the name of the stellar lifetimes function that should be used ('Raiteri_1996', 'Argast_2000')
-                interpolation_scheme = which interpolation in metallicity should be used for the yield table ('linear' or 'logarithmic')
-                only_net_yields_in_process_tables = Should the total yields or only the net yields be stored in the nucleosynthetic enrichment tables, bool
-		
-                OUTPUT:
-                the ssp_class.table holds key values of the evolution of the SSP all normalised to a mass of unity (which is the starting mass of the SSP).
+		INPUT:
+		output = bool, should output be plotted
+		z = metallicity of the SSP in Z, not normed to solar
+		imf_x = class_imf.x
+		imf_dm = class_imf.dm
+		imf_dn = class_imf.dn
+		time_steps = time_steps usually coming from class_sfr.t
+		elements_to_trace = which elements should be traced
+		stellar_lifetimes = the name of the stellar lifetimes function that should be used ('Raiteri_1996', 'Argast_2000')
+		interpolation_scheme = which interpolation in metallicity should be used for the yield table ('linear' or 'logarithmic')
+		only_net_yields_in_process_tables = Should the total yields or only the net yields be stored in the nucleosynthetic enrichment tables, bool
+
+		OUTPUT:
+		the ssp_class.table holds key values of the evolution of the SSP all normalised to a mass of unity (which is the starting mass of the SSP).
 		mass_in_ms_stars + cumsum(mass_of_ms_stars_dying) = 1 calculated from stellar lifetime with IMF 
 		the element feedbacks are also given normalised to one. And the number of events as well
 		'''
@@ -115,16 +115,16 @@ class SSP(object):
 	def sn2_feedback(self, sn2_elements, sn2_yields, sn2_metallicities, sn2_mmin, sn2_mmax, fractions_in_gas):	
 		'''
 		Calculating the CC-SN feedback over time.
-                The routine is sensitive to the ordering of the masses in the yield table, it must begin with the smallest increase to the biggest value.
-				
-                INPUT:
-	        sn2_elements = which elements are provided by the yield table, list containing the symbols
-                sn2_yields = the yield table provided by Chempys SN2 yield class
-                sn2_metallicities = the metallicities of that table
-                sn2_mmin = the minimal mass of the CC-SN (default 8) in Msun
-                sn2_mmax = the maximum mass of the CC-SN (default 100) in Msun
-                fractions_in_gas = the birth material of the SSP (will be mixed into the enrichment as unprocessed material)
-                '''
+		The routine is sensitive to the ordering of the masses in the yield table, it must begin with the smallest increase to the biggest value.
+
+		INPUT:
+		sn2_elements = which elements are provided by the yield table, list containing the symbols
+		sn2_yields = the yield table provided by Chempys SN2 yield class
+		sn2_metallicities = the metallicities of that table
+		sn2_mmin = the minimal mass of the CC-SN (default 8) in Msun
+		sn2_mmax = the maximum mass of the CC-SN (default 100) in Msun
+		fractions_in_gas = the birth material of the SSP (will be mixed into the enrichment as unprocessed material)
+		'''
 		# tracking the elemental feedback of individual processes
 		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants']
 		names = additional_keys + self.elements # not sure if all elements should be taken (might be easier to add the 3 tables in order to get total yield)
@@ -248,18 +248,18 @@ class SSP(object):
 
 	def agb_feedback(self,agb_elements, agb_yields, agb_metallicities, agb_mmin, agb_mmax, fractions_in_gas):
 		'''
-                AGB enrichment calculation adds the feedback to the total SSP table and also to the self.agb_yield table.
+		AGB enrichment calculation adds the feedback to the total SSP table and also to the self.agb_yield table.
 
-                INPUT:
-	        agb_elements = which elements are provided by the yield table, list containing the symbols
-                agb_yields = the yield table provided by Chempys AGB yield class
-                agb_metallicities = the metallicities of that table
-                agb_mmin = the minimal mass of the AGB stars (default 0.5) in Msun
-                agb_mmax = the maximum mass of the AGB stars (default 8) in Msun
-                fractions_in_gas = the birth material of the SSP (will be mixed into the enrichment as unprocessed material)
-                '''
-                
-                # sensitive to the ordering of the masses from the yield. Should be checked in the beginning
+		INPUT:
+		agb_elements = which elements are provided by the yield table, list containing the symbols
+		agb_yields = the yield table provided by Chempys AGB yield class
+		agb_metallicities = the metallicities of that table
+		agb_mmin = the minimal mass of the AGB stars (default 0.5) in Msun
+		agb_mmax = the maximum mass of the AGB stars (default 8) in Msun
+		fractions_in_gas = the birth material of the SSP (will be mixed into the enrichment as unprocessed material)
+		'''
+
+		# sensitive to the ordering of the masses from the yield. Should be checked in the beginning
 		# ATTENTION this loop and interpolation scheme only works with fractional yields which should be used by default
 		# metallicity interpolation is implemented
 		# tmp_masses is the masses for which a yield is available
@@ -449,26 +449,26 @@ class SSP(object):
 						self.agb_table[element_name] += tables_to_interpolate[i][element_name] * metallicity_weight[i]
 
 	def sn1a_feedback(self, sn1a_elements, sn1a_metallicities, sn1a_yields, time_delay_functional_form, sn1a_min, sn1a_max, time_delay_parameter,ssp_mass, stochastic_IMF):
-                '''
-                Calculating the SN1a feedback over time
+		'''
+		Calculating the SN1a feedback over time
 
-                INPUT:
-	        sn1a_elements = Which elements are provided by the yield table
-                sn1a_metallicities = metallicities in the yield table 
-                sn1a_yields = yield table
-                time_delay_functional_form = which functional form of the delay time should be used ('normal','maoz','gamma_function'). Maoz is the default and the others are not tested. Check for functionality
-                sn1a_min = the minimum mass from which sn1a can occur (does not matter for maoz)
-                sn1a_max = the maximum mass from which SN Ia can occur (does not mater for maoz)
-                time_delay_parameter = a tuple containing the parameters for the specific functional form
-                ssp_mass = the mass of the SSP
-                stochastic_IMF = bool, do we want to use stochastci explosions
+		INPUT:
+		sn1a_elements = Which elements are provided by the yield table
+		sn1a_metallicities = metallicities in the yield table 
+		sn1a_yields = yield table
+		time_delay_functional_form = which functional form of the delay time should be used ('normal','maoz','gamma_function'). Maoz is the default and the others are not tested. Check for functionality
+		sn1a_min = the minimum mass from which sn1a can occur (does not matter for maoz)
+		sn1a_max = the maximum mass from which SN Ia can occur (does not mater for maoz)
+		time_delay_parameter = a tuple containing the parameters for the specific functional form
+		ssp_mass = the mass of the SSP
+		stochastic_IMF = bool, do we want to use stochastci explosions
 
-                for MAOZ functional form the following parameters are in time_delay_parameter:
-                N_0 = Number of SNIa exploding per Msun over the course of 15Gyr
-                tau_8 = The delay time when the first SN Ia explode (usually 40Myr are anticipated because then 8Msun stars start to die but our Prior is more at 160Myr)
-                s_eponent = the time decay exponent
-                dummy = not in use anymore
-                '''
+		for MAOZ functional form the following parameters are in time_delay_parameter:
+		N_0 = Number of SNIa exploding per Msun over the course of 15Gyr
+		tau_8 = The delay time when the first SN Ia explode (usually 40Myr are anticipated because then 8Msun stars start to die but our Prior is more at 160Myr)
+		s_eponent = the time decay exponent
+		dummy = not in use anymore
+		'''
 		end_of_time = 15 #Gyrs Over this time-span the SN1a explosions will be distributed, for mass normalisation reasons
 		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants']
 		names = additional_keys + self.elements # not sure if all elements should be taken (might be easier to add the 3 tables in order to get total yield)
@@ -522,12 +522,12 @@ class SSP(object):
 			self.sn1a_feedback_number = feedback_number
 
 		def maoz_timedelay():
-                        '''
-                        Calculating the delay time distribution of the SNIa explosion. Stochastic sampling is possible if wanted.
-                        '''
+			'''
+			Calculating the delay time distribution of the SNIa explosion. Stochastic sampling is possible if wanted.
+			'''
 			#number_of_stars_in_mass_range_for_remnant = imf_mass_fraction_non_nativ(self.dn,self.x,self.sn1a_min,self.sn1a_max) ##Analytic result for Chabrier IMF and sn1a min max 1,8: 0.182189794774
 			#mass_of_stars_in_mass_range_for_remnant = imf_mass_fraction_non_nativ(self.dm,self.x,self.sn1a_min,self.sn1a_max) ##Analytic result for Chabrier IMF and sn1a min max 1,8: 0.398074766434
-			
+
 			full_time = list(self.t)
 			while full_time[-1] < end_of_time:
 				full_time.append(full_time[-1]+self.dt)
@@ -781,9 +781,9 @@ class SSP(object):
 		self.sn2_table['number_of_events'][1] = imf_mass_fraction_non_nativ(self.dn,self.x,sn2_mmin,sn2_mmax)
 
 	def bh_feedback(self,bhmmin,bhmmax,element_list,fractions_in_gas,percentage_of_bh_mass):
-                '''
-                Old routine, just no enrichment for a specific mass range
-                '''
+		'''
+		Old routine, just no enrichment for a specific mass range
+		'''
 		cut = np.where(np.logical_and(self.x>=bhmmin,self.x<bhmmax))
 		weight = sum(self.dm[cut])
 

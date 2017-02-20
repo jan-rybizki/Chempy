@@ -6,9 +6,9 @@ from parameter import ModelParameters
 
 def one_chain(args):
 	'''
-        This function is testing the startpoint of an MCMC chain and tries to find parameter values for which Chempy does not return -inf 
-        '''
-        seed,a,startpoint = args
+	This function is testing the startpoint of an MCMC chain and tries to find parameter values for which Chempy does not return -inf 
+	'''
+	seed,a,startpoint = args
 	np.random.seed(seed[0])
 	chain = np.zeros(shape=(a.ndim))
 	backup = np.array(a.to_optimize)
@@ -31,16 +31,16 @@ def one_chain(args):
 
 def creating_chain(a,startpoint):
 	'''
-        This function creates the initial parameter values for an MCMC chain.
+	This function creates the initial parameter values for an MCMC chain.
 
-        INPUT:
-        a = default parameter values from parameter.py
-        startpoint = from where the pointcloud of walkers start in a small sphere
+	INPUT:
+	a = default parameter values from parameter.py
+	startpoint = from where the pointcloud of walkers start in a small sphere
 
-        OUTPUT:
-        returns the array of the initial startpoints
-        '''
-        args = [(np.random.random_integers(low = 0, high = 1e9,size = 1),a,startpoint) for i in range(a.nwalkers)]
+	OUTPUT:
+	returns the array of the initial startpoints
+	'''
+	args = [(np.random.random_integers(low = 0, high = 1e9,size = 1),a,startpoint) for i in range(a.nwalkers)]
 	p = mp.Pool(a.nwalkers)
 	t = p.map(one_chain,args)
 	p.close()
@@ -52,8 +52,8 @@ def gaussian_log(x,x0,xsig):
 	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
 
 def posterior_probability(x,a):
-        '''
-        Just returning the posterior probability of Chempy and the list of blobs
-        '''
+	'''
+	Just returning the posterior probability of Chempy and the list of blobs
+	'''
 	s,t = cem(x,a)
 	return s,t

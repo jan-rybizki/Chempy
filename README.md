@@ -12,13 +12,13 @@ Its dependencies are: [Numpy](http://numpy.scipy.org/), [matplotlib](http://matp
 ### Installation without admin rights:
 You can install `Chempy` into a folder where you have write access:
 ```
-pip install --install-option='--prefix=~/additional_python_packages/' git+https://github.com/jan-rybizki/Chempy.git
+pip install --install-option='--prefix=~/extra_package/' git+https://github.com/jan-rybizki/Chempy.git
 ```
-Then you have to add the `site-packages/` folder which will be one of the newly created subfolders into the ```PYTHONPATH``` variable, e.g.:
+Then you have to add the `site-packages/` folder which will be one of the newly created subfolders in `extra_package/` into the ```PYTHONPATH``` variable, e.g.:
 ```
-export PYTHONPATH=~/additional_python_packages/lib/python2.7/site-packages/:$PYTHONPATH
+export PYTHONPATH=~/extra_package/lib/python2.7/site-packages/:$PYTHONPATH
 ```
-If you want this to be permanent, then you can add this to your `.bashrc`
+If you want this to be permanent, then you can add the last line to your `.bashrc`
 
 
 ## Authors

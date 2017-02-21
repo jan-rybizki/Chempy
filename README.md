@@ -1,5 +1,5 @@
 # Chempy
-Flexible one-zone open box chemical evolution modeling. Abundance fitting and stellar feedback calculation
+Flexible one-zone open-box chemical evolution modeling. Abundance fitting and stellar feedback calculation
 
 ## Installation
 
@@ -18,7 +18,7 @@ Then you have to add the `site-packages/` folder which will be one of the newly 
 ```
 export PYTHONPATH=~/extra_package/lib/python2.7/site-packages/:$PYTHONPATH
 ```
-If you want this to be permanent, then you can add the last line to your `.bashrc`
+If you want this to be permanent, you can add the last line to your `.bashrc`.
 
 
 ## Authors
@@ -34,4 +34,11 @@ If you want this to be permanent, then you can add the last line to your `.bashr
 - An early version of Chempy is presented in chapter 4 of my [phd thesis](http://nbn-resolving.de/urn:nbn:de:bsz:16-heidok-199349).
 
 ## Getting started
-The jupyter [tutorial](https://github.com/jan-rybizki/Chempy/tree/master/tutorials) illustrates the basic usage of Chempy and basic concepts of galactic chemical evolution modeling. It can be run on your local machine (you have to ```jupyter notebook``` from within the tutorial folder) or just inspected in this github repository.
+The jupyter [tutorial](https://github.com/jan-rybizki/Chempy/tree/master/tutorials) illustrates the basic usage of Chempy and basic concepts of galactic chemical evolution modeling. It can be inspected in the github repository or you can run it interactively on your local machine.
+
+First clone the repository with
+```
+git clone https://github.com/jan-rybizki/Chempy.git
+```
+Then you can ```jupyter notebook``` from within the tutorial folder (it will run if you have installed the package). 
+If you did not install Chempy you can still run the tutorial but need to point to the files in the Chempy folder. Basically you have to ```cd ../Chempy/``` and then replace each ```from Chempy import ...``` with ```from . import ...```.

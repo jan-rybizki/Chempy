@@ -120,21 +120,22 @@ def cem_real(changing_parameter,a):
 	basic_solar = solar_abundances()
 	getattr(basic_solar, a.solar_abundance_name)()
 	elements_to_trace = a.elements_to_trace
-
+        
+        directory = 'model_temp/'
 	### Model is calculated
 	if a.calculate_model:
 		cube, abundances= Chempy(a)
 		cube1 = cube.cube
 		gas_reservoir = cube.gas_reservoir
-		directory = 'model_temp/'
-		if os.path.exists(directory):
-			print(directory, ' already exists. Content might be overwritten')
-		else:
-			os.makedirs(directory)
-		np.save(directory + '%s_elements_to_trace' %(a.name_string), elements_to_trace)
-		np.save(directory + '%s_gas_reservoir' %(a.name_string),gas_reservoir)
-		np.save(directory + '%s_cube' %(a.name_string),cube1)
-		np.save(directory + '%s_abundances' %(a.name_string),abundances)
+                if a.testing_output:
+		        if os.path.exists(directory):
+			        print(directory, ' already exists. Content might be overwritten')
+		        else:
+			        os.makedirs(directory)
+		        np.save(directory + '%s_elements_to_trace' %(a.name_string), elements_to_trace)
+		        np.save(directory + '%s_gas_reservoir' %(a.name_string),gas_reservoir)
+		        np.save(directory + '%s_cube' %(a.name_string),cube1)
+		        np.save(directory + '%s_abundances' %(a.name_string),abundances)
 	else:
 		cube1 = np.load(directory + '%s_cube.npy' %(a.name_string))
 		abundances = np.load(directory + '%s_abundances.npy' %(a.name_string))

@@ -7,7 +7,7 @@ from .solar_abundance import solar_abundances
 from .making_abundances import mass_fraction_to_abundances
 from numpy.lib.recfunctions import append_fields
 import time
-from .data_to_test import elements_plot, arcturus, sol_norm, plot_processes, save_abundances,  cosmic_abundance_standard, ratio_function, star_function, gas_reservoir_metallicity
+from .data_to_test import wildcard_likelihood_function, elements_plot, arcturus, sol_norm, plot_processes, save_abundances,  cosmic_abundance_standard, ratio_function, star_function, gas_reservoir_metallicity
 import multiprocessing as mp
 from .wrapper import SSP_wrap, initialise_stuff, Chempy
 
@@ -169,6 +169,11 @@ def cem_real(changing_parameter,a):
 		a.names.append(element_names)
 	if 'arcturus' in a.observational_constraints_index:
 		probabilities, abundance_list, element_names = arcturus(a.summary_pdf,a.name_string,np.copy(abundances),np.copy(cube1),elements_to_trace,a.element_names,np.copy(basic_solar.table),a.number_of_models_overplotted,a.arcturus_age,a.produce_mock_data,a.use_mock_data,a.error_inflation)
+		a.probability.append(probabilities)
+		a.abundance_list.append(abundance_list)
+		a.names.append(element_names)
+	if 'wildcard' in a.observational_constraints_index:
+		probabilities, abundance_list, element_names = wildcard_likelihood_function(a.summary_pdf,a.stellar_identifier, np.copy(abundances))
 		a.probability.append(probabilities)
 		a.abundance_list.append(abundance_list)
 		a.names.append(element_names)

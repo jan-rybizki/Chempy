@@ -502,7 +502,7 @@ def arcturus(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 	elements_to_trace = Which elements should be used for the analysis
 	sol_table = solar abundance class
 	number_of_models_overplotted = default is 1, if more the results will be saved and in the last iteration all former models will be plotted at once
-	produce_mock_data = should the predictions be saved with an error added to them (default=False)
+	produce_mock_data = should the predictions be saved with an error added to them (default = False)
 	use_mock_data = instead of the real data use the formerly produced mock data (default = False)
 	error_inflation = a factor with which the mock data should be perturbed with the observational data (default = 1.0)
 
@@ -1025,3 +1025,120 @@ def save_abundances(summary_pdf,name_string,abundances):
 	if summary_pdf:
 		np.save('abundances_%s' %(name_string),abundances)
 	return [0.]
+
+def produce_wildcard_stellar_abundances(stellar_identifier, age_of_star, sigma_age, element_symbols, element_abundances, element_errors):
+    '''
+    This produces a structured array that can be used by the Chempy wildcard likelihood function.
+    
+    INPUT:
+    stellar_identifier = name of the files
+    age_of_star = age of star in Gyr
+    sigma_age = the gaussian error of the age (so far not implemented in the likelihood function)
+    element_symbols = a list of the element symbols
+    element_abundances = the corresponding abundances in [X/Fe] except for Fe where it is [Fe/H]
+    element_errors = the corresponding gaussian errors of the abundances
+    
+    OUTPUT:
+    it will produce a .npy file in the current directory with stellar_identifier as its name.
+    '''    
+    names = element_symbols + ['age']
+    base = np.zeros(2)
+    base_list = []
+    for item in names:
+        base_list.append(base)
+    wildcard = np.core.records.fromarrays(base_list,names=names)
+    for i,item in enumerate(element_symbols):
+        wildcard[item][0] = element_abundances[i]
+        wildcard[item][1] = element_errors[i]
+    wildcard['age'][0] = age_of_star
+    wildcard['age'][1] = sigma_age
+    np.save(stellar_identifier,wildcard)
+
+def plot_abundance_wildcard(stellar_identifier, wildcard,abundance_list, element_list, probabilities, time_model):
+    '''
+    this function plots the abundances of a stellar wildcard and the abundances of a chempy model together with the resulting likelihood values
+
+    INPUT:
+    stellar_identifier = str, name of the Star
+    wildcard = the wildcard recarray
+    abundance_list = the abundance list from the model
+    element_list = the corresponding element symbols
+    probabilities = the corresponding single likelihoods as a list
+    time_model = the time of the chempy model which is compared to the stellar abundance (age of the star form the wildcard)
+
+    OUTPUT:
+    This saves a png plot to the current directory
+    '''
+    star_abundance_list = []
+    star_error_list = []
+    for item in element_list:
+        star_abundance_list.append(float(wildcard[item][0]))
+        star_error_list.append(float(wildcard[item][1]))
+        
+    text_size = 14
+    plt.rc('font', family='serif',size = text_size)
+    plt.rc('xtick', labelsize=text_size)
+    plt.rc('ytick', labelsize=text_size)
+    plt.rc('axes', labelsize=text_size, lw=1.0)
+    plt.rc('lines', linewidth = 1)
+    plt.rcParams['ytick.major.pad']='8'
+    plt.clf()
+    fig = plt.figure(figsize=(10.69,8.27), dpi=100)
+    ax = fig.add_subplot(111)
+    plt.errorbar(np.arange(len(element_list)),star_abundance_list,xerr=None,yerr=star_error_list,mew=3,marker='x',capthick =3,capsize = 20, ms = 10,elinewidth=3,label = stellar_identifier)
+    plt.plot(np.arange(len(element_list)),np.array(abundance_list),label='prediction after %.2f Gyr' %(time_model),linestyle='-')
+
+    for i in range(len(element_list)):
+        plt.annotate(xy=(i,-0.4),s= '%.2f' %(probabilities[i]))
+    element_labels = ['[%s/Fe]' %(item) for item in element_list]
+    element_labels = np.array(element_labels)
+    element_labels[np.where(element_labels == '[Fe/Fe]')] = '[Fe/H]'
+    plt.xticks(np.arange(len(element_list)), element_labels)
+    plt.ylabel("abundance relative to solar in dex")
+    plt.xlabel("Element")
+    plt.title('joint probability of agreeing with %s (normed to pmax) = %.2f' %(stellar_identifier,sum(probabilities)))	
+    plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
+    plt.savefig('%s.png' %(stellar_identifier))
+	
+
+def wildcard_likelihood_function(summary_pdf, stellar_identifier, abundances):    
+    '''
+    This function produces Chempy conform likelihood output for a abundance wildcard that was produced before with 'produce_wildcard_stellar_abundances'.
+    
+    INPUT:
+    summary_pdf = bool, should there be an output
+    stellar_identifier = str, name of the star
+    abundances = the abundances instance from a chempy chemical evolution
+
+    OUTPUT:
+    probabilities = a list of the likelihoods for each element
+    abundance_list = the abundances of the model for each element
+    element_list = the symbols of the corresponding elements
+
+    These list will be used to produce the likelihood and the blobs. See cem_function.py
+    '''
+
+    wildcard = np.load(stellar_identifier + '.npy')
+    
+    star_time = abundances['time'][-1] - wildcard['age'][0]
+    cut = [np.where(np.abs(abundances['time'] - star_time) == np.min(np.abs(abundances['time'] - star_time)))]
+    if len(cut[0][0]) != 1:
+        cut = cut[0][0][0]
+    time_model = abundances['time'][cut]
+    
+    abundance_list = []
+    element_list = []
+    probabilities = []
+    for item in list(wildcard.dtype.names):
+        if item in list(abundances.dtype.names):
+            if item != 'Fe':
+                abundance = abundances[item][cut]-abundances['Fe'][cut]
+            else:
+                abundance = abundances['Fe'][cut]
+            element_list.append(item)
+            abundance_list.append(float(abundance))
+            probabilities.append(float(gaussian_1d_log(abundance,wildcard[item][0],wildcard[item][1])))
+    if summary_pdf:
+        plot_abundance_wildcard(stellar_identifier,wildcard,abundance_list, element_list, probabilities, time_model)
+    return probabilities, abundance_list, element_list
+

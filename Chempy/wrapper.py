@@ -141,7 +141,8 @@ def Chempy(a):
 	abundances,elements,numbers = mass_fraction_to_abundances(np.copy(cube.cube),np.copy(basic_solar.table))
 	weights = cube.cube['sfr']
 	abundances = append_fields(abundances,'weights',weights)
-	abundances = np.array(abundances)
+	abundances = append_fields(abundances,'time', cube.cube['time'])
+        abundances = np.array(abundances)
 
 	return cube, abundances
 

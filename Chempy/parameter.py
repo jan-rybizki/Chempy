@@ -20,7 +20,7 @@ class ModelParameters(object):
 	number_of_models_overplotted = 1 ### with the positions from an mcmc run
 	testing_output = False
 	summary_pdf = False
-	name_string = 'single_suncasarc'#%d' %(time_steps)#'mass_analytic'#%d' %(total_mass/1e2)
+	name_string = 'Chempy_default'
 
 	# SFR still model A from Just&Jahreiss 2010 should be changed
 	# arbitrary function can be implemented here
@@ -184,20 +184,18 @@ class ModelParameters(object):
 	outflow_feedback_fraction = 0.5
 	## various output modes
 	check_processes = True
-	only_net_yields_in_process_tables = False
+	only_net_yields_in_process_tables = True
 	calculate_model = True #just loading the outcome of the last ssp if False
 
 
 	nwalkers = 64
 	mburn = 1
 	save_state_every = 1
-	m = 1000
+	m = 1000 # For 7 free parameters 300 iterations are usually enough. The mcmc routine is stopping after 300 if the posterior mean is converged for more than 200 iterations.
 	####### Evaluate model
-	#V,K,
-	# element lists
 	element_names = ['He','C', 'N', 'O', 'F','Ne','Na', 'Mg', 'Al', 'Si', 'P','S', 'Ar','K', 'Ca','Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni']#, 'Zn','Y', 'Ba']# Runs with sun
 	elements_to_trace = ['Al', 'Ar', 'B', 'Be', 'C', 'Ca', 'Cl', 'Co', 'Cr', 'Cu', 'F', 'Fe', 'Ga', 'Ge', 'H', 'He', 'K', 'Li', 'Mg', 'Mn', 'N', 'Na', 'Ne', 'Ni', 'O', 'P', 'S', 'Sc', 'Si', 'Ti', 'V', 'Zn']
-	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm']#,'cas','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
+	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm']#,'wildcard ','cas','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
 	arcturus_age = 7.1# 7.1 +1.5 -1.2
         stellar_identifier = 'NGC1718-9'
 	produce_mock_data = False

@@ -3,12 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Chempy - Flexible one-zone open-box chemical evolution modeling
+Chempy
 ===============================================================
 
-This package is a elemental abundance fitting tool for stellar abundances.
-It takes literature yield, integrates them over the IMF for simple stellar (SSP) populations
-and uses successive SSPs to integrate the chemical evolution of a single zone ISM over time.
+This package is a flexible elemental abundance fitting tool for stellar abundances.
+It takes nucleosynthetic yield tables from literature, integrates them over the IMF for simple stellar (SSP) populations
+and uses successive SSPs to integrate the chemical evolution of an open-box one-zone inter stellar medium (ISM) over time.
 
 Package main content
 ~~~~~~~~~~~~~~~~~~~~
@@ -22,14 +22,14 @@ This package is mostly organized around 2 main classes:
 
 Additionally, and for convenience 
 
-* the mcmc function can use cem to infer most likely parameters
-  :class:`Chempy.wrapper.mcmc`
+* :py:func:`Chempy.wrapper.mcmc` can be used to infer most likely parameters.
+  
 
 Contents
 ---------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
 
    modules
 
@@ -54,6 +54,10 @@ Installation
 
 Quick Start
 ~~~~~~~~~~~
+
+Look into the very extensive jupyter tutorial_. Here is a short preview:
+
+.. _tutorial: https://github.com/jan-rybizki/Chempy/tree/master/tutorials
 
 .. code-block:: python
 

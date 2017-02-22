@@ -1,4 +1,4 @@
-## Chempy tutorial
+## Chempy tutorial roadmap
 
 You can load the notebooks using ``jupyter notebook`` and then change the content interactively, once you downloaded this repository.
 You can also just have a look at them here on github.

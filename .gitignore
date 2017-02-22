@@ -4,4 +4,3 @@
 *.npy
 *.csv
 .ipynb*
-source/model_temp/

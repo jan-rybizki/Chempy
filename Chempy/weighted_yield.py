@@ -7,13 +7,19 @@ def imf_mass_fraction_non_nativ(imf_dm,imf_x,mlow,mup):
 	Function to determine the mass fraction of the IMF between two masses
 
 	INPUT:
-	imf_dm = imf_class.dm
-	imf_x = imf_class.x
-	mlow = lower mass
-	mup = upper mass
+	
+        imf_dm = imf_class.dm
+	
+        imf_x = imf_class.x
+	
+        mlow = lower mass
+	
+        mup = upper mass
 
-	OUTPUT:
-	the mass fraction in this mass range
+	
+        OUTPUT:
+	
+        the mass fraction in this mass range
 	'''
 	cut = np.where(np.logical_and(imf_x>=mlow,imf_x<mup))
 	fraction = sum(imf_dm[cut])
@@ -23,10 +29,19 @@ def imf_mass_fraction_non_nativ(imf_dm,imf_x,mlow,mup):
 def lifetime_Argast(m,Z_frac):
 	"""
 	here we will calculate the MS lifetime of the star after Argast et al., 2000, A&A, 356, 873
-	m = mass in Msun
-	Z_frac = fractions of metals of the stellar composition
-	Z = metallicity in Zsun
-	returns the lifetime of the star in Gyrs
+	
+        INPUT:
+
+        m = mass in Msun
+	
+        Z_frac = fractions of metals of the stellar composition
+	
+        Z = metallicity in Zsun
+	
+        
+        OUTPUT:
+
+        returns the lifetime of the star in Gyrs
 	"""
 	solar_metallicity = 0.015
 	Z = Z_frac / solar_metallicity

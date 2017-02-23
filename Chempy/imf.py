@@ -3,15 +3,18 @@ import numpy as np
 def slope_imf(x,p1,p2,p3,kn1,kn2):
 	'''
 	Is calculating a three slope IMF
+	
 	INPUT:
 
-	x = An array of masses for which the IMF should be calculated
-	p1..p3 = the slopes of the power law
-	kn1, kn2 = Where the breaks of the power law are
+	   x = An array of masses for which the IMF should be calculated
+	
+	   p1..p3 = the slopes of the power law
+	
+	   kn1, kn2 = Where the breaks of the power law are
 
 	OUTPUT:
 	
-	An array of frequencies matching the mass base array x
+	   An array of frequencies matching the mass base array x
 	'''
 	if(x > kn2):
 		t = (pow(kn2,p2)/pow(kn2,p3))*pow(x,p3+1)
@@ -27,13 +30,14 @@ def lifetime(m,Z):
 	here we will calculate the MS lifetime of the star after Argast et al., 2000, A&A, 356, 873
 	INPUT:
 	
-	m = mass in Msun
+	   m = mass in Msun
 	
-	Z = metallicity in Zsun
+	   Z = metallicity in Zsun
 	
 
 	OUTPUT:
-	returns the lifetime of the star in Gyrs
+	
+	   returns the lifetime of the star in Gyrs
 	"""
 	lm = np.log10(m)
 	a0 =  3.79 + 0.24*Z
@@ -49,15 +53,19 @@ class IMF(object):
 	
 	Input for initialisation:
 
-	mmin = minimal mass of the IMF
-	mmax = maximal mass of the IMF
-	intervals = how many steps inbetween mmin and mmax should be given
+	   mmin = minimal mass of the IMF
+	
+	   mmax = maximal mass of the IMF
+	
+	   intervals = how many steps inbetween mmin and mmax should be given
 	
 	Then one of the IMF functions can be used
 	
-	self.x = mass base
-	self.dn = the number of stars at x 
-	self.dm = the masses for each mass interval x
+	   self.x = mass base
+	
+	   self.dn = the number of stars at x 
+	
+	   self.dm = the masses for each mass interval x
 	'''
 	def __init__(self, mmin = 0.08 , mmax = 100., intervals = 5000):
 		self.mmin = mmin

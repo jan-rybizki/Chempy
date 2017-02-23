@@ -54,8 +54,12 @@ def lifetime_Argast(m,Z_frac):
 
 def lifetime_Raiteri(m,Z):
 	"""
-	m = mass in Msun
-	Z = metallicity in Zsun
+	INPUT:
+
+	   m = mass in Msun
+	
+	   Z = metallicity in Zsun
+	
 	returns the lifetime of the star in Gyrs
 	"""
 	lm = np.log10(m)
@@ -75,21 +79,34 @@ class SSP(object):
 		Upon initialisation the table for the SSP evolution and enrichment over time is created. Interpolation from yield tables in mass is made linear.
 
 		INPUT:
-		output = bool, should output be plotted
-		z = metallicity of the SSP in Z, not normed to solar
-		imf_x = class_imf.x
-		imf_dm = class_imf.dm
-		imf_dn = class_imf.dn
-		time_steps = time_steps usually coming from class_sfr.t
-		elements_to_trace = which elements should be traced
-		stellar_lifetimes = the name of the stellar lifetimes function that should be used ('Raiteri_1996', 'Argast_2000')
-		interpolation_scheme = which interpolation in metallicity should be used for the yield table ('linear' or 'logarithmic')
-		only_net_yields_in_process_tables = Should the total yields or only the net yields be stored in the nucleosynthetic enrichment tables, bool
+		
+		   output = bool, should output be plotted
+		
+		   z = metallicity of the SSP in Z, not normed to solar
+		
+		   imf_x = class_imf.x
+		
+		   imf_dm = class_imf.dm
+		
+		   imf_dn = class_imf.dn
+		
+		   time_steps = time_steps usually coming from class_sfr.t
+		
+		   elements_to_trace = which elements should be traced
+		
+		   stellar_lifetimes = the name of the stellar lifetimes function that should be used ('Raiteri_1996', 'Argast_2000')
+		
+		   interpolation_scheme = which interpolation in metallicity should be used for the yield table ('linear' or 'logarithmic')
+		
+		   only_net_yields_in_process_tables = Should the total yields or only the net yields be stored in the nucleosynthetic enrichment tables, bool
 
 		OUTPUT:
+		
 		the ssp_class.table holds key values of the evolution of the SSP all normalised to a mass of unity (which is the starting mass of the SSP).
+		
 		mass_in_ms_stars + cumsum(mass_of_ms_stars_dying) = 1 calculated from stellar lifetime with IMF 
-		the element feedbacks are also given normalised to one. And the number of events as well
+		
+		The element feedbacks are also given normalised to one. And the number of events as well
 		'''
 		self.z = z
 		self.x = imf_x
@@ -133,12 +150,22 @@ class SSP(object):
 		The routine is sensitive to the ordering of the masses in the yield table, it must begin with the smallest increase to the biggest value.
 
 		INPUT:
-		sn2_elements = which elements are provided by the yield table, list containing the symbols
-		sn2_yields = the yield table provided by Chempys SN2 yield class
-		sn2_metallicities = the metallicities of that table
-		sn2_mmin = the minimal mass of the CC-SN (default 8) in Msun
-		sn2_mmax = the maximum mass of the CC-SN (default 100) in Msun
-		fractions_in_gas = the birth material of the SSP (will be mixed into the enrichment as unprocessed material)
+		
+		   sn2_elements = which elements are provided by the yield table, list containing the symbols
+		
+		   sn2_yields = the yield table provided by Chempys SN2 yield class
+		
+		   sn2_metallicities = the metallicities of that table
+		
+		   sn2_mmin = the minimal mass of the CC-SN (default 8) in Msun
+		
+		   sn2_mmax = the maximum mass of the CC-SN (default 100) in Msun
+		
+		   fractions_in_gas = the birth material of the SSP (will be mixed into the enrichment as unprocessed material)
+
+		OUTPUT:
+
+		the classes table will be filled up and a sn2_table will be added (so that the individual processes can be tracked)
 		'''
 		# tracking the elemental feedback of individual processes
 		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants']
@@ -266,12 +293,22 @@ class SSP(object):
 		AGB enrichment calculation adds the feedback to the total SSP table and also to the self.agb_yield table.
 
 		INPUT:
-		agb_elements = which elements are provided by the yield table, list containing the symbols
-		agb_yields = the yield table provided by Chempys AGB yield class
-		agb_metallicities = the metallicities of that table
-		agb_mmin = the minimal mass of the AGB stars (default 0.5) in Msun
-		agb_mmax = the maximum mass of the AGB stars (default 8) in Msun
-		fractions_in_gas = the birth material of the SSP (will be mixed into the enrichment as unprocessed material)
+		
+		   agb_elements = which elements are provided by the yield table, list containing the symbols
+		
+		   agb_yields = the yield table provided by Chempys AGB yield class
+		
+		   agb_metallicities = the metallicities of that table
+		
+		   agb_mmin = the minimal mass of the AGB stars (default 0.5) in Msun
+		
+		   agb_mmax = the maximum mass of the AGB stars (default 8) in Msun
+		
+		   fractions_in_gas = the birth material of the SSP (will be mixed into the enrichment as unprocessed material)
+
+		OUTPUT:
+
+		the classes table will be filled up and a sn2_table will be added (so that the individual processes can be tracked)
 		'''
 
 		# sensitive to the ordering of the masses from the yield. Should be checked in the beginning
@@ -468,21 +505,39 @@ class SSP(object):
 		Calculating the SN1a feedback over time
 
 		INPUT:
-		sn1a_elements = Which elements are provided by the yield table
-		sn1a_metallicities = metallicities in the yield table 
-		sn1a_yields = yield table
-		time_delay_functional_form = which functional form of the delay time should be used ('normal','maoz','gamma_function'). Maoz is the default and the others are not tested. Check for functionality
-		sn1a_min = the minimum mass from which sn1a can occur (does not matter for maoz)
-		sn1a_max = the maximum mass from which SN Ia can occur (does not mater for maoz)
-		time_delay_parameter = a tuple containing the parameters for the specific functional form
-		ssp_mass = the mass of the SSP
-		stochastic_IMF = bool, do we want to use stochastci explosions
+		
+		   sn1a_elements = Which elements are provided by the yield table
+		
+		   sn1a_metallicities = metallicities in the yield table 
+		
+		   sn1a_yields = yield table
+		
+		   time_delay_functional_form = which functional form of the delay time should be used ('normal','maoz','gamma_function'). Maoz is the default and the others are not tested. Check for functionality
+		
+		   sn1a_min = the minimum mass from which sn1a can occur (does not matter for maoz)
+		
+		   sn1a_max = the maximum mass from which SN Ia can occur (does not mater for maoz)
+		
+		   time_delay_parameter = a tuple containing the parameters for the specific functional form
+		
+		   ssp_mass = the mass of the SSP
+		
+		   stochastic_IMF = bool, do we want to use stochastci explosions
+
+		
+		OUTPUT:
+
+		the classes table will be filled up and a sn2_table will be added (so that the individual processes can be tracked)
 
 		for MAOZ functional form the following parameters are in time_delay_parameter:
-		N_0 = Number of SNIa exploding per Msun over the course of 15Gyr
-		tau_8 = The delay time when the first SN Ia explode (usually 40Myr are anticipated because then 8Msun stars start to die but our Prior is more at 160Myr)
-		s_eponent = the time decay exponent
-		dummy = not in use anymore
+		
+		   N_0 = Number of SNIa exploding per Msun over the course of 15Gyr
+		
+		   tau_8 = The delay time when the first SN Ia explode (usually 40Myr are anticipated because then 8Msun stars start to die but our Prior is more at 160Myr)
+		
+		   s_eponent = the time decay exponent
+		
+		   dummy = not in use anymore
 		'''
 		end_of_time = 15 #Gyrs Over this time-span the SN1a explosions will be distributed, for mass normalisation reasons
 		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants']
@@ -505,6 +560,7 @@ class SSP(object):
 			#mass_factor = 0.003,a_parameter = 2, loc = 0, scale = 3
 			'''
 			the gamma function for a_parameter = 2 and loc = 0 produces a peak at scale so we have a two parameter sfr.
+			
 			Later we can also release a to have a larger diversity in functional form.
 			'''
 			from scipy.stats import gamma

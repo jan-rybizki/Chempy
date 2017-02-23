@@ -9,15 +9,24 @@ class SN1a_feedback(object):
 	def __init__(self):    
 		"""
 		this is the object that holds the feedback table for SN1a
-		.masses gives a list of masses
-		.metallicities gives a list of possible yield metallicities
-		.elements gives the elements considered in the yield table
-		.table gives a dictionary where the yield table for a specific metallicity can be queried
-		.table[0.02] gives a yield table.
-		Keys of this object are ['Mass','mass_in_remnants','elements']
-		Mass is in units of Msun
-		'mass_in_remnants' in units of Msun but with a '-'
-		'elements' yield in Msun normalised to Mass. i.e. integral over all elements is unity 
+		
+		   .masses gives a list of masses
+		
+		   .metallicities gives a list of possible yield metallicities
+		
+		   .elements gives the elements considered in the yield table
+		
+		   .table gives a dictionary where the yield table for a specific metallicity can be queried
+		
+		   .table[0.02] gives a yield table.
+		
+		      Keys of this object are ['Mass','mass_in_remnants','elements']
+		
+		         Mass is in units of Msun
+		
+		         'mass_in_remnants' in units of Msun but with a '-'
+		
+		         'elements' yield in Msun normalised to Mass. i.e. integral over all elements is unity 
 		"""
 	def Seitenzahl(self):
 		"""

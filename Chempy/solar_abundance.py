@@ -154,6 +154,7 @@ class solar_abundances(object):
 		It is not sure for which elements from Asplund+ 2005 the apogee consortium has used the photospheric or the meteoritic abundances.
 		Therefore I try here to use only the photospheric except for elements without photospheric values.
 		'''
+		
 		"""
 		After an email from Carlos Allende Prieto only the synthetic spectra are made with Asplund 2005. If trying to normalise to zero we need to see the results of a solar twin with the apogee pipeline.
 		Carlos send me the results for Vesta

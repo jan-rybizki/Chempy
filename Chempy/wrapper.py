@@ -47,7 +47,6 @@ class SSP_wrap():
 		self.sn2 = basic_sn2
 		self.sn1a = basic_1a
 		self.agb = basic_agb
-		print a.imf_parameter
 
 	def calculate_feedback(self, z, elements, element_fractions, time_steps):
 		'''

@@ -8,12 +8,16 @@ class SFR(object):
 		Upon initialization the time steps need to be provided
 
 		INPUT:
-		start = beginning of the simulation
-		end = end of the simulation
-		time_steps = number of time_steps
+		
+		   start = beginning of the simulation
+		
+		   end = end of the simulation
+		
+		   time_steps = number of time_steps
 
 		OUTPUT:
-		dt, timespan and t will be exposed by the class.
+		
+		   dt, timespan and t will be exposed by the class.
 		'''
 		self.start = start
 		self.end = end

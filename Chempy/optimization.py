@@ -1,8 +1,8 @@
 import numpy as np
-from cem_function import cem
+from .cem_function import cem
 import multiprocessing as mp
 import os
-from parameter import ModelParameters
+from .parameter import ModelParameters
 
 def one_chain(args):
 	'''
@@ -34,11 +34,14 @@ def creating_chain(a,startpoint):
 	This function creates the initial parameter values for an MCMC chain.
 
 	INPUT:
-	a = default parameter values from parameter.py
-	startpoint = from where the pointcloud of walkers start in a small sphere
+	
+	   a = default parameter values from parameter.py
+	
+	   startpoint = from where the pointcloud of walkers start in a small sphere
 
 	OUTPUT:
-	returns the array of the initial startpoints
+	
+	   returns the array of the initial startpoints
 	'''
 	args = [(np.random.random_integers(low = 0, high = 1e9,size = 1),a,startpoint) for i in range(a.nwalkers)]
 	p = mp.Pool(a.nwalkers)

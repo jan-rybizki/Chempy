@@ -49,7 +49,7 @@ class PRIMORDIAL_INFALL(object):
 
 		INPUT 
 
-		metallicity in dex
+		   metallicity in dex
 		'''
 		self.symbols = []
 		self.abundances = []
@@ -98,8 +98,9 @@ class INFALL(object):
 
 		Input:
 
-		t = timesteps
-		sfr = the SFR for the timesteps
+		   t = timesteps
+		
+		   sfr = the SFR for the timesteps
 		
 		t is time in Gyr over which infall takes place as a numpy array
 		sfr is the star formation rate

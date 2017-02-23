@@ -16,20 +16,29 @@ def gaussian_log(x,x0,xsig):
 	function to calculate the gaussian probability (its normed to Pmax and given in log)
 	
 	INPUT:
-	x = where is the data point or parameter value
-	x0 = mu
-	xsig = sigma
+	
+	   x = where is the data point or parameter value
+	
+	   x0 = mu
+	
+	   xsig = sigma
 	'''
 	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
 
 def lognorm_log(x,mu,factor):
 	'''
 	this function provides Prior probability distribution where the factor away from the mean behaves like the sigma deviation in normal_log 
-	for example if mu = 1 and factor = 2 for
-	1 it returns 0
+	
+	for example if mu = 1 and factor = 2 
+	
+	for	1 it returns 0
+	
 	for 0,5 and 2 it returns -0.5
+	
 	for 0.25 and 4 it returns -2.0
+	
 	and so forth
+	
 	Can be used to specify the prior on the yield factors
 	'''
 	y = np.log(np.divide(x,mu))
@@ -43,12 +52,16 @@ def cem(changing_parameter,a):
 	This function actually encapsulates the real cem function in order to capture exceptions and in that case return -inf. This makes the MCMC runs much more stable
 
 	INPUT: 
-	changing_parameters = parameter values of the free parameters as an array
-	a = model parameters specified in parameter.py. There are also the names of free parameters specified here
+	
+	   changing_parameters = parameter values of the free parameters as an array
+	
+	   a = model parameters specified in parameter.py. There are also the names of free parameters specified here
 
 	OUTPUT:
-	log posterior, array of blobs
-	the blobs contain the prior values, the likelihoods and the actual values of each predicted data point (e.g. elemental abundance value)
+	
+	   log posterior, array of blobs
+	
+	   the blobs contain the prior values, the likelihoods and the actual values of each predicted data point (e.g. elemental abundance value)
 	'''
 	try:
 		posterior, blobs = cem_real(changing_parameter,a)
@@ -121,21 +134,21 @@ def cem_real(changing_parameter,a):
 	getattr(basic_solar, a.solar_abundance_name)()
 	elements_to_trace = a.elements_to_trace
         
-        directory = 'model_temp/'
+	directory = 'model_temp/'
 	### Model is calculated
 	if a.calculate_model:
 		cube, abundances= Chempy(a)
 		cube1 = cube.cube
 		gas_reservoir = cube.gas_reservoir
-                if a.testing_output:
-		        if os.path.exists(directory):
-			        print(directory, ' already exists. Content might be overwritten')
-		        else:
-			        os.makedirs(directory)
-		        np.save(directory + '%s_elements_to_trace' %(a.name_string), elements_to_trace)
-		        np.save(directory + '%s_gas_reservoir' %(a.name_string),gas_reservoir)
-		        np.save(directory + '%s_cube' %(a.name_string),cube1)
-		        np.save(directory + '%s_abundances' %(a.name_string),abundances)
+		if a.testing_output:
+			if os.path.exists(directory):
+				print(directory, ' already exists. Content might be overwritten')
+			else:
+				os.makedirs(directory)
+			np.save(directory + '%s_elements_to_trace' %(a.name_string), elements_to_trace)
+			np.save(directory + '%s_gas_reservoir' %(a.name_string),gas_reservoir)
+			np.save(directory + '%s_cube' %(a.name_string),cube1)
+			np.save(directory + '%s_abundances' %(a.name_string),abundances)
 	else:
 		cube1 = np.load(directory + '%s_cube.npy' %(a.name_string))
 		abundances = np.load(directory + '%s_abundances.npy' %(a.name_string))

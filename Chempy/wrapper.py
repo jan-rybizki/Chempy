@@ -12,7 +12,8 @@ class SSP_wrap():
         Upon initialization the default IMF, CC-SN yields, SN Ia yields and AGB yields is loaded.
 
         INPUT:
-        a = Modelparameter class. So the default IMF etc are loaded. If we want other yield sets etc. loaded we need to specify that in paramter.py
+        
+           a = Modelparameter class. So the default IMF etc are loaded. If we want other yield sets etc. loaded we need to specify that in paramter.py
         '''
 
 		## loading the IMF and the yieldsets prescribed in a (containing all the model parameters)
@@ -46,16 +47,21 @@ class SSP_wrap():
 		self.sn2 = basic_sn2
 		self.sn1a = basic_1a
 		self.agb = basic_agb
+		print a.imf_parameter
 
 	def calculate_feedback(self, z, elements, element_fractions, time_steps):
 		'''
         The feedback is calculated for the initializes SSP.
 
         INPUT:
-        z = metallicity of the SSP in mass fraction (not normed to solar!)
-        elements = which elements to follow
-        element_fractions = the birth material of the SSP in the same order as 'elements'
-        time_steps = the time-steps for which the enrichment of the SSP should be calculated (usually the time-steps until the end of the chempy simulation)
+        
+           z = metallicity of the SSP in mass fraction (not normed to solar!)
+        
+           elements = which elements to follow
+        
+           element_fractions = the birth material of the SSP in the same order as 'elements'
+        
+           time_steps = the time-steps for which the enrichment of the SSP should be calculated (usually the time-steps until the end of the chempy simulation)
         '''
 		basic_ssp = SSP(False, float(z), np.copy(self.imf.x), np.copy(self.imf.dm), np.copy(self.imf.dn), np.copy(time_steps), list(elements), str(self.a.stellar_lifetimes), str(self.a.interpolation_scheme), bool(self.a.only_net_yields_in_process_tables))
 		basic_ssp.sn2_feedback(list(self.sn2.elements), dict(self.sn2.table), np.copy(self.sn2.metallicities), float(self.a.sn2mmin), float(self.a.sn2mmax),list(element_fractions))
@@ -66,6 +72,7 @@ class SSP_wrap():
 		self.sn2_table = basic_ssp.sn2_table
 		self.agb_table = basic_ssp.agb_table
 		self.sn1a_table = basic_ssp.sn1a_table
+		self.inverse_imf = basic_ssp.inverse_imf
 
 def initialise_stuff(a):
 	'''
@@ -105,11 +112,14 @@ def Chempy(a):
     Chemical evolution run with the default parameters using the net yields.
 
     INPUT: 
-    a = ModelParameters() from parameter.py
+    
+       a = ModelParameters() from parameter.py
 
     OUTPUT:
-    cube = The ISM evolution class
-    abundances = The abundances of the ISM
+    
+       cube = The ISM evolution class
+    
+       abundances = The abundances of the ISM
     '''
 	from .infall import PRIMORDIAL_INFALL
 	from .time_integration import ABUNDANCE_MATRIX
@@ -142,7 +152,7 @@ def Chempy(a):
 	weights = cube.cube['sfr']
 	abundances = append_fields(abundances,'weights',weights)
 	abundances = append_fields(abundances,'time', cube.cube['time'])
-        abundances = np.array(abundances)
+	abundances = np.array(abundances)
 
 	return cube, abundances
 
@@ -151,11 +161,14 @@ def Chempy_gross(a):
     Chemical evolution run with the default parameters but now using solar scaled material (testing the worse case when total yields provided).
 
     INPUT: 
-    a = ModelParameters() from parameter.py
+    
+       a = ModelParameters() from parameter.py
 
     OUTPUT:
-    cube = The ISM evolution class
-    abundances = The abundances of the ISM
+    
+       cube = The ISM evolution class
+    
+       abundances = The abundances of the ISM
 	'''
 	from infall import PRIMORDIAL_INFALL
 	from time_integration import ABUNDANCE_MATRIX
@@ -188,6 +201,7 @@ def Chempy_gross(a):
 def mcmc(a):
 	'''
     Convenience function to use the MCMC. A subdirectory mcmc/ will be created in the current directory and intermediate chains will be stored there.
+    
     The MCMC will sample the volume of best posterior for the likelihood functions that are declared in parameter.py. Default is ['sol_norm','gas_reservoir','sn_ratio'] which corresponds to 'Sun+' from the paper.
     '''
 	import time

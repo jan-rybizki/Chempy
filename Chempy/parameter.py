@@ -6,6 +6,7 @@ class ModelParameters(object):
 	In this class the model parameters are specified. It contains a lot of information which is (not always) necessary to run Chempy.
 	The individual definitions are given as comments.
 	'''
+	
 	# Which zero point of abundances shall be used. Asplund 2005 is corrected to VESTA abundances
 	solar_abundance_name_list = ['Lodders09','Asplund09','Asplund05_pure_solar','Asplund05_apogee_correction']
 	solar_abundance_name_index = 1
@@ -197,7 +198,7 @@ class ModelParameters(object):
 	elements_to_trace = ['Al', 'Ar', 'B', 'Be', 'C', 'Ca', 'Cl', 'Co', 'Cr', 'Cu', 'F', 'Fe', 'Ga', 'Ge', 'H', 'He', 'K', 'Li', 'Mg', 'Mn', 'N', 'Na', 'Ne', 'Ni', 'O', 'P', 'S', 'Sc', 'Si', 'Ti', 'V', 'Zn']
 	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm']#,'wildcard ','cas','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
 	arcturus_age = 7.1# 7.1 +1.5 -1.2
-        stellar_identifier = 'NGC1718-9'
+	stellar_identifier = 'NGC1718-9'
 	produce_mock_data = False
 	use_mock_data = False
 	error_inflation = 1.

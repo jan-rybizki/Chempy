@@ -13,17 +13,20 @@ and uses successive SSPs to integrate the chemical evolution of an open-box one-
 Package main content
 ~~~~~~~~~~~~~~~~~~~~
 
-This package is mostly organized around 2 main classes:
+This package is mostly organized around:
 
-* :class:`Chempy.weighted_yield.SSP` that handles the SSP enrichment.
+* :class:`Chempy.wrapper.SSP_wrap` that handles the SSP enrichment.
  
-* :class:`Chempy.cem_function.cem` that handles the time-integration. 
+* :py:func:`Chempy.wrapper.Chempy` that handles the time-integration. 
 
 
 Additionally, and for convenience 
 
 * :py:func:`Chempy.wrapper.mcmc` can be used to infer most likely parameters.
-  
+
+To get started with using Chempy it is strongly recommended to browse through the extensive tutorial_.
+
+.. _tutorial: https://github.com/jan-rybizki/Chempy/tree/master/tutorials  
 
 Contents
 ---------

@@ -38,7 +38,7 @@ The jupyter [tutorial](https://github.com/jan-rybizki/Chempy/tree/master/tutoria
 
 To run it interactively first clone the repository with
 ```
-git clone https://github.com/jan-rybizki/Chempy.git
+git clone https://github.com/jan-rybizki/Chempy.git@v0.1
 ```
 Then you can ```jupyter notebook``` from within the tutorial folder (it will run if you have installed *Chempy*). 
 If you did not install Chempy you can still run the tutorial but need to point to the files in the Chempy folder. Basically you have to ```cd ../Chempy/``` and then replace each ```from Chempy import ...``` with ```from . import ...```.

@@ -30,7 +30,6 @@ If you want this to be permanent, you can add the last line to your `.bashrc`.
 - Morgan Fouesneau (MPIA)
 
 ## Links
-- [astro-ph](https://arxiv.org/abs/1702.08729)
 - <a href="http://arxiv.org/abs/1702.08729"><img src="http://img.shields.io/badge/arXiv-1702.08729-orange.svg?style=flat" alt="arxiv:1702.08729" /></a>
 - <a href="http://ascl.net/1702.011"><img src="https://img.shields.io/badge/ascl-1702.011-blue.svg?colorB=262255" alt="ascl:1702.011" /></a>
 - An early version of Chempy is presented in chapter 4 of my [phd thesis](http://nbn-resolving.de/urn:nbn:de:bsz:16-heidok-199349).

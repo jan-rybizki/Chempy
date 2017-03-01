@@ -30,7 +30,8 @@ If you want this to be permanent, you can add the last line to your `.bashrc`.
 - Morgan Fouesneau (MPIA)
 
 ## Links
-- [Paper on overleaf](https://www.overleaf.com/read/jypbdqqqrdnp), Arxiv link following
+- [astro-ph](https://arxiv.org/abs/1702.08729)
+- [ASCL](http://ascl.net/1702.011)
 - An early version of Chempy is presented in chapter 4 of my [phd thesis](http://nbn-resolving.de/urn:nbn:de:bsz:16-heidok-199349).
 
 ## Getting started
@@ -44,3 +45,6 @@ Then you can ```jupyter notebook``` from within the tutorial folder (it will run
 If you did not install Chempy you can still run the tutorial but need to point to the files in the Chempy folder. Basically you have to ```cd ../Chempy/``` and then replace each ```from Chempy import ...``` with ```from . import ...```.
 
 You can also have a look at the *preliminary* [documentaion](http://www.mpia.de/homes/rybizki/html/index.html) which gives an overview over the Chempy classes and functions.
+
+## Attribution
+Please cite the [paper](https://arxiv.org/abs/1702.08729) when using the code in your research (so far only arxiv link, will be updated).

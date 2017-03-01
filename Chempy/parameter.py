@@ -123,9 +123,9 @@ class ModelParameters(object):
 		imf_break_1 = 0.5
 		imf_break_2 = 1.0
 		imf_slope_1 = -1.3
-		imf_slope_2 = -2.2
-		imf_slope_3 = -2.7
-		imf_parameter = (-1.3,-2.2,-2.7,0.5,1.0)
+		imf_slope_2 = -2.3
+		imf_slope_3 = -2.29
+		imf_parameter = (imf_slope_1,imf_slope_2,imf_slope_3,imf_break_1,imf_break_2)
 	name_infall_list = ['primordial','solar','simple','alpha']
 	name_infall_index = 1
 	name_infall = name_infall_list[name_infall_index]
@@ -178,7 +178,7 @@ class ModelParameters(object):
 	sn1ammax = 8#float(sagbmmax)
 	gas_at_start = 0. #*dt yields the Msun/pc^2 value
 
-	gas_reservoir_mass_factor = np.power(10,0.3)#3.0
+	gas_reservoir_mass_factor = np.power(10,0.0)#3.0
 	sfr_factor_for_cosmic_accretion = 1.
 	cosmic_accretion_elements = ['H','He']
 	cosmic_accretion_element_fractions = [0.76,0.24]
@@ -198,6 +198,7 @@ class ModelParameters(object):
 	elements_to_trace = ['Al', 'Ar', 'B', 'Be', 'C', 'Ca', 'Cl', 'Co', 'Cr', 'Cu', 'F', 'Fe', 'Ga', 'Ge', 'H', 'He', 'K', 'Li', 'Mg', 'Mn', 'N', 'Na', 'Ne', 'Ni', 'O', 'P', 'S', 'Sc', 'Si', 'Ti', 'V', 'Zn']
 	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm']#,'wildcard ','cas','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
 	arcturus_age = 7.1# 7.1 +1.5 -1.2
+	age_of_star = 4.56
 	stellar_identifier = 'NGC1718-9'
 	produce_mock_data = False
 	use_mock_data = False
@@ -214,8 +215,8 @@ class ModelParameters(object):
 	assert len(SSP_parameters) == len(SSP_parameters_to_optimize)
 	if True:
 		#prior
-		ISM_parameters =  [-0.3, 3.5,	0.5, 0.3]#,0.2]#, 0.7, 0.3, 0.0]
-		ISM_parameters_to_optimize = ['log10_starformation_efficiency', 'sfr_scale', 'outflow_feedback_fraction','log10_gas_reservoir_mass_factor']#,'log10_sfr_factor_for_cosmic_accretion']#,'log10_gas_reservoir_mass_factor','log10_a_parameter','log10_gas_power']
+		ISM_parameters =  [-0.3, 0.55,	0.5]#, 0.3]#,0.2]#, 0.7, 0.3, 0.0]
+		ISM_parameters_to_optimize = ['log10_starformation_efficiency', 'log10_sfr_scale', 'outflow_feedback_fraction']#,'log10_gas_reservoir_mass_factor']#,'log10_sfr_factor_for_cosmic_accretion']#,'log10_gas_reservoir_mass_factor','log10_a_parameter','log10_gas_power']
 	else:
 		ISM_parameters = []
 		ISM_parameters_to_optimize = []
@@ -230,7 +231,8 @@ class ModelParameters(object):
 	'log10_N_0' : (None,0), 
 	'log10_sn1a_time_delay' : (None,1.),
 	'log10_starformation_efficiency' : (None,None),
-	'sfr_scale' : (0.0,None),
+        'log10_sfr_scale' : (None,None),
+        'sfr_scale' : (0.0,None),
 	'outflow_feedback_fraction' : (0.,1.),
 	'log10_gas_reservoir_mass_factor': (None,None),
 	
@@ -264,6 +266,7 @@ class ModelParameters(object):
 	'log10_N_0' : (-2.75,0.3,0),
 	'log10_sn1a_time_delay' : (-0.8,0.3,0),
 	'log10_starformation_efficiency' : (-0.3,0.3,0),
+        'log10_sfr_scale' : (0.55,0.1,0),
 	'sfr_scale' : (3.5,1.5,0),
 	'outflow_feedback_fraction' : (0.5,0.2,0),
 	'log10_gas_reservoir_mass_factor' : (0.3,0.3,0),

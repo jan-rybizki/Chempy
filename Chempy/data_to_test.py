@@ -428,8 +428,10 @@ def sol_norm(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 	   
 	   cube = the ISM mass fractions per element (A Chempy class containing the model evolution)
 	
-	   elements_to_trace = Which elements should be used for the analysis
+	   elements_to_trace = which elements are tracked by Chempy
 	   
+	   element_names = which elements should be used for the likelihood
+
 	   sol_table = solar abundance class
 	
 	   number_of_models_overplotted = default is 1, if more the results will be saved and in the last iteration all former models will be plotted at once

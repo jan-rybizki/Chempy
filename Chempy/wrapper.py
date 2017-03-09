@@ -3,6 +3,7 @@ from .weighted_yield import SSP, lifetime_Argast, lifetime_Raiteri
 from .imf import IMF
 from .yields import SN2_feedback, AGB_feedback, SN1a_feedback, Hypernova_feedback
 
+
 class SSP_wrap():
 	'''
 	This is the wrapper around the SSP function. It preloads the needed classes and calls all nucleosynthetic enrichment processes when the enrichment is calculated.
@@ -251,3 +252,4 @@ def mcmc(a):
 		print('calculation so far took', elapsed1, ' seconds')
 		if i>300 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < 0.5 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < 0.5:
 			break
+

@@ -58,7 +58,7 @@ def gaussian(x,x0,xsig):
 	exponent = -np.divide((x - x0) * (x - x0),2 * xsig * xsig)
 	return factor * np.exp(exponent)
 
-def lognorm(x,mu,xsig):
+def lognorm(x,mu,factor):
 	'''
 	this function provides Prior probability distribution where the factor away from the mean behaves like the sigma deviation in normal_log 
 	
@@ -74,9 +74,10 @@ def lognorm(x,mu,xsig):
 	
 	Can be used to specify the prior on the yield factors
 	'''
-	factor = 1. / (np.sqrt(x * x * xsig * xsig * 2. * np.pi))
-	exponent = -np.divide((np.log(x) - mu) * (np.log(x) - mu),2 * xsig * xsig)
-	return factor * np.exp(exponent)
+	y = np.log(np.divide(x,mu))
+	y = np.divide(y,np.log(factor))
+	y = gaussian(y,0.,1.)
+	return y
 
 def shorten_sfr(a):
 	'''

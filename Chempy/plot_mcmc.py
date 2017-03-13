@@ -21,7 +21,7 @@ def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'
 	'''
 	producing_positions_for_plot = True
 	how_many_plot_samples = 100
-	how_many_MCMC_samples = 500
+	how_many_MCMC_samples = 5000
 		
 	with_blobs = True
 	change_back = False

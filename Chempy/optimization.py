@@ -1,5 +1,5 @@
 import numpy as np
-from .cem_function import cem
+from .cem_function import posterior_function, cem
 import multiprocessing as mp
 import os
 from .parameter import ModelParameters
@@ -22,8 +22,19 @@ def one_chain(args):
 				std = 0.02
 			(lower, upper) = a.constraints.get(name)
 			value = mean + np.random.normal(0,std)
-			while value < lower and lower is not None or value > upper and upper is not None:
-				value = mean + np.random.normal(0,std)
+			# new formulation due to problem in python 3
+			if lower is None and upper is not None:
+				while value > upper:
+					value = mean + np.random.normal(0,std)
+			elif upper is None and lower is not None:
+				while value < lower:
+					value = mean + np.random.normal(0,std)
+			elif lower is not None and upper is not None:
+				while value < lower or value > upper:
+					value = mean + np.random.normal(0,std)
+			### alternative in python 3
+			#while value < lower and lower is not None or value > upper and upper is not None:
+			#	value = mean + np.random.normal(0,std)
 			chain[j] = value 
 		a.to_optimize = backup
 		result = posterior_probability(chain,a)
@@ -58,5 +69,5 @@ def posterior_probability(x,a):
 	'''
 	Just returning the posterior probability of Chempy and the list of blobs
 	'''
-	s,t = cem(x,a)
+	s,t = posterior_function(x,a)#cem(x,a)#posterior_function(x,a)
 	return s,t

@@ -61,16 +61,15 @@ def gaussian(x,x0,xsig):
 def lognorm(x,mu,factor):
 	'''
 	this function provides Prior probability distribution where the factor away from the mean behaves like the sigma deviation in normal_log 
+	BEWARE: this function is not a properly normalized probability distribution. It only provides relative values.
 	
-	for example if mu = 1 and factor = 2 
-	
-	for	1 it returns 0
-	
-	for 0,5 and 2 it returns -0.5
-	
-	for 0.25 and 4 it returns -2.0
-	
-	and so forth
+	INPUT:
+
+	   x = where to evaluate the function, can be an array
+
+	   mu = peak of the distribution
+
+	   factor = the factor at which the probability decreases to 1 sigma
 	
 	Can be used to specify the prior on the yield factors
 	'''
@@ -406,9 +405,9 @@ def extract_parameters_and_priors(changing_parameter, a):
 		val = getattr(a, name)
 		prior_names.append(name)
 		if functional_form == 0:
-			prior.append(gaussian_log(val, mean, std))
+			prior.append(gaussian(val, mean, std))
 		elif functional_form == 1:
-			prior.append(lognorm_log(val, mean, std))
+			prior.append(lognorm(val, mean, std))
 	a.prior = prior
 
 	# check the borders of the free parameters
@@ -455,12 +454,20 @@ def posterior_function_real(changing_parameter,a):
 	'''
 	This is the actual posterior function. But the functionality is explained in posterior_function.
 	'''
-	
-
-
+	'''
+	if not a.testing_output:
+		print(changing_parameter,mp.current_process()._identity[0])#,a.observational_constraints_index
+	else:
+		print(changing_parameter)
+	'''
 	# the values in a are updated according to changing_parameters and the prior list is appended
 	a = extract_parameters_and_priors(changing_parameter, a)
 
-
-	predictions, name_list = cem2(a)
-	print(predictions, name_list)
+	prior = sum(np.log(a.prior))
+	'''
+	if a.testing_output:
+		print('prior = ', prior)#, mp.current_process()._identity[0]
+	else:
+		print('prior = ', prior)
+	'''
+	return(prior,[0])

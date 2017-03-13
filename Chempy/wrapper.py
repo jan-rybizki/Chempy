@@ -156,6 +156,9 @@ def Chempy(a):
 
 	return cube, abundances
 
+
+
+
 def Chempy_gross(a):
 	'''
     Chemical evolution run with the default parameters but now using solar scaled material (testing the worse case when total yields provided).
@@ -197,7 +200,13 @@ def Chempy_gross(a):
 	abundances = np.array(abundances)
 
 	return cube, abundances
-
+'''
+def minimize_parameters(a)
+	from .cem_function import posterior_function
+	from  scipy.optimize import minimize
+	
+	minimize(posterior_function, a.p0, args=(a), method=None, jac=None, hess=None, hessp=None, bounds=None, constraints=(), tol=None, callback=None, options=None)
+'''
 def mcmc(a):
 	'''
     Convenience function to use the MCMC. A subdirectory mcmc/ will be created in the current directory and intermediate chains will be stored there.

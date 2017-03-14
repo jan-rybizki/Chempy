@@ -1,6 +1,29 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+def gaussian(x,x0,xsig):
+	'''
+	function to calculate the gaussian probability (its normed to Pmax and given in log)
+	
+	INPUT:
+	
+	   x = where is the data point or parameter value
+	
+	   x0 = mu
+	
+	   xsig = sigma
+	'''
+	factor = 1. / (np.sqrt(xsig * xsig * 2. * np.pi))
+	exponent = -np.divide((x - x0) * (x - x0),2 * xsig * xsig)
+	return factor * np.exp(exponent)
+
+def likelihood_evaluation(model_error, star_error_list, abundance_list, star_abundance_list):
+	error = np.sqrt(model_error * model_error + star_error_list * star_error_list)
+	list_of_likelihoods = gaussian(star_abundance_list,abundance_list,error)
+	log_likelihood_list = np.log(list_of_likelihoods)
+	likelihood = sum(log_likelihood_list)
+	return likelihood
+
 def sample_stars(weight,selection,element1,element2,error1,error2,nsample):
 	'''
 	This function samples stars along a chemical evolution track properly taking into account the SFR and the selection function of the stellar population (e.g. red-clump stars). It can be used to produce mock observations which can be compared to survey data.
@@ -1271,3 +1294,57 @@ def wildcard_likelihood_function(summary_pdf, stellar_identifier, abundances):
         plot_abundance_wildcard(stellar_identifier,wildcard,abundance_list, element_list, probabilities, time_model)
     return probabilities, abundance_list, element_list
 
+
+def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trace):    
+	'''
+	This function produces Chempy conform likelihood output for a abundance wildcard that was produced before with 'produce_wildcard_stellar_abundances'.
+
+	INPUT:
+
+	   summary_pdf = bool, should there be an output
+
+	   stellar_identifier = str, name of the star
+
+	   abundances = the abundances instance from a chempy chemical evolution
+
+	OUTPUT:
+
+	   probabilities = a list of the likelihoods for each element
+
+	   abundance_list = the abundances of the model for each element
+
+	   element_list = the symbols of the corresponding elements
+
+	These list will be used to produce the likelihood and the blobs. See cem_function.py
+	'''
+	wildcard = np.load(stellar_identifier + '.npy')
+
+	# Brings the model_abundances, the stellar abundances and the associated error into the same sequence
+	abundance_list = []
+	element_list = []
+	star_abundance_list = []
+	star_error_list = []
+	for i,item in enumerate(elements_to_trace):
+		if item in list(wildcard.dtype.names):
+			element_list.append(item)
+			abundance_list.append(float(list_of_abundances[i]))
+			star_abundance_list.append(float(wildcard[item][0]))
+			star_error_list.append(float(wildcard[item][1]))
+	abundance_list = np.hstack(abundance_list)
+	star_abundance_list = np.hstack(star_abundance_list)
+	star_error_list = np.hstack(star_error_list)
+	assert len(abundance_list) == len(star_abundance_list) == len(star_error_list), 'no equal length, something went wrong'
+	###################
+
+	# Introduces the optimal model error which can be derived analytically
+	model_error = []
+	for i, item in enumerate(element_list):
+		if (abundance_list[i] - star_abundance_list[i]) * (abundance_list[i] - star_abundance_list[i]) <= star_error_list[i] * star_error_list[i]:
+			model_error.append(0.)
+		else:
+			model_error.append(np.sqrt((abundance_list[i] - star_abundance_list[i]) * (abundance_list[i] - star_abundance_list[i]) - star_error_list[i] * star_error_list[i]))
+	model_error = np.hstack(model_error)
+
+	# Now the likelihood is evaluated
+	likelihood = likelihood_evaluation(model_error, star_error_list, abundance_list, star_abundance_list)
+	return likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list

@@ -19,7 +19,7 @@ class ModelParameters(object):
 	total_mass = 1#45.07
 	stochastic_IMF = False
 	number_of_models_overplotted = 1 ### with the positions from an mcmc run
-	testing_output = False
+	testing_output = True
 	summary_pdf = False
 	name_string = 'Chempy_default'
 

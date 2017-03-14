@@ -3,7 +3,7 @@ import os
 from .sfr import SFR
 from .solar_abundance import solar_abundances
 import time
-from .data_to_test import wildcard_likelihood_function, elements_plot, arcturus, sol_norm, plot_processes, save_abundances,  cosmic_abundance_standard, ratio_function, star_function, gas_reservoir_metallicity
+from .data_to_test import likelihood_function, wildcard_likelihood_function, elements_plot, arcturus, sol_norm, plot_processes, save_abundances,  cosmic_abundance_standard, ratio_function, star_function, gas_reservoir_metallicity
 import multiprocessing as mp
 from .wrapper import initialise_stuff, Chempy
 
@@ -391,7 +391,9 @@ def posterior_function(changing_parameter,a):
 	return -np.inf, [0]
 
 def extract_parameters_and_priors(changing_parameter, a):
-
+	'''
+	This function extracts the parameters from changing parameters and writes them into a so that Chempy can evaluate the changed parameter settings
+	'''
 	for i,item in enumerate(a.to_optimize):
 		setattr(a, item, changing_parameter[i])
 		val = getattr(a, item)
@@ -460,14 +462,44 @@ def posterior_function_real(changing_parameter,a):
 	else:
 		print(changing_parameter)
 	'''
+	
+	start_time = time.time()
 	# the values in a are updated according to changing_parameters and the prior list is appended
 	a = extract_parameters_and_priors(changing_parameter, a)
+	
 
+	# the log prior is calculated
 	prior = sum(np.log(a.prior))
+
+	# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
+	precalculation = time.time()
+	print('precalculation: ', start_time - precalculation)
+
+	backup = a.end ,a.time_steps, a.total_mass
+	abundance_list,elements_to_trace = cem_real2(a)
+	a.end ,a.time_steps, a.total_mass = backup
+	print(a.end ,a.time_steps, a.total_mass)
+	abundance_list = abundance_list[:-2]
+	elements_to_trace = elements_to_trace[:-2]
+
+	model = time.time()
+	print('model: ', precalculation - model)
+
+
+	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function('Proto-sun', abundance_list, elements_to_trace)
+
+
+	error_optimization = time.time()
+	print('error optimization: ', model - error_optimization)
 	'''
 	if a.testing_output:
 		print('prior = ', prior)#, mp.current_process()._identity[0]
 	else:
 		print('prior = ', prior)
 	'''
-	return(prior,[0])
+	return(prior+likelihood,[0])
+
+
+def posterior_function_for_minimization(changing_parameter,a):
+	posterior, blobs = posterior_function(changing_parameter,a)
+	return -posterior

@@ -478,19 +478,18 @@ def posterior_function_real(changing_parameter,a):
 	backup = a.end ,a.time_steps, a.total_mass
 	
 	# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
-	##abundance_list,elements_to_trace = cem_real2(a)
+	abundance_list,elements_to_trace = cem_real2(a)
 	a.end ,a.time_steps, a.total_mass = backup
 	
 	# The last two entries of the abundance list are the Corona metallicity and the SN-ratio
-	##abundance_list = abundance_list[:-2]
-	##elements_to_trace = elements_to_trace[:-2]
+	abundance_list = abundance_list[:-2]
+	elements_to_trace = elements_to_trace[:-2]
 
 	model = time.time()
 	#print('model: ', precalculation - model)
 
 	# a likelihood is calculated where the model error is optimized analytically
-	#likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
-	likelihood = 0.
+	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
 
 	error_optimization = time.time()
 	#print('error optimization: ', model - error_optimization)

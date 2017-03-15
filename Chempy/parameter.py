@@ -230,10 +230,10 @@ class ModelParameters(object):
 
 	constraints = {
 	'high_mass_slope' : (-4.,-1.),
-	'log10_N_0' : (None,0), 
-	'log10_sn1a_time_delay' : (None,1.),
-	'log10_starformation_efficiency' : (None,None),
-	'log10_sfr_scale' : (None,None),
+	'log10_N_0' : (-5,-1), 
+	'log10_sn1a_time_delay' : (-3,1.),
+	'log10_starformation_efficiency' : (-3,2),
+	'log10_sfr_scale' : (-1,1),
 	'sfr_scale' : (0.0,None),
 	'outflow_feedback_fraction' : (0.,1.),
 	'log10_gas_reservoir_mass_factor': (None,None),

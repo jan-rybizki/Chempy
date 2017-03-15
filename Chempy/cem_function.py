@@ -488,7 +488,7 @@ def posterior_function_real(changing_parameter,a):
 	model = time.time()
 	#print('model: ', precalculation - model)
 
-	# a likelihood is calculated where the model error is optimized analytically
+	# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
 	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
 
 	error_optimization = time.time()
@@ -499,7 +499,7 @@ def posterior_function_real(changing_parameter,a):
 		else:
 			print('prior = ', prior, 'likelihood = ', likelihood)
 
-	return(prior+likelihood,[0])
+	return(prior+likelihood,abundance_list)
 
 
 def posterior_function_for_minimization(changing_parameter,a):

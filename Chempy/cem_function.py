@@ -343,7 +343,8 @@ def cem_real2(a):
 		gas_reservoir = cube.gas_reservoir
 		if a.testing_output:
 			if os.path.exists(directory):
-				print(directory, ' already exists. Content might be overwritten')
+				if a.verbose:
+					print(directory, ' already exists. Content might be overwritten')
 			else:
 				os.makedirs(directory)
 			np.save(directory + '%s_elements_to_trace' %(a.name_string), elements_to_trace)
@@ -424,11 +425,11 @@ def extract_parameters_and_priors(changing_parameter, a):
 			assert False, '%s lower border is violated' %(name)
 		if upper is not None and val>upper:
 			assert False, '%s upper border is violated' %(name)
-
-	if not a.testing_output:
-		print(changing_parameter,mp.current_process()._identity[0])#,a.observational_constraints_index
-	else:
-		print(changing_parameter)
+	if a.verbose:
+		if not a.testing_output:
+			print(changing_parameter,mp.current_process()._identity[0])#,a.observational_constraints_index
+		else:
+			print(changing_parameter)
 	
 	### So that the parameter can be plotted in linear space
 	if 'log10_N_0' in a.to_optimize:
@@ -493,11 +494,11 @@ def posterior_function_real(changing_parameter,a):
 
 	error_optimization = time.time()
 	#print('error optimization: ', model - error_optimization)
-
-	if not a.testing_output:
-		print('prior = ', prior, 'likelihood = ', likelihood, mp.current_process()._identity[0])
-	else:
-		print('prior = ', prior, 'likelihood = ', likelihood)
+	if a.verbose:
+		if not a.testing_output:
+			print('prior = ', prior, 'likelihood = ', likelihood, mp.current_process()._identity[0])
+		else:
+			print('prior = ', prior, 'likelihood = ', likelihood)
 
 	return(prior+likelihood,[0])
 

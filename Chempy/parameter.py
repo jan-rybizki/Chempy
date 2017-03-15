@@ -13,6 +13,7 @@ class ModelParameters(object):
 	solar_abundance_name = solar_abundance_name_list[solar_abundance_name_index]
 
 	# Time discretization, so far only linear time-steps are implemented
+	verbose = 0
 	start = 0 # birth of disc, always set to 0
 	end = 13.5
 	time_steps = 28#541#241#35#1401

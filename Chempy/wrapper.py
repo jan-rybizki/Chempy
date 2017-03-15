@@ -216,7 +216,8 @@ def mcmc(a):
 	start1 = time.time()
 	directory = 'mcmc/'
 	if os.path.exists(directory):
-		print('%s already existed. Content might be overwritten' %(directory))
+		if a.verbose:
+			print('%s already existed. Content might be overwritten' %(directory))
 	else:
 		os.makedirs(directory)
 	

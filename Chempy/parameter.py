@@ -199,8 +199,7 @@ class ModelParameters(object):
 
 	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm']#,'wildcard ','cas','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
 	arcturus_age = 7.1# 7.1 +1.5 -1.2
-	age_of_star = 4.56
-	stellar_identifier = 'NGC1718-9'
+	stellar_identifier = 'Proto-sun'
 	produce_mock_data = False
 	use_mock_data = False
 	error_inflation = 1.

@@ -80,19 +80,22 @@ def lognorm(x,mu,factor):
 
 def shorten_sfr(a):
 	'''
-	This function crops the SFR to the length of the age of the star
+	This function crops the SFR to the length of the age of the star and ensures that enough stars are formed at the stellar birth epoch
 
 	INPUT:
 
 	   a = Modelparameters
-	
-	   age_of_star = the age of the star in Gyr
 
 	OUTPUT:
 	
 	   the function will update the modelparameters, such that the simulation will end when the star is born and it will also check whether there is enough sfr left at that epoch
 	'''
-	age_of_star = a.age_of_star
+	try:
+		star = np.load('%s.npy' %(a.stellar_identifier))
+	except Exception as ex:
+		from . import localpath
+		star = np.load(localpath + 'input/stars/' + a.stellar_identifier + '.npy')
+	age_of_star = star['age'][0]
 	assert (age_of_star <= 13.0), "Age of the star must be below 13Gyr"
 
 	basic_sfr = SFR(a.start,a.end,a.time_steps)
@@ -369,7 +372,8 @@ def cem_real2(a):
 
 def posterior_function(changing_parameter,a):
 	'''
-	The posterior function is the interface between the optimizing function and Chempy.
+	The posterior function is the interface between the optimizing function and Chempy. Usually the likelihood will be calculated with respect to a so called 'stellar wildcard'.
+	Wildcards can be created according to the tutorial 6. A few wildcards are already stored in the input folder. Chempy will try the current folder first. If no wildcard npy file with the name a.stellar_identifier is found it will look into the Chempy/input/stars folder.
 
 	INPUT: 
 	
@@ -392,7 +396,7 @@ def posterior_function(changing_parameter,a):
 
 def extract_parameters_and_priors(changing_parameter, a):
 	'''
-	This function extracts the parameters from changing parameters and writes them into a so that Chempy can evaluate the changed parameter settings
+	This function extracts the parameters from changing parameters and writes them into the ModelParamaters (a), so that Chempy can evaluate the changed parameter settings
 	'''
 	for i,item in enumerate(a.to_optimize):
 		setattr(a, item, changing_parameter[i])
@@ -456,12 +460,6 @@ def posterior_function_real(changing_parameter,a):
 	'''
 	This is the actual posterior function. But the functionality is explained in posterior_function.
 	'''
-	'''
-	if not a.testing_output:
-		print(changing_parameter,mp.current_process()._identity[0])#,a.observational_constraints_index
-	else:
-		print(changing_parameter)
-	'''
 	
 	start_time = time.time()
 	# the values in a are updated according to changing_parameters and the prior list is appended
@@ -471,35 +469,42 @@ def posterior_function_real(changing_parameter,a):
 	# the log prior is calculated
 	prior = sum(np.log(a.prior))
 
-	# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
+	
 	precalculation = time.time()
-	print('precalculation: ', start_time - precalculation)
+	#print('precalculation: ', start_time - precalculation)
 
+	## The endtime is changed for the actual calculation but restored to default afterwards
 	backup = a.end ,a.time_steps, a.total_mass
+	
+	# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
 	abundance_list,elements_to_trace = cem_real2(a)
 	a.end ,a.time_steps, a.total_mass = backup
-	print(a.end ,a.time_steps, a.total_mass)
+	
+	# The last two entries of the abundance list are the Corona metallicity and the SN-ratio
 	abundance_list = abundance_list[:-2]
 	elements_to_trace = elements_to_trace[:-2]
 
 	model = time.time()
-	print('model: ', precalculation - model)
+	#print('model: ', precalculation - model)
 
-
-	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function('Proto-sun', abundance_list, elements_to_trace)
+	# a likelihood is calculated where the model error is optimized analytically
+	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
 
 
 	error_optimization = time.time()
-	print('error optimization: ', model - error_optimization)
-	'''
-	if a.testing_output:
-		print('prior = ', prior)#, mp.current_process()._identity[0]
+	#print('error optimization: ', model - error_optimization)
+
+	if not a.testing_output:
+		print('prior = ', prior, 'likelihood = ', likelihood, mp.current_process()._identity[0])
 	else:
-		print('prior = ', prior)
-	'''
+		print('prior = ', prior, 'likelihood = ', likelihood)
+
 	return(prior+likelihood,[0])
 
 
 def posterior_function_for_minimization(changing_parameter,a):
+	'''
+	calls the posterior function but just returns the negative log posterior instead of posterior and blobs
+	'''
 	posterior, blobs = posterior_function(changing_parameter,a)
 	return -posterior

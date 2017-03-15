@@ -18,6 +18,24 @@ def gaussian(x,x0,xsig):
 	return factor * np.exp(exponent)
 
 def likelihood_evaluation(model_error, star_error_list, abundance_list, star_abundance_list):
+	'''
+	This function evaluates the Gaussian for the prediction/observation comparison and returns the resulting log likelihood. The model error and the observed error are added quadratically
+	
+	INPUT:
+
+	   model_error = the error coming from the models side
+
+	   star_error_list = the error coming from the observations
+
+	   abundance_list = the predictions
+
+	   star_abundance_list = the observations
+
+	OUTPUT:
+
+	   likelihood = the summed log likelihood
+	'''
+
 	error = np.sqrt(model_error * model_error + star_error_list * star_error_list)
 	list_of_likelihoods = gaussian(star_abundance_list,abundance_list,error)
 	log_likelihood_list = np.log(list_of_likelihoods)
@@ -1297,28 +1315,33 @@ def wildcard_likelihood_function(summary_pdf, stellar_identifier, abundances):
 
 def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trace):    
 	'''
-	This function produces Chempy conform likelihood output for a abundance wildcard that was produced before with 'produce_wildcard_stellar_abundances'.
+	This function calculates analytically an optimal model error and the resulting likelihood from the comparison of predictions and observations
 
 	INPUT:
 
-	   summary_pdf = bool, should there be an output
+	   list_of_abundances = a list of the abundances coming from Chempy
 
-	   stellar_identifier = str, name of the star
-
-	   abundances = the abundances instance from a chempy chemical evolution
+	   elements_to_trace = a list of the elemental symbols
 
 	OUTPUT:
 
-	   probabilities = a list of the likelihoods for each element
+	   likelihood = the added log likelihood
 
-	   abundance_list = the abundances of the model for each element
-
-	   element_list = the symbols of the corresponding elements
-
-	These list will be used to produce the likelihood and the blobs. See cem_function.py
+	   element_list = the elements that were in common between the predictions and the observations, has the same sequence as the following arrays
+	   
+	   model_error = the analytic optimal model error
+	   
+	   star_error_list = the observed error
+	   
+	   abundance_list = the predictions
+	   
+	   star_abundance_list = the observations
 	'''
-	wildcard = np.load(stellar_identifier + '.npy')
-
+	try:
+		wildcard = np.load(stellar_identifier + '.npy')
+	except Exception as ex:
+		from . import localpath
+		wildcard = np.load(localpath + 'input/stars/' + stellar_identifier + '.npy')
 	# Brings the model_abundances, the stellar abundances and the associated error into the same sequence
 	abundance_list = []
 	element_list = []

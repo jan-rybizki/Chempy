@@ -13,6 +13,7 @@ class ModelParameters(object):
 	solar_abundance_name = solar_abundance_name_list[solar_abundance_name_index]
 
 	# Time discretization, so far only linear time-steps are implemented
+	
 	verbose = 0
 	start = 0 # birth of disc, always set to 0
 	end = 13.5
@@ -23,7 +24,7 @@ class ModelParameters(object):
 	testing_output = True
 	summary_pdf = False
 	name_string = 'Chempy_default'
-
+	parameter_names = [r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)$',r'$\mathrm{x}_\mathrm{out}$'])
 	# SFR still model A from Just&Jahreiss 2010 should be changed
 	# arbitrary function can be implemented here
 	basic_sfr_name_list = ['model_A','gamma_function','prescribed', 'doubly_peaked']

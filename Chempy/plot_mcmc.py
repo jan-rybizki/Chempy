@@ -267,7 +267,7 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
 					plt.setp(axes[i,j].get_yticklabels(), visible=False)
 
 				if set_scale:
-					borders.append([axes[i,j].get_xlim(),axes[i,j].get_ylim(),xgauss,ygauss])
+					borders.append([axes[i,j].get_xlim(),axes[i,j].get_ylim(),edges[:-1],counts])
 
 				axes[i,j].vlines(np.percentile(positions[:,j],15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')    
 				axes[i,j].vlines(np.percentile(positions[:,j],100-15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')  
@@ -286,7 +286,7 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
 				if use_scale:
 					axes[i,j].set_xlim(borders[t][0])
 					axes[i,j].set_ylim(borders[t][1])
-					axes[i,j].plot( borders[t][2], borders[t][3], "k",linestyle = '--', alpha=1, lw = lw )
+					#axes[i,j].plot( borders[t][2], borders[t][3], "k",linestyle = '--', alpha=1, lw = lw )
 					t += 1
 				else:
 					axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
@@ -294,7 +294,7 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
 
 
 				if set_scale:
-					borders.append([axes[i,j].get_xlim(),axes[i,j].get_ylim(),xk,yk])
+					borders.append([axes[i,j].get_xlim(),axes[i,j].get_ylim(),i,j])
 
 			if j>i:
 				correlation_coefficient = np.corrcoef((positions[:,i],positions[:,j]))

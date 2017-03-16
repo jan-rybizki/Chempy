@@ -474,7 +474,7 @@ def posterior_function_real(changing_parameter,a):
 	precalculation = time.time()
 	#print('precalculation: ', start_time - precalculation)
 
-	## The endtime is changed for the actual calculation but restored to default afterwards
+	# The endtime is changed for the actual calculation but restored to default afterwards
 	backup = a.end ,a.time_steps, a.total_mass
 	
 	# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
@@ -490,6 +490,8 @@ def posterior_function_real(changing_parameter,a):
 
 	# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
 	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
+	#likelihood = 0.
+	#abundance_list = [0]
 
 	error_optimization = time.time()
 	#print('error optimization: ', model - error_optimization)
@@ -508,3 +510,57 @@ def posterior_function_for_minimization(changing_parameter,a):
 	'''
 	posterior, blobs = posterior_function(changing_parameter,a)
 	return -posterior
+
+def posterior_function_returning_predictions(args):
+	'''
+	calls the posterior function but just returns the negative log posterior instead of posterior and blobs
+	'''
+	changing_parameter,a = args
+	posterior, abundance_list, element_list = posterior_function_predictions(changing_parameter,a)
+	return abundance_list,element_list
+
+def posterior_function_predictions(changing_parameter,a):
+	'''
+	This is the actual posterior function. But the functionality is explained in posterior_function.
+	'''
+	
+	start_time = time.time()
+	# the values in a are updated according to changing_parameters and the prior list is appended
+	a = extract_parameters_and_priors(changing_parameter, a)
+	
+
+	# the log prior is calculated
+	prior = sum(np.log(a.prior))
+
+	
+	precalculation = time.time()
+	#print('precalculation: ', start_time - precalculation)
+
+	# The endtime is changed for the actual calculation but restored to default afterwards
+	backup = a.end ,a.time_steps, a.total_mass
+	
+	# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
+	abundance_list,elements_to_trace = cem_real2(a)
+	a.end ,a.time_steps, a.total_mass = backup
+	
+	# The last two entries of the abundance list are the Corona metallicity and the SN-ratio
+	abundance_list = abundance_list[:-2]
+	elements_to_trace = elements_to_trace[:-2]
+
+	model = time.time()
+	#print('model: ', precalculation - model)
+
+	# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
+	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
+	#likelihood = 0.
+	#abundance_list = [0]
+
+	error_optimization = time.time()
+	#print('error optimization: ', model - error_optimization)
+	if a.verbose:
+		if not a.testing_output:
+			print('prior = ', prior, 'likelihood = ', likelihood, mp.current_process()._identity[0])
+		else:
+			print('prior = ', prior, 'likelihood = ', likelihood)
+
+	return(prior+likelihood,abundance_list, element_list)

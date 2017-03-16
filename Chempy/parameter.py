@@ -14,7 +14,7 @@ class ModelParameters(object):
 
 	# Time discretization, so far only linear time-steps are implemented
 	
-	verbose = 0
+	verbose = 1
 	start = 0 # birth of disc, always set to 0
 	end = 13.5
 	time_steps = 28#541#241#35#1401
@@ -201,6 +201,7 @@ class ModelParameters(object):
 
 	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm']#,'wildcard ','cas','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
 	arcturus_age = 7.1# 7.1 +1.5 -1.2
+	stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
 	stellar_identifier = 'Proto-sun'
 	produce_mock_data = False
 	use_mock_data = False

@@ -1374,3 +1374,50 @@ def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trac
 	# Now the likelihood is evaluated
 	likelihood = likelihood_evaluation(model_error, star_error_list, abundance_list, star_abundance_list)
 	return likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list
+
+def read_out_wildcard(stellar_identifier, list_of_abundances, elements_to_trace):    
+	'''
+	This function calculates analytically an optimal model error and the resulting likelihood from the comparison of predictions and observations
+
+	INPUT:
+
+	   list_of_abundances = a list of the abundances coming from Chempy
+
+	   elements_to_trace = a list of the elemental symbols
+
+	OUTPUT:
+
+	   likelihood = the added log likelihood
+
+	   element_list = the elements that were in common between the predictions and the observations, has the same sequence as the following arrays
+	   
+	   model_error = the analytic optimal model error
+	   
+	   star_error_list = the observed error
+	   
+	   abundance_list = the predictions
+	   
+	   star_abundance_list = the observations
+	'''
+	try:
+		wildcard = np.load(stellar_identifier + '.npy')
+	except Exception as ex:
+		from . import localpath
+		wildcard = np.load(localpath + 'input/stars/' + stellar_identifier + '.npy')
+	# Brings the model_abundances, the stellar abundances and the associated error into the same sequence
+	abundance_list = []
+	element_list = []
+	star_abundance_list = []
+	star_error_list = []
+	for i,item in enumerate(elements_to_trace):
+		if item in list(wildcard.dtype.names):
+			element_list.append(item)
+			abundance_list.append(float(list_of_abundances[i]))
+			star_abundance_list.append(float(wildcard[item][0]))
+			star_error_list.append(float(wildcard[item][1]))
+	abundance_list = np.hstack(abundance_list)
+	star_abundance_list = np.hstack(star_abundance_list)
+	star_error_list = np.hstack(star_error_list)
+	assert len(abundance_list) == len(star_abundance_list) == len(star_error_list), 'no equal length, something went wrong'
+	###################
+	return element_list, star_error_list, abundance_list, star_abundance_list

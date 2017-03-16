@@ -257,3 +257,36 @@ def mcmc(a):
 		if i>300 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < 0.5 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < 0.5:
 			break
 
+def multi_star_optimization(a):
+	'''
+	This function will optimize the parameters of all stars
+	'''
+	import time
+
+	start_time = time.time()
+	# I: Minimization for each star seperately
+	# 1: for each star make initial conditions (each star needs other model parameters)
+	# 2: call posterior_function_for_minimization with scipy.optimize.minimize in multiprocess for each star and recover the found parameters
+	initial = time.time()
+	print('first minimization for each star separately took: %2.f seconds' %(initial - start_time))
+
+	# II: Global parameter minimization:
+	# 1: only SSP parameters free. Use mean SSP parameter values and individual (but fixed ISM parameter values)
+	# 2: Call each star in multiprocess but only return the predictions
+	# 3: Calculate the likelihood for each star and optimize the common model error
+	# 4: return global SSP parameters and common model error
+
+	global_iteration1 = time.time()
+	print('first global minimization took: %2.f seconds' %(global_iteration1 - initial))	
+
+	# III: Local parameter minimization:
+	# 1: Use fixed global parameters and fixed common errors make initial conditions
+	# 2: Minimize each star ISM parameters in multiprocess
+
+	local_iteration1 = time.time()
+	print('first local minimization took: %2.f seconds' %(local_iteration1 - global_iteration1))	
+	# IV: repeat II and III until posterior does not change much
+
+	# V: MCMC run
+	# 1: Free all parameters and optimize common error (SSP should be the same for all stars)
+	# 2: Plug everything into emcee and sample the posterior

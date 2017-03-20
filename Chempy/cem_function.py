@@ -564,3 +564,21 @@ def posterior_function_predictions(changing_parameter,a):
 			print('prior = ', prior, 'likelihood = ', likelihood)
 
 	return(prior+likelihood,abundance_list, element_list)
+
+def get_prior(changing_parameter, a):
+    for i,item in enumerate(a.to_optimize):
+        setattr(a, item, changing_parameter[i])
+        val = getattr(a, item)
+
+    ### PRIOR calculation, values are stored in parameter.py
+    prior_names = []
+    prior = []
+    for name in a.to_optimize:
+        (mean, std, functional_form) = a.priors.get(name)
+        val = getattr(a, name)
+        prior_names.append(name)
+        if functional_form == 0:
+            prior.append(gaussian(val, mean, std))
+        elif functional_form == 1:
+            prior.append(lognorm(val, mean, std))
+    return(sum(np.log(prior)))

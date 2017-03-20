@@ -39,7 +39,7 @@ def likelihood_evaluation(model_error, star_error_list, abundance_list, star_abu
 	error = np.sqrt(model_error * model_error + star_error_list * star_error_list)
 	list_of_likelihoods = gaussian(star_abundance_list,abundance_list,error)
 	log_likelihood_list = np.log(list_of_likelihoods)
-	likelihood = sum(log_likelihood_list)
+	likelihood = np.sum(log_likelihood_list)
 	return likelihood
 
 def sample_stars(weight,selection,element1,element2,error1,error2,nsample):

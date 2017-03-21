@@ -263,8 +263,9 @@ def multi_star_optimization(a):
 	'''
 	import time
 	import multiprocess as mp
-	from .optimization import minimizer_initial
-	
+	from .optimization import minimizer_initial, minimizer_global
+	from .cem_function import global_optimization_error_returned
+
 	start_time = time.time()
 
 	# I: Minimization for each star seperately
@@ -286,16 +287,20 @@ def multi_star_optimization(a):
 	# II: Global parameter minimization:
 	# 1: only SSP parameters free. Use mean SSP parameter values and individual (but fixed ISM parameter values)
 	result[:,:3] = np.mean(result[:,:3], axis = 0)
-
+	changing_parameter = result[0,:3]
 	# 2: Call each star in multiprocess but only return the predictions
-	# 3: Calculate the likelihood for each star and optimize the common model error
+	# 3: Calculate the likelihood for each star and optimize the common model error (is all done within minimizer global, which is calling 'global optimization')
+	x = minimizer_global(changing_parameter, a, result)
+
 	# 4: return global SSP parameters and common model error
+	posterior, error_list, elements = global_optimization_error_returned(x, a, result)
 
 	global_iteration1 = time.time()
 	print('first global minimization took: %2.f seconds' %(global_iteration1 - initial))	
 
 	# III: Local parameter minimization:
 	# 1: Use fixed global parameters and fixed common errors make initial conditions
+
 	# 2: Minimize each star ISM parameters in multiprocess
 
 	local_iteration1 = time.time()

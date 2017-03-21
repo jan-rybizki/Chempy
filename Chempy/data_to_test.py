@@ -1313,7 +1313,7 @@ def wildcard_likelihood_function(summary_pdf, stellar_identifier, abundances):
     return probabilities, abundance_list, element_list
 
 
-def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trace):    
+def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trace, fixed_model_error = None, elements = None):    
 	'''
 	This function calculates analytically an optimal model error and the resulting likelihood from the comparison of predictions and observations
 
@@ -1360,17 +1360,24 @@ def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trac
 	###################
 
 	# Introduces the optimal model error which can be derived analytically
-	model_error = []
-	for i, item in enumerate(element_list):
-		if (abundance_list[i] - star_abundance_list[i]) * (abundance_list[i] - star_abundance_list[i]) <= star_error_list[i] * star_error_list[i]:
-			model_error.append(0.)
-		else:
-			model_error.append(np.sqrt((abundance_list[i] - star_abundance_list[i]) * (abundance_list[i] - star_abundance_list[i]) - star_error_list[i] * star_error_list[i]))
-	model_error = np.hstack(model_error)
+	if fixed_model_error == None:
+		model_error = []
+		for i, item in enumerate(element_list):
+			if (abundance_list[i] - star_abundance_list[i]) * (abundance_list[i] - star_abundance_list[i]) <= star_error_list[i] * star_error_list[i]:
+				model_error.append(0.)
+			else:
+				model_error.append(np.sqrt((abundance_list[i] - star_abundance_list[i]) * (abundance_list[i] - star_abundance_list[i]) - star_error_list[i] * star_error_list[i]))
+		model_error = np.hstack(model_error)
+	else:
+		model_error = []
+		for i,item in enumerate(element_list):
+			model_error.append(float(fixed_model_error[np.where(elements == item)]))
+		model_error = np.hstack(model_error)
 	## Uncomment next line if you do not want to use model errors
 	#model_error = np.zeros_like(model_error)
 	
-	model_error = np.array([ 0.0780355, 0., 0.15495525, 0.00545988,  0.3063154,   0., 0.1057009,  0.05165564,  0., 0.72038212,  0., 0.08926388,  0., 0.27583715,  0.22945499,  0.09774014,  0.17965589 , 0. ,0.17686723,  0.21137374,  0.37973184,  0.2263486 ])
+	# This is the best model error at the median posterior of the Proto-sun (just used to see how this effects the posterior distribution)
+	#model_error = np.array([ 0.0780355, 0., 0.15495525, 0.00545988,  0.3063154,   0., 0.1057009,  0.05165564,  0., 0.72038212,  0., 0.08926388,  0., 0.27583715,  0.22945499,  0.09774014,  0.17965589 , 0. ,0.17686723,  0.21137374,  0.37973184,  0.2263486 ])
 	
 	# Now the likelihood is evaluated
 	likelihood = likelihood_evaluation(model_error, star_error_list, abundance_list, star_abundance_list)

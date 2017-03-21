@@ -218,7 +218,7 @@ def cem_real(changing_parameter,a):
 	basic_solar = solar_abundances()
 	getattr(basic_solar, a.solar_abundance_name)()
 	elements_to_trace = a.elements_to_trace
-        
+		
 	directory = 'model_temp/'
 	### Model is calculated
 	if a.calculate_model:
@@ -334,7 +334,7 @@ def cem_real2(a):
 	basic_solar = solar_abundances()
 	getattr(basic_solar, a.solar_abundance_name)()
 	elements_to_trace = list(a.elements_to_trace)
-        
+		
 	directory = 'model_temp/'
 	### Model is calculated
 	if a.calculate_model:
@@ -395,67 +395,6 @@ def posterior_function(changing_parameter,a):
 		import traceback; traceback.print_exc()
 	return -np.inf, [0]
 
-def extract_parameters_and_priors(changing_parameter, a):
-	'''
-	This function extracts the parameters from changing parameters and writes them into the ModelParamaters (a), so that Chempy can evaluate the changed parameter settings
-	'''
-	for i,item in enumerate(a.to_optimize):
-		setattr(a, item, changing_parameter[i])
-		val = getattr(a, item)
-
-	start_time = time.time()
-	### PRIOR calculation, values are stored in parameter.py
-	prior_names = []
-	prior = []
-	for name in a.to_optimize:
-		(mean, std, functional_form) = a.priors.get(name)
-		val = getattr(a, name)
-		prior_names.append(name)
-		if functional_form == 0:
-			prior.append(gaussian(val, mean, std))
-		elif functional_form == 1:
-			prior.append(lognorm(val, mean, std))
-	a.prior = prior
-
-	# check the borders of the free parameters
-	for name in a.to_optimize:
-		(lower, upper) = a.constraints.get(name)
-		val = getattr(a, name)
-		if lower is not None and val<lower:
-			assert False, '%s lower border is violated' %(name)
-		if upper is not None and val>upper:
-			assert False, '%s upper border is violated' %(name)
-	if a.verbose:
-		if not a.testing_output:
-			print(changing_parameter,mp.current_process()._identity[0])#,a.observational_constraints_index
-		else:
-			print(changing_parameter)
-	
-	### So that the parameter can be plotted in linear space
-	if 'log10_N_0' in a.to_optimize:
-		a.N_0 = np.power(10,a.log10_N_0)
-	if 'log10_sn1a_time_delay' in a.to_optimize:
-		a.sn1a_time_delay = np.power(10,a.log10_sn1a_time_delay)
-	if 'log10_starformation_efficiency' in a.to_optimize:
-		a.starformation_efficiency = np.power(10,a.log10_starformation_efficiency)
-	if 'log10_gas_reservoir_mass_factor' in a.to_optimize:
-		a.gas_reservoir_mass_factor = np.power(10,a.log10_gas_reservoir_mass_factor)
-	if 'log10_sfr_scale' in a.to_optimize:
-		a.sfr_scale = np.power(10,a.log10_sfr_scale)
-
-	if a.imf_type_name == 'salpeter':
-		a.imf_parameter = (a.high_mass_slope)
-	elif a.imf_type_name == 'Chabrier_2':
-		a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.chabrier_para3,a.high_mass_slope)
-	elif a.imf_type_name == 'normed_3slope':	
-		a.imf_parameter = (a.imf_slope_1,a.imf_slope_2,a.high_mass_slope,a.imf_break_1,a.imf_break_2)
-	if a.time_delay_functional_form == 'maoz':
-		a.sn1a_parameter = [a.N_0,a.sn1a_time_delay,a.sn1a_exponent,a.dummy]
-	elif a.time_delay_functional_form == 'normal':
-		a.sn1a_parameter = [a.number_of_pn_exlopding,a.sn1a_time_delay,a.sn1a_timescale,a.sn1a_gauss_beginning]
-	elif a.time_delay_functional_form == 'gamma_function':
-		a.sn1a_parameter = [a.sn1a_norm,a.sn1a_a_parameter,a.sn1a_beginning,a.sn1a_scale]
-	return(a)
 
 def posterior_function_real(changing_parameter,a):
 	'''
@@ -585,77 +524,228 @@ def get_prior(changing_parameter, a):
 
 def global_optimization(changing_parameter, a, result):
 	try:
-		posterior = global_optimization_real(changing_parameter,a, result)
+		posterior, error_list, elements = global_optimization_real(changing_parameter,a, result)
 		return posterior
 	except Exception as ex:
 		import traceback; traceback.print_exc()
 	return np.inf
 
+def global_optimization_error_returned(changing_parameter, a, result):
+	try:
+		posterior, error_list, elements = global_optimization_real(changing_parameter,a, result)
+		return -posterior, error_list, elements
+	except Exception as ex:
+		import traceback; traceback.print_exc()
+	return np.inf
 
 def global_optimization_real(changing_parameter, a, result):
-    import multiprocessing as mp
-    import numpy.ma as ma
-    from .cem_function import get_prior, posterior_function_returning_predictions
-    from .data_to_test import likelihood_evaluation
-    from .parameter import ModelParameters
-    
-    ## Calculating the prior
-    a = ModelParameters()
-    a.to_optimize = ['high_mass_slope', 'log10_N_0', 'log10_sn1a_time_delay']
-    prior = get_prior(changing_parameter,a)
+	import multiprocessing as mp
+	import numpy.ma as ma
+	from .cem_function import get_prior, posterior_function_returning_predictions
+	from .data_to_test import likelihood_evaluation
+	from .parameter import ModelParameters
+	
+	## Calculating the prior
+	a = ModelParameters()
+	a.to_optimize = ['high_mass_slope', 'log10_N_0', 'log10_sn1a_time_delay']
+	prior = get_prior(changing_parameter,a)
 
-    ## Handing over to posterior_function_returning_predictions
-    parameter_list = []
-    p0_list = []
-    for i,item in enumerate(a.stellar_identifier_list):
-        parameter_list.append(ModelParameters())
-        parameter_list[-1].stellar_identifier = item
-        p0_list.append(result[i])
-    args = zip(p0_list,parameter_list)
-    p = mp.Pool(len(parameter_list))
-    t = p.map(posterior_function_returning_predictions, args)
-    z = np.array(t)
-    # Predictions including element symbols are returned
+	## Handing over to posterior_function_returning_predictions
+	parameter_list = []
+	p0_list = []
+	for i,item in enumerate(a.stellar_identifier_list):
+		parameter_list.append(ModelParameters())
+		parameter_list[-1].stellar_identifier = item
+		p0_list.append(np.hstack((changing_parameter,result[i,3:])))
+	args = zip(p0_list,parameter_list)
+	p = mp.Pool(len(parameter_list))
+	t = p.map(posterior_function_returning_predictions, args)
+	p.close()
+	p.join()
+	z = np.array(t)
+	# Predictions including element symbols are returned
 
-    # Reading out the wildcards
-    elements = np.unique(np.hstack(z[:,1]))
-    from Chempy.data_to_test import read_out_wildcard
-    args = zip(a.stellar_identifier_list, z[:,0], z[:,1])
-    list_of_l_input = []
-    for item in args:
-        list_of_l_input.append(read_out_wildcard(*item))
-        list_of_l_input[-1] = list(list_of_l_input[-1])
-    # Now the input for the likelihood evaluating function is almost ready
+	# Reading out the wildcards
+	elements = np.unique(np.hstack(z[:,1]))
+	from Chempy.data_to_test import read_out_wildcard
+	args = zip(a.stellar_identifier_list, z[:,0], z[:,1])
+	list_of_l_input = []
+	for item in args:
+		list_of_l_input.append(read_out_wildcard(*item))
+		list_of_l_input[-1] = list(list_of_l_input[-1])
+	# Now the input for the likelihood evaluating function is almost ready
 
-    # Masking the elements that are not given for specific stars and preparing the likelihood input
-    star_errors = ma.array(np.zeros((len(elements),len(args))), mask = True)
-    star_abundances = ma.array(np.zeros((len(elements),len(args))), mask = True)
-    model_abundances = ma.array(np.zeros((len(elements),len(args))), mask = True)
+	# Masking the elements that are not given for specific stars and preparing the likelihood input
+	star_errors = ma.array(np.zeros((len(elements),len(args))), mask = True)
+	star_abundances = ma.array(np.zeros((len(elements),len(args))), mask = True)
+	model_abundances = ma.array(np.zeros((len(elements),len(args))), mask = True)
 
-    for star_index,item in enumerate(list_of_l_input):
-        for element_index,element in enumerate(item[0]):
-            assert element in elements, 'observed element is not predicted by Chempy'
-            new_element_index = np.where(elements == element)[0][0]
-            star_errors[new_element_index,star_index] = item[1][element_index]
-            model_abundances[new_element_index,star_index] = item[2][element_index]
-            star_abundances[new_element_index,star_index] = item[3][element_index]
+	for star_index,item in enumerate(list_of_l_input):
+		for element_index,element in enumerate(item[0]):
+			assert element in elements, 'observed element is not predicted by Chempy'
+			new_element_index = np.where(elements == element)[0][0]
+			star_errors[new_element_index,star_index] = item[1][element_index]
+			model_abundances[new_element_index,star_index] = item[2][element_index]
+			star_abundances[new_element_index,star_index] = item[3][element_index]
 
-    # Brute force testing of a few model errors
-    model_errors = np.linspace(0.03,1.,50)
-    error_list = []
-    likelihood_list = []
-    for i,element in enumerate(elements):
-        error_temp = []
-        for item in model_errors:
-            error_temp.append(likelihood_evaluation(item, star_errors[i] , model_abundances[i], star_abundances[i]))
-        cut = np.where(np.hstack(error_temp)==np.max(error_temp))
-        if len(cut) == 2:
-            cut = cut[0][0]
-        error_list.append(float(model_errors[cut]))
-        likelihood_list.append(np.max(error_temp))
-    error_list = np.hstack(error_list)
-    likelihood_list = np.hstack(likelihood_list)
-    likelihood = np.sum(likelihood_list)
-    
-    # returning the best likelihood together with the prior as posterior
-    return -(prior + likelihood)
+	# Brute force testing of a few model errors
+	model_errors = np.linspace(0.03,1.,50)
+	error_list = []
+	likelihood_list = []
+	for i,element in enumerate(elements):
+		error_temp = []
+		for item in model_errors:
+			error_temp.append(likelihood_evaluation(item, star_errors[i] , model_abundances[i], star_abundances[i]))
+		cut = np.where(np.hstack(error_temp)==np.max(error_temp))
+		if len(cut) == 2:
+			cut = cut[0][0]
+		error_list.append(float(model_errors[cut]))
+		likelihood_list.append(np.max(error_temp))
+	error_list = np.hstack(error_list)
+	likelihood_list = np.hstack(likelihood_list)
+	likelihood = np.sum(likelihood_list)
+	
+	# returning the best likelihood together with the prior as posterior
+	return(-(prior + likelihood), error_list, elements)
+
+def extract_parameters_and_priors(changing_parameter, a):
+	'''
+	This function extracts the parameters from changing parameters and writes them into the ModelParamaters (a), so that Chempy can evaluate the changed parameter settings
+	'''
+	for i,item in enumerate(a.to_optimize):
+		setattr(a, item, changing_parameter[i])
+		val = getattr(a, item)
+
+	start_time = time.time()
+	### PRIOR calculation, values are stored in parameter.py
+	prior_names = []
+	prior = []
+	for name in a.to_optimize:
+		(mean, std, functional_form) = a.priors.get(name)
+		val = getattr(a, name)
+		prior_names.append(name)
+		if functional_form == 0:
+			prior.append(gaussian(val, mean, std))
+		elif functional_form == 1:
+			prior.append(lognorm(val, mean, std))
+	a.prior = prior
+
+	# check the borders of the free parameters
+	for name in a.to_optimize:
+		(lower, upper) = a.constraints.get(name)
+		val = getattr(a, name)
+		if lower is not None and val<lower:
+			assert False, '%s lower border is violated' %(name)
+		if upper is not None and val>upper:
+			assert False, '%s upper border is violated' %(name)
+	if a.verbose:
+		if not a.testing_output:
+			print(changing_parameter,mp.current_process()._identity[0])#,a.observational_constraints_index
+		else:
+			print(changing_parameter)
+	
+	### So that the parameter can be plotted in linear space
+	if 'log10_N_0' in a.to_optimize:
+		a.N_0 = np.power(10,a.log10_N_0)
+	if 'log10_sn1a_time_delay' in a.to_optimize:
+		a.sn1a_time_delay = np.power(10,a.log10_sn1a_time_delay)
+	if 'log10_starformation_efficiency' in a.to_optimize:
+		a.starformation_efficiency = np.power(10,a.log10_starformation_efficiency)
+	if 'log10_gas_reservoir_mass_factor' in a.to_optimize:
+		a.gas_reservoir_mass_factor = np.power(10,a.log10_gas_reservoir_mass_factor)
+	if 'log10_sfr_scale' in a.to_optimize:
+		a.sfr_scale = np.power(10,a.log10_sfr_scale)
+
+	if a.imf_type_name == 'salpeter':
+		a.imf_parameter = (a.high_mass_slope)
+	elif a.imf_type_name == 'Chabrier_2':
+		a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.chabrier_para3,a.high_mass_slope)
+	elif a.imf_type_name == 'normed_3slope':	
+		a.imf_parameter = (a.imf_slope_1,a.imf_slope_2,a.high_mass_slope,a.imf_break_1,a.imf_break_2)
+	if a.time_delay_functional_form == 'maoz':
+		a.sn1a_parameter = [a.N_0,a.sn1a_time_delay,a.sn1a_exponent,a.dummy]
+	elif a.time_delay_functional_form == 'normal':
+		a.sn1a_parameter = [a.number_of_pn_exlopding,a.sn1a_time_delay,a.sn1a_timescale,a.sn1a_gauss_beginning]
+	elif a.time_delay_functional_form == 'gamma_function':
+		a.sn1a_parameter = [a.sn1a_norm,a.sn1a_a_parameter,a.sn1a_beginning,a.sn1a_scale]
+	return(a)
+
+def posterior_function_local_for_minimization(changing_parameter,a, global_parameters, errors, elements):
+	'''
+	calls the posterior function but just returns the negative log posterior instead of posterior and blobs
+	'''
+	posterior, blobs = posterior_function_local(changing_parameter,a, global_parameters, errors, elements)
+	return -posterior
+
+def posterior_function_local(changing_parameter,a, global_parameters, errors, elements):
+	'''
+	The posterior function is the interface between the optimizing function and Chempy. Usually the likelihood will be calculated with respect to a so called 'stellar wildcard'.
+	Wildcards can be created according to the tutorial 6. A few wildcards are already stored in the input folder. Chempy will try the current folder first. If no wildcard npy file with the name a.stellar_identifier is found it will look into the Chempy/input/stars folder.
+
+	INPUT: 
+	
+	   changing_parameter = parameter values of the free parameters as an array
+	
+	   a = model parameters specified in parameter.py. There are also the names of free parameters specified here
+
+	OUTPUT:
+	
+	   log posterior, array of blobs
+	
+	   the blobs contain the likelihoods and the actual values of each predicted data point (e.g. elemental abundance value)
+	'''
+	try:
+		posterior, blobs = posterior_function_local_real(changing_parameter,a, global_parameters, errors, elements)
+		return posterior, blobs
+	except Exception as ex:
+		import traceback; traceback.print_exc()
+	return -np.inf, [0]
+
+def posterior_function_local_real(changing_parameter,a, global_parameters, errors, elements):
+	'''
+	This is the actual posterior function. But the functionality is explained in posterior_function.
+	'''
+	
+	start_time = time.time()
+	# the values in a are updated according to changing_parameters and the prior list is appended
+	changing_parameter = np.hstack((global_parameters,changing_parameter))
+	a = extract_parameters_and_priors(changing_parameter, a)
+	
+
+	# the log prior is calculated
+	prior = sum(np.log(a.prior))
+
+	
+	precalculation = time.time()
+	#print('precalculation: ', start_time - precalculation)
+
+	# The endtime is changed for the actual calculation but restored to default afterwards
+	backup = a.end ,a.time_steps, a.total_mass
+	
+	# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
+	abundance_list,elements_to_trace = cem_real2(a)
+	a.end ,a.time_steps, a.total_mass = backup
+	
+	# The last two entries of the abundance list are the Corona metallicity and the SN-ratio
+	abundance_list = abundance_list[:-2]
+	elements_to_trace = elements_to_trace[:-2]
+
+	model = time.time()
+	#print('model: ', precalculation - model)
+
+	# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
+	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = errors, elements = elements)
+	#likelihood = 0.
+	#abundance_list = [0]
+
+	error_optimization = time.time()
+	#print('error optimization: ', model - error_optimization)
+	if a.verbose:
+		if not a.testing_output:
+			print('prior = ', prior, 'likelihood = ', likelihood, mp.current_process()._identity[0])
+		else:
+			print('prior = ', prior, 'likelihood = ', likelihood)
+
+	return(prior+likelihood,abundance_list)
+
+

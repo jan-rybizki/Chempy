@@ -1,5 +1,5 @@
 import numpy as np
-from .cem_function import posterior_function, cem
+
 import multiprocessing as mp
 import os
 from .parameter import ModelParameters
@@ -73,13 +73,42 @@ def posterior_probability(x,a):
 	return s,t
 
 def minimizer_initial(a):
+	from scipy.optimize import minimize
+	from .cem_function import posterior_function_local_for_minimization
+	res = minimize(fun = posterior_function_for_minimization,
+		x0 = a.p0,
+		args = (a),
+		method = 'Nelder-Mead',
+		tol = a.tol_minimization,
+		options = {'maxiter':a.maxiter_minimization})
+	if a.verbose:
+		print(res.message)
+	return res.x
+
+def minimizer_local(args):
+	from scipy.optimize import minimize
+	from .cem_function import posterior_function_local_for_minimization
+	changing_parameter,a, global_parameters, errors, elements = args
+	res = minimize(fun = posterior_function_local_for_minimization,
+		x0 = changing_parameter,
+		args = (a, global_parameters, errors, elements),
+		method = 'Nelder-Mead',
+		tol = a.tol_minimization,
+		options = {'maxiter':a.maxiter_minimization})
+	if a.verbose:
+		print(res.message)
+	return res.x
+
+def minimizer_global(changing_parameter, a, result):
     from scipy.optimize import minimize
-    res = minimize(fun = posterior_function_for_minimization,
-        x0 = a.p0,
-        args = (a),
+    from .cem_function import global_optimization
+    
+    res = minimize(fun = global_optimization,
+        x0 = changing_parameter,
+        args = (a, result),
         method = 'Nelder-Mead',
-        tol = 1e-3,
-        options = {'maxiter':1000})
+        tol = a.tol_minimization,
+        options = {'maxiter':a.maxiter_minimization})
     if a.verbose:
         print(res.message)
     return res.x

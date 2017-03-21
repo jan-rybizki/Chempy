@@ -206,6 +206,8 @@ class ModelParameters(object):
 	produce_mock_data = False
 	use_mock_data = False
 	error_inflation = 1.
+	maxiter_minimization = 3
+	tol_minimization = 1e-3
 
 	# If some parameter is in to optimise there needs to be a prior and constraints defined
 	if True:

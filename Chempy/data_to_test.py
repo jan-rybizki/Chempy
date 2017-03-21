@@ -1367,7 +1367,8 @@ def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trac
 		else:
 			model_error.append(np.sqrt((abundance_list[i] - star_abundance_list[i]) * (abundance_list[i] - star_abundance_list[i]) - star_error_list[i] * star_error_list[i]))
 	model_error = np.hstack(model_error)
-
+	for i,item in enumerate(element_list):
+		print(i,item,model_error[i])
 	## Uncomment next line if you do not want to use model errors
 	#model_error = np.zeros_like(model_error)
 

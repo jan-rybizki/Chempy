@@ -566,19 +566,96 @@ def posterior_function_predictions(changing_parameter,a):
 	return(prior+likelihood,abundance_list, element_list)
 
 def get_prior(changing_parameter, a):
-    for i,item in enumerate(a.to_optimize):
-        setattr(a, item, changing_parameter[i])
-        val = getattr(a, item)
+	for i,item in enumerate(a.to_optimize):
+		setattr(a, item, changing_parameter[i])
+		val = getattr(a, item)
 
-    ### PRIOR calculation, values are stored in parameter.py
-    prior_names = []
-    prior = []
-    for name in a.to_optimize:
-        (mean, std, functional_form) = a.priors.get(name)
-        val = getattr(a, name)
-        prior_names.append(name)
-        if functional_form == 0:
-            prior.append(gaussian(val, mean, std))
-        elif functional_form == 1:
-            prior.append(lognorm(val, mean, std))
-    return(sum(np.log(prior)))
+	### PRIOR calculation, values are stored in parameter.py
+	prior_names = []
+	prior = []
+	for name in a.to_optimize:
+		(mean, std, functional_form) = a.priors.get(name)
+		val = getattr(a, name)
+		prior_names.append(name)
+		if functional_form == 0:
+			prior.append(gaussian(val, mean, std))
+		elif functional_form == 1:
+			prior.append(lognorm(val, mean, std))
+	return(sum(np.log(prior)))
+
+def global_optimization(changing_parameter, a, result):
+	try:
+		posterior = global_optimization_real(changing_parameter,a, result)
+		return posterior
+	except Exception as ex:
+		import traceback; traceback.print_exc()
+	return np.inf
+
+
+def global_optimization_real(changing_parameter, a, result):
+    import multiprocessing as mp
+    import numpy.ma as ma
+    from .cem_function import get_prior, posterior_function_returning_predictions
+    from .data_to_test import likelihood_evaluation
+    from .parameter import ModelParameters
+    
+    ## Calculating the prior
+    a = ModelParameters()
+    a.to_optimize = ['high_mass_slope', 'log10_N_0', 'log10_sn1a_time_delay']
+    prior = get_prior(changing_parameter,a)
+
+    ## Handing over to posterior_function_returning_predictions
+    parameter_list = []
+    p0_list = []
+    for i,item in enumerate(a.stellar_identifier_list):
+        parameter_list.append(ModelParameters())
+        parameter_list[-1].stellar_identifier = item
+        p0_list.append(result[i])
+    args = zip(p0_list,parameter_list)
+    p = mp.Pool(len(parameter_list))
+    t = p.map(posterior_function_returning_predictions, args)
+    z = np.array(t)
+    # Predictions including element symbols are returned
+
+    # Reading out the wildcards
+    elements = np.unique(np.hstack(z[:,1]))
+    from Chempy.data_to_test import read_out_wildcard
+    args = zip(a.stellar_identifier_list, z[:,0], z[:,1])
+    list_of_l_input = []
+    for item in args:
+        list_of_l_input.append(read_out_wildcard(*item))
+        list_of_l_input[-1] = list(list_of_l_input[-1])
+    # Now the input for the likelihood evaluating function is almost ready
+
+    # Masking the elements that are not given for specific stars and preparing the likelihood input
+    star_errors = ma.array(np.zeros((len(elements),len(args))), mask = True)
+    star_abundances = ma.array(np.zeros((len(elements),len(args))), mask = True)
+    model_abundances = ma.array(np.zeros((len(elements),len(args))), mask = True)
+
+    for star_index,item in enumerate(list_of_l_input):
+        for element_index,element in enumerate(item[0]):
+            assert element in elements, 'observed element is not predicted by Chempy'
+            new_element_index = np.where(elements == element)[0][0]
+            star_errors[new_element_index,star_index] = item[1][element_index]
+            model_abundances[new_element_index,star_index] = item[2][element_index]
+            star_abundances[new_element_index,star_index] = item[3][element_index]
+
+    # Brute force testing of a few model errors
+    model_errors = np.linspace(0.03,1.,50)
+    error_list = []
+    likelihood_list = []
+    for i,element in enumerate(elements):
+        error_temp = []
+        for item in model_errors:
+            error_temp.append(likelihood_evaluation(item, star_errors[i] , model_abundances[i], star_abundances[i]))
+        cut = np.where(np.hstack(error_temp)==np.max(error_temp))
+        if len(cut) == 2:
+            cut = cut[0][0]
+        error_list.append(float(model_errors[cut]))
+        likelihood_list.append(np.max(error_temp))
+    error_list = np.hstack(error_list)
+    likelihood_list = np.hstack(likelihood_list)
+    likelihood = np.sum(likelihood_list)
+    
+    # returning the best likelihood together with the prior as posterior
+    return -(prior + likelihood)

@@ -262,16 +262,31 @@ def multi_star_optimization(a):
 	This function will optimize the parameters of all stars
 	'''
 	import time
-
+	import multiprocess as mp
+	from .optimization import minimizer_initial
+	
 	start_time = time.time()
+
 	# I: Minimization for each star seperately
-	# 1: for each star make initial conditions (each star needs other model parameters)
+	# 1: for each star make initial conditions (each star needs other model parameters)	
+	parameter_list = []
+	for item in a.stellar_identifier_list:
+		parameter_list.append(ModelParameters())
+		parameter_list[-1].stellar_identifier = item
 	# 2: call posterior_function_for_minimization with scipy.optimize.minimize in multiprocess for each star and recover the found parameters
+	p = mp.Pool(len(parameter_list))
+	t = p.map(minimizer_initial, parameter_list)
+	p.close()
+	p.join()
+	result = np.vstack(t)
+
 	initial = time.time()
 	print('first minimization for each star separately took: %2.f seconds' %(initial - start_time))
 
 	# II: Global parameter minimization:
 	# 1: only SSP parameters free. Use mean SSP parameter values and individual (but fixed ISM parameter values)
+	result[:,:3] = np.mean(result[:,:3], axis = 0)
+
 	# 2: Call each star in multiprocess but only return the predictions
 	# 3: Calculate the likelihood for each star and optimize the common model error
 	# 4: return global SSP parameters and common model error

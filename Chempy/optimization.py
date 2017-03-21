@@ -71,3 +71,15 @@ def posterior_probability(x,a):
 	'''
 	s,t = posterior_function(x,a)#cem(x,a)#posterior_function(x,a)
 	return s,t
+
+def minimizer_initial(a):
+    from scipy.optimize import minimize
+    res = minimize(fun = posterior_function_for_minimization,
+        x0 = a.p0,
+        args = (a),
+        method = 'Nelder-Mead',
+        tol = 1e-3,
+        options = {'maxiter':1000})
+    if a.verbose:
+        print(res.message)
+    return res.x

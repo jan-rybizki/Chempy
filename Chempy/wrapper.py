@@ -10,12 +10,12 @@ class SSP_wrap():
 	'''
 	def __init__(self, a):
 		'''
-        Upon initialization the default IMF, CC-SN yields, SN Ia yields and AGB yields is loaded.
+		Upon initialization the default IMF, CC-SN yields, SN Ia yields and AGB yields is loaded.
 
-        INPUT:
-        
-           a = Modelparameter class. So the default IMF etc are loaded. If we want other yield sets etc. loaded we need to specify that in paramter.py
-        '''
+		INPUT:
+		
+		   a = Modelparameter class. So the default IMF etc are loaded. If we want other yield sets etc. loaded we need to specify that in paramter.py
+		'''
 
 		## loading the IMF and the yieldsets prescribed in a (containing all the model parameters)
 		basic_imf = IMF(a.mmin,a.mmax,a.mass_steps)
@@ -51,18 +51,18 @@ class SSP_wrap():
 
 	def calculate_feedback(self, z, elements, element_fractions, time_steps):
 		'''
-        The feedback is calculated for the initializes SSP.
+		The feedback is calculated for the initializes SSP.
 
-        INPUT:
-        
-           z = metallicity of the SSP in mass fraction (not normed to solar!)
-        
-           elements = which elements to follow
-        
-           element_fractions = the birth material of the SSP in the same order as 'elements'
-        
-           time_steps = the time-steps for which the enrichment of the SSP should be calculated (usually the time-steps until the end of the chempy simulation)
-        '''
+		INPUT:
+		
+		   z = metallicity of the SSP in mass fraction (not normed to solar!)
+		
+		   elements = which elements to follow
+		
+		   element_fractions = the birth material of the SSP in the same order as 'elements'
+		
+		   time_steps = the time-steps for which the enrichment of the SSP should be calculated (usually the time-steps until the end of the chempy simulation)
+		'''
 		basic_ssp = SSP(False, float(z), np.copy(self.imf.x), np.copy(self.imf.dm), np.copy(self.imf.dn), np.copy(time_steps), list(elements), str(self.a.stellar_lifetimes), str(self.a.interpolation_scheme), bool(self.a.only_net_yields_in_process_tables))
 		basic_ssp.sn2_feedback(list(self.sn2.elements), dict(self.sn2.table), np.copy(self.sn2.metallicities), float(self.a.sn2mmin), float(self.a.sn2mmax),list(element_fractions))
 		basic_ssp.agb_feedback(list(self.agb.elements), dict(self.agb.table), list(self.agb.metallicities), float(self.a.agbmmin), float(self.a.agbmmax),np.hstack(element_fractions))
@@ -76,8 +76,8 @@ class SSP_wrap():
 
 def initialise_stuff(a):
 	'''
-    Convenience function initialising the solar abundance, SFR and infall with the default values provided in parameter.py as a
-    '''
+	Convenience function initialising the solar abundance, SFR and infall with the default values provided in parameter.py as a
+	'''
 	from .solar_abundance import solar_abundances
 	from .sfr import SFR 
 	from .infall import INFALL
@@ -109,18 +109,18 @@ def initialise_stuff(a):
 
 def Chempy(a):
 	'''
-    Chemical evolution run with the default parameters using the net yields.
+	Chemical evolution run with the default parameters using the net yields.
 
-    INPUT: 
-    
-       a = ModelParameters() from parameter.py
+	INPUT: 
+	
+	   a = ModelParameters() from parameter.py
 
-    OUTPUT:
-    
-       cube = The ISM evolution class
-    
-       abundances = The abundances of the ISM
-    '''
+	OUTPUT:
+	
+	   cube = The ISM evolution class
+	
+	   abundances = The abundances of the ISM
+	'''
 	from .infall import PRIMORDIAL_INFALL
 	from .time_integration import ABUNDANCE_MATRIX
 	from .making_abundances import mass_fraction_to_abundances
@@ -161,17 +161,17 @@ def Chempy(a):
 
 def Chempy_gross(a):
 	'''
-    Chemical evolution run with the default parameters but now using solar scaled material (testing the worse case when total yields provided).
+	Chemical evolution run with the default parameters but now using solar scaled material (testing the worse case when total yields provided).
 
-    INPUT: 
-    
-       a = ModelParameters() from parameter.py
+	INPUT: 
+	
+	   a = ModelParameters() from parameter.py
 
-    OUTPUT:
-    
-       cube = The ISM evolution class
-    
-       abundances = The abundances of the ISM
+	OUTPUT:
+	
+	   cube = The ISM evolution class
+	
+	   abundances = The abundances of the ISM
 	'''
 	from infall import PRIMORDIAL_INFALL
 	from time_integration import ABUNDANCE_MATRIX
@@ -203,10 +203,10 @@ def Chempy_gross(a):
 
 def mcmc(a):
 	'''
-    Convenience function to use the MCMC. A subdirectory mcmc/ will be created in the current directory and intermediate chains will be stored there.
-    
-    The MCMC will sample the volume of best posterior for the likelihood functions that are declared in parameter.py. Default is ['sol_norm','gas_reservoir','sn_ratio'] which corresponds to 'Sun+' from the paper.
-    '''
+	Convenience function to use the MCMC. A subdirectory mcmc/ will be created in the current directory and intermediate chains will be stored there.
+	
+	The MCMC will sample the volume of best posterior for the likelihood functions that are declared in parameter.py. Default is ['sol_norm','gas_reservoir','sn_ratio'] which corresponds to 'Sun+' from the paper.
+	'''
 	import time
 	import os
 	import multiprocessing as mp
@@ -229,9 +229,11 @@ def mcmc(a):
 	a.nthreads = mp.cpu_count()
 	if a.nthreads == 4:
 		a.nthreads = 2
+	
 	chain = creating_chain(a,np.copy(a.p0))
 	sampler = emcee.EnsembleSampler(a.nwalkers,a.ndim,posterior_probability,threads=a.nthreads, args = [a])
 	pos,prob,state,blobs = sampler.run_mcmc(chain,a.mburn)
+	
 	mean_prob = mean_prob_beginning = np.zeros((a.m))
 	posterior_list = []
 	posterior_std_list = []
@@ -265,9 +267,10 @@ def multi_star_optimization(a):
 	import multiprocess as mp
 	from .optimization import minimizer_initial, minimizer_global
 	from .cem_function import global_optimization_error_returned
-
+	from .parameter import ModelParameters
 	start_time = time.time()
 
+	log_list = []
 	# I: Minimization for each star seperately
 	# 1: for each star make initial conditions (each star needs other model parameters)	
 	parameter_list = []
@@ -280,6 +283,8 @@ def multi_star_optimization(a):
 	p.close()
 	p.join()
 	result = np.vstack(t)
+
+	loglist.append(result)
 
 	initial = time.time()
 	print('first minimization for each star separately took: %2.f seconds' %(initial - start_time))
@@ -295,17 +300,46 @@ def multi_star_optimization(a):
 	# 4: return global SSP parameters and common model error
 	posterior, error_list, elements = global_optimization_error_returned(x, a, result)
 
+
 	global_iteration1 = time.time()
 	print('first global minimization took: %2.f seconds' %(global_iteration1 - initial))	
 
 	# III: Local parameter minimization:
 	# 1: Use fixed global parameters and fixed common errors make initial conditions
+	result[:,:3] = x
+
+	log_list.append((x,posterior, error_list,elements))
+
+	p0_list = []
+	parameter_list = []
+	x_list = []
+	error_list_mp = []
+	element_list_mp = []
+
+	for i,item in enumerate(a.stellar_identifier_list):
+		parameter_list.append(ModelParameters())
+		parameter_list[-1].stellar_identifier = item
+		p0_list.append(result[i,3:])
+		x_list.append(x)
+		error_list_mp.append(error_list)
+		element_list_mp.append(elements)
+
+	args = zip(p0_list,parameter_list,x_list,error_list_mp,element_list_mp)
 
 	# 2: Minimize each star ISM parameters in multiprocess
+	p = mp.Pool(len(parameter_list))
+	t = p.map(minimizer_local, args)
+	p.close()
+	p.join()
+	local_parameters = np.vstack(t)
+	result[:,3:] = local_parameters
+
+	log_list.append(result)
 
 	local_iteration1 = time.time()
 	print('first local minimization took: %2.f seconds' %(local_iteration1 - global_iteration1))	
 	# IV: repeat II and III until posterior does not change much
+	# Skipping this step for now
 
 	# V: MCMC run
 	# 1: Free all parameters and optimize common error (SSP should be the same for all stars)

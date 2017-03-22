@@ -1313,7 +1313,7 @@ def wildcard_likelihood_function(summary_pdf, stellar_identifier, abundances):
     return probabilities, abundance_list, element_list
 
 
-def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trace, fixed_model_error = None, elements = None):    
+def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trace, **keyword_parameters):    
 	'''
 	This function calculates analytically an optimal model error and the resulting likelihood from the comparison of predictions and observations
 
@@ -1360,7 +1360,18 @@ def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trac
 	###################
 
 	# Introduces the optimal model error which can be derived analytically
-	if fixed_model_error == None:
+	if ('fixed_model_error' in keyword_parameters):
+		fixed_model_error = keyword_parameters['fixed_model_error']
+		elements = keyword_parameters['elements']
+		el_list = []
+		for i,item in enumerate(elements):
+			el_list.append(item.decode('utf-8'))
+		elements = np.hstack(el_list)
+		model_error = []
+		for i,item in enumerate(element_list):
+			model_error.append(fixed_model_error[np.where(elements == item)])
+		model_error = np.hstack(model_error)
+	else:
 		model_error = []
 		for i, item in enumerate(element_list):
 			if (abundance_list[i] - star_abundance_list[i]) * (abundance_list[i] - star_abundance_list[i]) <= star_error_list[i] * star_error_list[i]:
@@ -1368,11 +1379,7 @@ def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trac
 			else:
 				model_error.append(np.sqrt((abundance_list[i] - star_abundance_list[i]) * (abundance_list[i] - star_abundance_list[i]) - star_error_list[i] * star_error_list[i]))
 		model_error = np.hstack(model_error)
-	else:
-		model_error = []
-		for i,item in enumerate(element_list):
-			model_error.append(float(fixed_model_error[np.where(elements == item)]))
-		model_error = np.hstack(model_error)
+
 	## Uncomment next line if you do not want to use model errors
 	#model_error = np.zeros_like(model_error)
 	

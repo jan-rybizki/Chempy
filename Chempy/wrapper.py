@@ -291,6 +291,7 @@ def multi_star_optimization(a):
 
 	# II: Global parameter minimization:
 	# 1: only SSP parameters free. Use mean SSP parameter values and individual (but fixed ISM parameter values)
+	a = ModelParameters()
 	result[:,:3] = np.mean(result[:,:3], axis = 0)
 	changing_parameter = result[0,:3]
 	# 2: Call each star in multiprocess but only return the predictions

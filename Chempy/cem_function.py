@@ -527,7 +527,7 @@ def global_optimization(changing_parameter, result):
 	This function is a buffer function if global_optimization_real fails and it only returns the negative posterior
 	'''
 	try:
-		posterior, error_list, elements = global_optimization_real(changing_parameter,a, result)
+		posterior, error_list, elements = global_optimization_real(changing_parameter, result)
 		return posterior
 	except Exception as ex:
 		import traceback; traceback.print_exc()
@@ -538,7 +538,7 @@ def global_optimization_error_returned(changing_parameter, result):
 	this is a buffer function preventing failures from global_optimization_real and returning all its output
 	'''
 	try:
-		posterior, error_list, elements = global_optimization_real(changing_parameter,a, result)
+		posterior, error_list, elements = global_optimization_real(changing_parameter, result)
 		return -posterior, error_list, elements
 	except Exception as ex:
 		import traceback; traceback.print_exc()

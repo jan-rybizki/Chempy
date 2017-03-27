@@ -73,6 +73,17 @@ def posterior_probability(x,a):
 	return s,t
 
 def minimizer_initial(a):
+	'''
+	This is a function that is minimizing the posterior of Chempy from initial conditions (and can be called in multiprocesses)
+
+	INPUT:
+
+	   a = model parameters
+
+	OUTPUT:
+
+	   res.x = the free Chempy parameter for which the posterior was minimal (log posterior is maximized)
+	'''
 	from scipy.optimize import minimize
 	from .cem_function import posterior_function_for_minimization
 	res = minimize(fun = posterior_function_for_minimization,
@@ -100,12 +111,27 @@ def minimizer_local(args):
 	return res.x
 
 def minimizer_global(changing_parameter, a, result):
+	'''
+	This is a function that minimizes the posterior coming from global optimization
+
+	INPUT:
+
+	   changing_parameter = the global SSP parameters (parameters that all stars share)
+
+	   a = model parameters (here also maxiter and tolerance for the minimization are specified)
+
+	   result = the complete parameter set is handed over as an array of shape(len(stars),len(all parameters)). From those the local ISM parameters are taken
+
+	OUTPUT:
+
+	   rex.x = for which global parameters the minimization returned the best posterior
+	'''
     from scipy.optimize import minimize
     from .cem_function import global_optimization
     
     res = minimize(fun = global_optimization,
         x0 = changing_parameter,
-        args = (a, result),
+        args = (result),
         method = 'Nelder-Mead',
         tol = a.tol_minimization,
         options = {'maxiter':a.maxiter_minimization})

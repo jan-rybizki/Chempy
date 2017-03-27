@@ -522,7 +522,10 @@ def get_prior(changing_parameter, a):
 			prior.append(lognorm(val, mean, std))
 	return(sum(np.log(prior)))
 
-def global_optimization(changing_parameter, a, result):
+def global_optimization(changing_parameter, result):
+	'''
+	This function is a buffer function if global_optimization_real fails and it only returns the negative posterior
+	'''
 	try:
 		posterior, error_list, elements = global_optimization_real(changing_parameter,a, result)
 		return posterior
@@ -530,15 +533,36 @@ def global_optimization(changing_parameter, a, result):
 		import traceback; traceback.print_exc()
 	return np.inf
 
-def global_optimization_error_returned(changing_parameter, a, result):
+def global_optimization_error_returned(changing_parameter, result):
+	'''
+	this is a buffer function preventing failures from global_optimization_real and returning all its output
+	'''
 	try:
 		posterior, error_list, elements = global_optimization_real(changing_parameter,a, result)
 		return -posterior, error_list, elements
 	except Exception as ex:
 		import traceback; traceback.print_exc()
-	return np.inf
+	return np.inf, [0], [0]
 
-def global_optimization_real(changing_parameter, a, result):
+def global_optimization_real(changing_parameter, result):
+	'''
+	This function calculates the predictions from several Chempy zones in parallel. It also calculates the likelihood for common model errors
+	BEWARE: Model parameters are called as saved in parameters.py!!!
+
+	INPUT:
+
+	   changing_parameter = the global SSP parameters (parameters that all stars share)
+
+	   result = the complete parameter set is handed over as an array of shape(len(stars),len(all parameters)). From those the local ISM parameters are taken
+	
+	OUTPUT:
+
+	   -posterior = negative log posterior for all stellar zones
+
+	   error_list = the optimal standard deviation of the model error
+
+	   elements = the corresponding element symbols
+	'''
 	import multiprocessing as mp
 	import numpy.ma as ma
 	from .cem_function import get_prior, posterior_function_returning_predictions

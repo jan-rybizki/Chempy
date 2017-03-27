@@ -261,7 +261,15 @@ def mcmc(a):
 
 def multi_star_optimization(a):
 	'''
-	This function will optimize the parameters of all stars
+	This function will optimize the parameters of all stars in a hierachical manner (similar to gibbs sampling)
+
+	INPUT: 
+
+	   a = model parameters (different stellar data is given in a list of a.stellar_identifier_list. For all those stars the individual ISM parameters are optimized and the global SSP parameters)
+
+	OUTPUT:
+
+	   log_list = a list of intermediate results (so far only for debugging)
 	'''
 	import time
 	import multiprocessing as mp
@@ -286,63 +294,68 @@ def multi_star_optimization(a):
 
 	log_list.append(np.copy(result))
 	log_list.append('initial minimization')
-
 	initial = time.time()
 	print('first minimization for each star separately took: %2.f seconds' %(initial - start_time))
 
-	# II: Global parameter minimization:
-	# 1: only SSP parameters free. Use mean SSP parameter values and individual (but fixed ISM parameter values)
-	result[:,:3] = np.mean(result[:,:3], axis = 0)
-	changing_parameter = result[0,:3]
-	# 2: Call each star in multiprocess but only return the predictions
-	# 3: Calculate the likelihood for each star and optimize the common model error (is all done within minimizer global, which is calling 'global optimization')
-	x = minimizer_global(changing_parameter, a, result)
-
-	# 4: return global SSP parameters and common model error
-	posterior, error_list, elements = global_optimization_error_returned(x, a, result)
-
-
-	global_iteration1 = time.time()
-	print('first global minimization took: %2.f seconds' %(global_iteration1 - initial))	
-
-	# III: Local parameter minimization:
-	# 1: Use fixed global parameters and fixed common errors make initial conditions
-	result[:,:3] = x
-
-	log_list.append((np.copy(x),posterior, error_list,elements))
-	log_list.append('global minimization')
-	p0_list = []
-	parameter_list = []
-	x_list = []
-	error_list_mp = []
-	element_list_mp = []
-
-	for i,item in enumerate(a.stellar_identifier_list):
-		parameter_list.append(ModelParameters())
-		parameter_list[-1].stellar_identifier = item
-		p0_list.append(result[i,3:])
-		x_list.append(x)
-		error_list_mp.append(error_list)
-		element_list_mp.append(elements)
-
-	args = zip(p0_list,parameter_list,x_list,error_list_mp,element_list_mp)
-
-	# 2: Minimize each star ISM parameters in multiprocess
-	p = mp.Pool(len(parameter_list))
-	t = p.map(minimizer_local, args)
-	p.close()
-	p.join()
-	local_parameters = np.vstack(t)
-	result[:,3:] = local_parameters
-
-	log_list.append(np.copy(result))
-	log_list.append('local minimization')
-
-	local_iteration1 = time.time()
-	print('first local minimization took: %2.f seconds' %(local_iteration1 - global_iteration1))	
 	# IV: repeat II and III until posterior does not change much
-	# Skipping this step for now
+	result[:,:3] = np.mean(result[:,:3], axis = 0)
+	posteriors = []
+	while True:
+		if len(posteriors) > 1:
+			if np.abs(posteriors[-1] - posteriors[-2]) < 0.5:
+				break
 
+		# II: Global parameter minimization:
+		# 1: only SSP parameters free. Use mean SSP parameter values and individual (but fixed ISM parameter values)
+		changing_parameter = result[0,:3]
+		# 2: Call each star in multiprocess but only return the predictions
+		# 3: Calculate the likelihood for each star and optimize the common model error (is all done within minimizer global, which is calling 'global optimization')
+		x = minimizer_global(changing_parameter, a, result)
+
+		# 4: return global SSP parameters and common model error
+		posterior, error_list, elements = global_optimization_error_returned(x, a, result)
+		print(posterior)
+
+		global_iteration1 = time.time()
+		print('first global minimization took: %2.f seconds' %(global_iteration1 - initial))	
+
+		# III: Local parameter minimization:
+		# 1: Use fixed global parameters and fixed common errors make initial conditions
+		result[:,:3] = x
+
+		log_list.append((np.copy(x),posterior, error_list,elements))
+		log_list.append('global minimization')
+		p0_list = []
+		parameter_list = []
+		x_list = []
+		error_list_mp = []
+		element_list_mp = []
+
+		for i,item in enumerate(a.stellar_identifier_list):
+			parameter_list.append(ModelParameters())
+			parameter_list[-1].stellar_identifier = item
+			p0_list.append(result[i,3:])
+			x_list.append(x)
+			error_list_mp.append(error_list)
+			element_list_mp.append(elements)
+
+		args = zip(p0_list,parameter_list,x_list,error_list_mp,element_list_mp)
+
+		# 2: Minimize each star ISM parameters in multiprocess
+		p = mp.Pool(len(parameter_list))
+		t = p.map(minimizer_local, args)
+		p.close()
+		p.join()
+		local_parameters = np.vstack(t)
+		result[:,3:] = local_parameters
+
+		log_list.append(np.copy(result))
+		log_list.append('local minimization')
+
+		local_iteration1 = time.time()
+		print('first local minimization took: %2.f seconds' %(local_iteration1 - global_iteration1))	
+
+	log_list.append(posteriors)
 	# V: MCMC run
 	# 1: Free all parameters and optimize common error (SSP should be the same for all stars)
 	# 2: Plug everything into emcee and sample the posterior

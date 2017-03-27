@@ -126,15 +126,15 @@ def minimizer_global(changing_parameter, a, result):
 
 	   rex.x = for which global parameters the minimization returned the best posterior
 	'''
-    from scipy.optimize import minimize
-    from .cem_function import global_optimization
-    
-    res = minimize(fun = global_optimization,
-        x0 = changing_parameter,
-        args = (result),
-        method = 'Nelder-Mead',
-        tol = a.tol_minimization,
-        options = {'maxiter':a.maxiter_minimization})
-    if a.verbose:
-        print(res.message)
-    return res.x
+	from scipy.optimize import minimize
+	from .cem_function import global_optimization
+	
+	res = minimize(fun = global_optimization,
+		x0 = changing_parameter,
+		args = (result),
+		method = 'Nelder-Mead',
+		tol = a.tol_minimization,
+		options = {'maxiter':a.maxiter_minimization})
+	if a.verbose:
+		print(res.message)
+	return res.x

@@ -773,3 +773,58 @@ def posterior_function_local_real(changing_parameter,a, global_parameters, error
 	return(prior+likelihood,abundance_list)
 
 
+def posterior_function_many_stars(changing_parameter,error_list,elements):
+	'''
+	The posterior function is the interface between the optimizing function and Chempy. Usually the likelihood will be calculated with respect to a so called 'stellar wildcard'.
+	Wildcards can be created according to the tutorial 6. A few wildcards are already stored in the input folder. Chempy will try the current folder first. If no wildcard npy file with the name a.stellar_identifier is found it will look into the Chempy/input/stars folder.
+
+	INPUT: 
+	
+	   changing_parameter = parameter values of the free parameters as an array
+	
+	   a = model parameters specified in parameter.py. There are also the names of free parameters specified here
+
+	OUTPUT:
+	
+	   log posterior, array of blobs
+	
+	   the blobs contain the likelihoods and the actual values of each predicted data point (e.g. elemental abundance value)
+	'''
+	try:
+		posterior, blobs = posterior_function_real(changing_parameter,error_list,elements)
+		return posterior, blobs
+	except Exception as ex:
+		import traceback; traceback.print_exc()
+	return -np.inf, [0]
+
+
+def posterior_function_many_stars_real(changing_parameter,error_list,elements):
+	'''
+	This is the actual posterior function. But the functionality is explained in posterior_function.
+	'''
+	from .parameter import ModelParameters
+	a = ModelParameters()
+
+	predictions_list = []
+	elements_list = []
+
+	for i, item in enumerate(a.stellar_identifier_list):
+		a = ModelParameters()
+		a.stellar_identifier = item
+		
+		posterior_function_returning_predictions(args)
+
+	# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
+	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
+	#likelihood = 0.
+	#abundance_list = [0]
+
+	error_optimization = time.time()
+	#print('error optimization: ', model - error_optimization)
+	if a.verbose:
+		if not a.testing_output:
+			print('prior = ', prior, 'likelihood = ', likelihood, mp.current_process()._identity[0])
+		else:
+			print('prior = ', prior, 'likelihood = ', likelihood)
+
+	return(prior+likelihood,abundance_list)

@@ -313,8 +313,9 @@ def multi_star_optimization(a):
 		x = minimizer_global(changing_parameter, a, result)
 
 		# 4: return global SSP parameters and common model error
-		posterior, error_list, elements = global_optimization_error_returned(x, a, result)
-		print(posterior)
+		posterior, error_list, elements = global_optimization_error_returned(x, result)
+		posteriors.append(posterior)
+		print(posteriors)
 
 		global_iteration1 = time.time()
 		print('first global minimization took: %2.f seconds' %(global_iteration1 - initial))	

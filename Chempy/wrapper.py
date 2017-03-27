@@ -264,8 +264,8 @@ def multi_star_optimization(a):
 	This function will optimize the parameters of all stars
 	'''
 	import time
-	import multiprocess as mp
-	from .optimization import minimizer_initial, minimizer_global
+	import multiprocessing as mp
+	from .optimization import minimizer_initial, minimizer_global, minimizer_local
 	from .cem_function import global_optimization_error_returned
 	from .parameter import ModelParameters
 	start_time = time.time()
@@ -284,14 +284,14 @@ def multi_star_optimization(a):
 	p.join()
 	result = np.vstack(t)
 
-	loglist.append(result)
+	log_list.append(np.copy(result))
+	log_list.append('initial minimization')
 
 	initial = time.time()
 	print('first minimization for each star separately took: %2.f seconds' %(initial - start_time))
 
 	# II: Global parameter minimization:
 	# 1: only SSP parameters free. Use mean SSP parameter values and individual (but fixed ISM parameter values)
-	a = ModelParameters()
 	result[:,:3] = np.mean(result[:,:3], axis = 0)
 	changing_parameter = result[0,:3]
 	# 2: Call each star in multiprocess but only return the predictions
@@ -309,8 +309,8 @@ def multi_star_optimization(a):
 	# 1: Use fixed global parameters and fixed common errors make initial conditions
 	result[:,:3] = x
 
-	log_list.append((x,posterior, error_list,elements))
-
+	log_list.append((np.copy(x),posterior, error_list,elements))
+	log_list.append('global minimization')
 	p0_list = []
 	parameter_list = []
 	x_list = []
@@ -335,7 +335,8 @@ def multi_star_optimization(a):
 	local_parameters = np.vstack(t)
 	result[:,3:] = local_parameters
 
-	log_list.append(result)
+	log_list.append(np.copy(result))
+	log_list.append('local minimization')
 
 	local_iteration1 = time.time()
 	print('first local minimization took: %2.f seconds' %(local_iteration1 - global_iteration1))	
@@ -345,3 +346,4 @@ def multi_star_optimization(a):
 	# V: MCMC run
 	# 1: Free all parameters and optimize common error (SSP should be the same for all stars)
 	# 2: Plug everything into emcee and sample the posterior
+	return log_list

@@ -74,7 +74,7 @@ def posterior_probability(x,a):
 
 def minimizer_initial(a):
 	from scipy.optimize import minimize
-	from .cem_function import posterior_function_local_for_minimization
+	from .cem_function import posterior_function_for_minimization
 	res = minimize(fun = posterior_function_for_minimization,
 		x0 = a.p0,
 		args = (a),

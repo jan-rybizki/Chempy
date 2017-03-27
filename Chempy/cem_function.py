@@ -576,9 +576,9 @@ def global_optimization_real(changing_parameter, a, result):
 	# Now the input for the likelihood evaluating function is almost ready
 
 	# Masking the elements that are not given for specific stars and preparing the likelihood input
-	star_errors = ma.array(np.zeros((len(elements),len(args))), mask = True)
-	star_abundances = ma.array(np.zeros((len(elements),len(args))), mask = True)
-	model_abundances = ma.array(np.zeros((len(elements),len(args))), mask = True)
+	star_errors = ma.array(np.zeros((len(elements),len(a.stellar_identifier_list))), mask = True)
+	star_abundances = ma.array(np.zeros((len(elements),len(a.stellar_identifier_list))), mask = True)
+	model_abundances = ma.array(np.zeros((len(elements),len(a.stellar_identifier_list))), mask = True)
 
 	for star_index,item in enumerate(list_of_l_input):
 		for element_index,element in enumerate(item[0]):

@@ -13,6 +13,8 @@ class ModelParameters(object):
 	solar_abundance_name = solar_abundance_name_list[solar_abundance_name_index]
 
 	# Time discretization, so far only linear time-steps are implemented
+	maxiter_minimization = 1000
+	tol_minimization = 1e-3
 	nwalkers = 64
 	mburn = 1
 	save_state_every = 1
@@ -206,8 +208,7 @@ class ModelParameters(object):
 	produce_mock_data = False
 	use_mock_data = False
 	error_inflation = 1.
-	maxiter_minimization = 3
-	tol_minimization = 1e-3
+
 
 	# If some parameter is in to optimise there needs to be a prior and constraints defined
 	if True:

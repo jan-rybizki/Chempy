@@ -1365,7 +1365,7 @@ def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trac
 		elements = keyword_parameters['elements']
 		el_list = []
 		for i,item in enumerate(elements):
-			el_list.append(item.decode('utf-8'))
+			el_list.append(item)#.decode('utf-8'))
 		elements = np.hstack(el_list)
 		model_error = []
 		for i,item in enumerate(element_list):

@@ -383,7 +383,7 @@ def mcmc_multi(a, changing_parameter, error_list, elements):
 	import time
 	import os
 	import multiprocessing as mp
-	from .optimization import creating_chain, posterior_probability
+	from .cem_function import  posterior_function_many_stars
 	import emcee
 
 	start1 = time.time()
@@ -400,10 +400,10 @@ def mcmc_multi(a, changing_parameter, error_list, elements):
 
 	chain = np.empty(shape = (a.nwalkers,len(changing_parameter)))
 	for i in range(a.nwalkers):
-		jitter = np.random.normal(loc = 0, scale = 0.001, size = len(t))
-		chain[i] = t + jitter
+		jitter = np.random.normal(loc = 0, scale = 0.001, size = len(changing_parameter))
+		chain[i] = changing_parameter + jitter
 
-	sampler = emcee.EnsembleSampler(a.nwalkers,a.ndim,posterior_probability_many_stars,threads=nthreads, args = [error_list,elements])
+	sampler = emcee.EnsembleSampler(a.nwalkers,a.ndim,posterior_function_many_stars,threads=nthreads, args = [error_list,elements])
 	pos,prob,state,blobs = sampler.run_mcmc(chain,a.mburn)
 	
 	mean_prob = mean_prob_beginning = np.zeros((a.m))

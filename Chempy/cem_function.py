@@ -791,40 +791,87 @@ def posterior_function_many_stars(changing_parameter,error_list,elements):
 	   the blobs contain the likelihoods and the actual values of each predicted data point (e.g. elemental abundance value)
 	'''
 	try:
-		posterior, blobs = posterior_function_real(changing_parameter,error_list,elements)
+		posterior, blobs = posterior_function_many_stars_real(changing_parameter,error_list,elements)
 		return posterior, blobs
 	except Exception as ex:
 		import traceback; traceback.print_exc()
 	return -np.inf, [0]
 
 
-def posterior_function_many_stars_real(changing_parameter,error_list,elements):
+def posterior_function_many_stars_real(changing_parameter,error_list,error_element_list):
 	'''
 	This is the actual posterior function. But the functionality is explained in posterior_function.
 	'''
+	import numpy.ma as ma
+	from .cem_function import get_prior, posterior_function_returning_predictions
+	from .data_to_test import likelihood_evaluation, read_out_wildcard
 	from .parameter import ModelParameters
-	a = ModelParameters()
 
+	a = ModelParameters()
+	
+	global_parameters = changing_parameter[:3]
+	local_parameters = changing_parameter[3:]
+	local_parameters = local_parameters.reshape((len(a.stellar_identifier_list),3))
+
+	a.to_optimize = ['high_mass_slope', 'log10_N_0', 'log10_sn1a_time_delay']
+	global_parameter_prior = get_prior(global_parameters,a)
+	
 	predictions_list = []
 	elements_list = []
+	log_prior_list = []
 
 	for i, item in enumerate(a.stellar_identifier_list):
-		a = ModelParameters()
-		a.stellar_identifier = item
-		
-		posterior_function_returning_predictions(args)
+		b = ModelParameters()
+		b.stellar_identifier = item
+		changing_parameter = np.hstack((global_parameters,local_parameters[i]))
+		args = (changing_parameter,b)
+		abundance_list,element_list = posterior_function_returning_predictions(args)
+		predictions_list.append(abundance_list)
+		elements_list.append(element_list)
+		log_prior_list.append(get_prior(changing_parameter,b))
 
-	# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
-	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
-	#likelihood = 0.
-	#abundance_list = [0]
+	########
 
-	error_optimization = time.time()
-	#print('error optimization: ', model - error_optimization)
+	args = zip(a.stellar_identifier_list, predictions_list, elements_list)
+	list_of_l_input = []
+	for item in args:
+	    list_of_l_input.append(read_out_wildcard(*item))
+	    list_of_l_input[-1] = list(list_of_l_input[-1])
+
+	elements = np.unique(np.hstack(elements_list))
+	# Masking the elements that are not given for specific stars and preparing the likelihood input
+	star_errors = ma.array(np.zeros((len(elements),len(a.stellar_identifier_list))), mask = True)
+	star_abundances = ma.array(np.zeros((len(elements),len(a.stellar_identifier_list))), mask = True)
+	model_abundances = ma.array(np.zeros((len(elements),len(a.stellar_identifier_list))), mask = True)
+
+	for star_index,item in enumerate(list_of_l_input):
+	    for element_index,element in enumerate(item[0]):
+	        assert element in elements, 'observed element is not predicted by Chempy'
+	        new_element_index = np.where(elements == element)[0][0]
+	        star_errors[new_element_index,star_index] = item[1][element_index]
+	        model_abundances[new_element_index,star_index] = item[2][element_index]
+	        star_abundances[new_element_index,star_index] = item[3][element_index]
+
+	error_elements_decoded = []
+	for item in error_element_list:
+	    error_elements_decoded.append(item.decode('utf8'))
+	error_element_list = np.hstack(error_elements_decoded)
+
+
+	error_list = np.hstack(error_list)
+	model_error = []
+	for element in elements:
+	    assert element in error_element_list, 'for this element the model error was not given, %s' %(element)
+	    model_error.append(error_list[np.where(error_element_list == element)])
+	model_error = np.hstack(model_error)
+
+	likelihood = likelihood_evaluation(model_error[:,None], star_errors , model_abundances, star_abundances)
+	
+	prior = sum(log_prior_list)
+	prior -= (len(a.stellar_identifier_list)-1) * global_parameter_prior
+
+	########
 	if a.verbose:
-		if not a.testing_output:
-			print('prior = ', prior, 'likelihood = ', likelihood, mp.current_process()._identity[0])
-		else:
-			print('prior = ', prior, 'likelihood = ', likelihood)
+		print('prior = ', prior, 'likelihood = ', likelihood)
 
-	return(prior+likelihood,abundance_list)
+	return(prior+likelihood,model_abundances)

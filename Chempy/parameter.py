@@ -12,7 +12,11 @@ class ModelParameters(object):
 	solar_abundance_name_index = 1
 	solar_abundance_name = solar_abundance_name_list[solar_abundance_name_index]
 
-	# Time discretization, so far only linear time-steps are implemented
+	# Observational constraints
+	stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
+	stellar_identifier = 'Proto-sun'
+
+	# Convergense parameters of minimization and MCMC
 	maxiter_minimization = 1000
 	tol_minimization = 1e-3
 	nwalkers = 64
@@ -21,6 +25,7 @@ class ModelParameters(object):
 	m = 3000 # For 7 free parameters 300 iterations are usually enough. The mcmc routine is stopping after 300 if the posterior mean is converged for more than 200 iterations.
 	
 	verbose = 0
+	# Time discretization, so far only linear time-steps are implemented
 	start = 0 # birth of disc, always set to 0
 	end = 13.5
 	time_steps = 28#541#241#35#1401
@@ -203,8 +208,7 @@ class ModelParameters(object):
 
 	observational_constraints_index = ['gas_reservoir','sn_ratio','sol_norm']#,'wildcard ','cas','arcturus','stars_at_end', 'plot_processes', 'save_abundances', 'elements']
 	arcturus_age = 7.1# 7.1 +1.5 -1.2
-	stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
-	stellar_identifier = 'Proto-sun'
+
 	produce_mock_data = False
 	use_mock_data = False
 	error_inflation = 1.

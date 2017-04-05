@@ -397,13 +397,14 @@ def mcmc_multi(a, changing_parameter, error_list, elements):
 	nthreads = mp.cpu_count()
 	if nthreads == 4:
 		nthreads = 2
-
-	chain = np.empty(shape = (a.nwalkers,len(changing_parameter)))
+	ndim = len(changing_parameter)
+	chain = np.empty(shape = (a.nwalkers,ndim))
 	for i in range(a.nwalkers):
-		jitter = np.random.normal(loc = 0, scale = 0.001, size = len(changing_parameter))
+		jitter = np.random.normal(loc = 0, scale = 0.001, size = ndim)
 		chain[i] = changing_parameter + jitter
 
-	sampler = emcee.EnsembleSampler(a.nwalkers,a.ndim,posterior_function_many_stars,threads=nthreads, args = [error_list,elements])
+
+	sampler = emcee.EnsembleSampler(a.nwalkers,ndim,posterior_function_many_stars,threads=nthreads, args = [error_list,elements])
 	pos,prob,state,blobs = sampler.run_mcmc(chain,a.mburn)
 	
 	mean_prob = mean_prob_beginning = np.zeros((a.m))

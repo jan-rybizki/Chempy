@@ -460,7 +460,7 @@ def posterior_function_returning_predictions(args):
 
 def posterior_function_predictions(changing_parameter,a):
 	'''
-	This is the actual posterior function. But the functionality is explained in posterior_function.
+	This is like posterior_function_real. But returning the predicted elements as well.
 	'''
 	
 	start_time = time.time()
@@ -505,6 +505,20 @@ def posterior_function_predictions(changing_parameter,a):
 	return(prior+likelihood,abundance_list, element_list)
 
 def get_prior(changing_parameter, a):
+	"""
+	This function calculates the prior probability
+
+	INPUT:
+
+	   changing_parameter = the values of the parameter vector
+
+	   a = the model parameters including the names of the parameters (which is needed to identify them with the prescribed priors in parameters.py)
+
+	OUTPUT:
+
+	   the log prior is returned
+	"""
+
 	for i,item in enumerate(a.to_optimize):
 		setattr(a, item, changing_parameter[i])
 		val = getattr(a, item)
@@ -535,7 +549,7 @@ def global_optimization(changing_parameter, result):
 
 def global_optimization_error_returned(changing_parameter, result):
 	'''
-	this is a buffer function preventing failures from global_optimization_real and returning all its output
+	this is a buffer function preventing failures from global_optimization_real and returning all its output including the best model error
 	'''
 	try:
 		posterior, error_list, elements = global_optimization_real(changing_parameter, result)
@@ -571,7 +585,7 @@ def global_optimization_real(changing_parameter, result):
 	
 	## Calculating the prior
 	a = ModelParameters()
-	a.to_optimize = ['high_mass_slope', 'log10_N_0', 'log10_sn1a_time_delay']
+	a.to_optimize = a.SSP_parameters_to_optimize
 	prior = get_prior(changing_parameter,a)
 
 	## Handing over to posterior_function_returning_predictions
@@ -580,7 +594,7 @@ def global_optimization_real(changing_parameter, result):
 	for i,item in enumerate(a.stellar_identifier_list):
 		parameter_list.append(ModelParameters())
 		parameter_list[-1].stellar_identifier = item
-		p0_list.append(np.hstack((changing_parameter,result[i,len(SSP_parameters):])))
+		p0_list.append(np.hstack((changing_parameter,result[i,len(a.SSP_parameters):])))
 	args = zip(p0_list,parameter_list)
 	p = mp.Pool(len(parameter_list))
 	t = p.map(posterior_function_returning_predictions, args)
@@ -696,7 +710,7 @@ def extract_parameters_and_priors(changing_parameter, a):
 
 def posterior_function_local_for_minimization(changing_parameter,a, global_parameters, errors, elements):
 	'''
-	calls the posterior function but just returns the negative log posterior instead of posterior and blobs
+	calls the local posterior function but just returns the negative log posterior instead of posterior and blobs
 	'''
 	posterior, blobs = posterior_function_local(changing_parameter,a, global_parameters, errors, elements)
 	return -posterior
@@ -712,11 +726,17 @@ def posterior_function_local(changing_parameter,a, global_parameters, errors, el
 	
 	   a = model parameters specified in parameter.py. There are also the names of free parameters specified here
 
+	   global_parameters = the SSP Parameters which are fixed for this optimization but need to be handed over to Chempy anyway
+
+	   errors = the model error for each element
+
+	   elements = the corresponding names of the elements
+
 	OUTPUT:
 	
 	   log posterior, array of blobs
 	
-	   the blobs contain the likelihoods and the actual values of each predicted data point (e.g. elemental abundance value)
+	   the blobs contain the actual values of each predicted data point (e.g. elemental abundance value)
 	'''
 	try:
 		posterior, blobs = posterior_function_local_real(changing_parameter,a, global_parameters, errors, elements)
@@ -777,12 +797,16 @@ def posterior_function_many_stars(changing_parameter,error_list,elements):
 	'''
 	The posterior function is the interface between the optimizing function and Chempy. Usually the likelihood will be calculated with respect to a so called 'stellar wildcard'.
 	Wildcards can be created according to the tutorial 6. A few wildcards are already stored in the input folder. Chempy will try the current folder first. If no wildcard npy file with the name a.stellar_identifier is found it will look into the Chempy/input/stars folder.
+	The posterior function for many stars evaluates many Chempy instances for different stars and adds up their common likelihood. The list of stars is given in parameter.py under stellar_identifier_list.
+	The names in the list must be represented by wildcards in the same folder.
 
 	INPUT: 
 	
 	   changing_parameter = parameter values of the free parameters as an array
 	
-	   a = model parameters specified in parameter.py. There are also the names of free parameters specified here
+	   error_list = the model error list for each element
+
+	   elements = the corresponding element symbols
 
 	OUTPUT:
 	
@@ -800,22 +824,26 @@ def posterior_function_many_stars(changing_parameter,error_list,elements):
 
 def posterior_function_many_stars_real(changing_parameter,error_list,error_element_list):
 	'''
-	This is the actual posterior function. But the functionality is explained in posterior_function.
+	This is the actual posterior function for many stars. But the functionality is explained in posterior_function_many_stars.
 	'''
 	import numpy.ma as ma
 	from .cem_function import get_prior, posterior_function_returning_predictions
 	from .data_to_test import likelihood_evaluation, read_out_wildcard
 	from .parameter import ModelParameters
 
+	## Initialising the model parameters
 	a = ModelParameters()
 	
+	## extracting from 'changing_parameters' the global parameters and the local parameters
 	global_parameters = changing_parameter[:len(a.SSP_parameters)]
 	local_parameters = changing_parameter[len(a.SSP_parameters):]
 	local_parameters = local_parameters.reshape((len(a.stellar_identifier_list),len(a.ISM_parameters)))
 
+	## getting the prior for the global parameters in order to subtract it in the end for each time it was evaluated too much
 	a.to_optimize = a.SSP_parameters_to_optimize
 	global_parameter_prior = get_prior(global_parameters,a)
 	
+	## Chempy is evaluated one after the other for each stellar identifier with the prescribed parameter combination and the element predictions for each star are stored
 	predictions_list = []
 	elements_list = []
 	log_prior_list = []
@@ -830,14 +858,14 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 		elements_list.append(element_list)
 		log_prior_list.append(get_prior(changing_parameter,b))
 
-	########
-
+	## The wildcards are read out so that the predictions can be compared with the observations
 	args = zip(a.stellar_identifier_list, predictions_list, elements_list)
 	list_of_l_input = []
 	for item in args:
 	    list_of_l_input.append(read_out_wildcard(*item))
 	    list_of_l_input[-1] = list(list_of_l_input[-1])
 
+	## Here the predictions and observations are brought into the same array form in order to perform the likelihood calculation fast
 	elements = np.unique(np.hstack(elements_list))
 	# Masking the elements that are not given for specific stars and preparing the likelihood input
 	star_errors = ma.array(np.zeros((len(elements),len(a.stellar_identifier_list))), mask = True)
@@ -852,6 +880,7 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 	        model_abundances[new_element_index,star_index] = item[2][element_index]
 	        star_abundances[new_element_index,star_index] = item[3][element_index]
 
+	## given model error from error_list is read out and brought into the same element order (compatibility between python 2 and 3 makes the decode method necessary)
 	error_elements_decoded = []
 	for item in error_element_list:
 	    error_elements_decoded.append(item.decode('utf8'))
@@ -865,9 +894,12 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 	    model_error.append(error_list[np.where(error_element_list == element)])
 	model_error = np.hstack(model_error)
 
+	## likelihood is calculated (the model error vector is expanded)
 	likelihood = likelihood_evaluation(model_error[:,None], star_errors , model_abundances, star_abundances)
 	
+	## Prior from all stars is added
 	prior = sum(log_prior_list)
+	## Prior for global parameters is subtracted
 	prior -= (len(a.stellar_identifier_list)-1) * global_parameter_prior
 
 	########

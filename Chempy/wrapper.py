@@ -376,9 +376,25 @@ def mcmc(a):
 
 def mcmc_multi(a, changing_parameter, error_list, elements):
 	'''
-	Convenience function to use the MCMC. A subdirectory mcmc/ will be created in the current directory and intermediate chains will be stored there.
+	Convenience function to use the MCMC for multiple zones (and therefore multiple observations). A subdirectory mcmc/ will be created in the current directory and intermediate chains will be stored there.
+	The MCMC will sample the volume of best posterior for the likelihood functions that are declared in parameter.py. 
+	Default is a list of Proto-sun, Arcturus and B-stars. The MCMC uses many walkers and can use multiple threads. Each walker will evaluate a series of Chempy zones and add their posterior together which then will be returned.
 	
-	The MCMC will sample the volume of best posterior for the likelihood functions that are declared in parameter.py. Default is ['sol_norm','gas_reservoir','sn_ratio'] which corresponds to 'Sun+' from the paper.
+	INPUT:
+
+	   a = the model parameters
+
+	   changing_parameter = the parameter vector for initialization (will usually be found from minimization before). The initial chain will be created by jittering slightly the initial parameter guess
+
+	   error_list = the vector of element errors
+
+	   elements = the corresponding element symbols
+
+	OUTPUT:
+
+	   The function will create a folder and store the chain as well as the predicted element values
+
+	The MCMC stops when the convergence criteria is met, which is when the median posterior of all walkers does not change much inbetween 200 steps anymore.
 	'''
 	import time
 	import os

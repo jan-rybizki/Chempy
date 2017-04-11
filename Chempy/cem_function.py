@@ -580,7 +580,7 @@ def global_optimization_real(changing_parameter, result):
 	for i,item in enumerate(a.stellar_identifier_list):
 		parameter_list.append(ModelParameters())
 		parameter_list[-1].stellar_identifier = item
-		p0_list.append(np.hstack((changing_parameter,result[i,3:])))
+		p0_list.append(np.hstack((changing_parameter,result[i,len(SSP_parameters):])))
 	args = zip(p0_list,parameter_list)
 	p = mp.Pool(len(parameter_list))
 	t = p.map(posterior_function_returning_predictions, args)
@@ -809,11 +809,11 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 
 	a = ModelParameters()
 	
-	global_parameters = changing_parameter[:3]
-	local_parameters = changing_parameter[3:]
-	local_parameters = local_parameters.reshape((len(a.stellar_identifier_list),3))
+	global_parameters = changing_parameter[:len(a.SSP_parameters)]
+	local_parameters = changing_parameter[len(a.SSP_parameters):]
+	local_parameters = local_parameters.reshape((len(a.stellar_identifier_list),len(a.ISM_parameters)))
 
-	a.to_optimize = ['high_mass_slope', 'log10_N_0', 'log10_sn1a_time_delay']
+	a.to_optimize = a.SSP_parameters_to_optimize
 	global_parameter_prior = get_prior(global_parameters,a)
 	
 	predictions_list = []

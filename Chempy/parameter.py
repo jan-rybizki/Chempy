@@ -13,7 +13,8 @@ class ModelParameters(object):
 	solar_abundance_name = solar_abundance_name_list[solar_abundance_name_index]
 
 	# Observational constraints
-	stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
+	#stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
+	stellar_identifier_list = ['2M01233744+3414451', '2M02484368+3106550', '2M05510326+1129561', '2M09031459+0648573', '2M09422500+4846338', '2M02011031+2426397', '2M09055837+0505324', '2M20092234+5601366']
 	stellar_identifier = 'Proto-sun'
 
 	# Convergense parameters of minimization and MCMC

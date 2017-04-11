@@ -241,7 +241,7 @@ def multi_star_optimization(a):
 	print('first minimization for each star separately took: %2.f seconds' %(initial - start_time))
 
 	# IV: repeat II and III until posterior does not change much
-	result[:,:3] = np.mean(result[:,:3], axis = 0)
+	result[:,:len(a.SSP_parameters)] = np.mean(result[:,:len(a.SSP_parameters)], axis = 0)
 	posteriors = []
 	while True:
 		if len(posteriors) > 1:
@@ -251,7 +251,7 @@ def multi_star_optimization(a):
 		initial = time.time()
 		# II: Global parameter minimization:
 		# 1: only SSP parameters free. Use mean SSP parameter values and individual (but fixed ISM parameter values)
-		changing_parameter = result[0,:3]
+		changing_parameter = result[0,:len(a.SSP_parameters)]
 		# 2: Call each star in multiprocess but only return the predictions
 		# 3: Calculate the likelihood for each star and optimize the common model error (is all done within minimizer global, which is calling 'global optimization')
 		x = minimizer_global(changing_parameter, a, result)
@@ -266,7 +266,7 @@ def multi_star_optimization(a):
 
 		# III: Local parameter minimization:
 		# 1: Use fixed global parameters and fixed common errors make initial conditions
-		result[:,:3] = x
+		result[:,:len(a.SSP_parameters)] = x
 
 		log_list.append((np.copy(x),posterior, error_list,elements))
 		log_list.append('global minimization')
@@ -279,7 +279,7 @@ def multi_star_optimization(a):
 		for i,item in enumerate(a.stellar_identifier_list):
 			parameter_list.append(ModelParameters())
 			parameter_list[-1].stellar_identifier = item
-			p0_list.append(result[i,3:])
+			p0_list.append(result[i,len(a.SSP_parameters):])
 			x_list.append(x)
 			error_list_mp.append(error_list)
 			element_list_mp.append(elements)
@@ -292,7 +292,7 @@ def multi_star_optimization(a):
 		p.close()
 		p.join()
 		local_parameters = np.vstack(t)
-		result[:,3:] = local_parameters
+		result[:,len(a.SSP_parameters):] = local_parameters
 
 		log_list.append(np.copy(result))
 		log_list.append('local minimization')
@@ -305,9 +305,9 @@ def multi_star_optimization(a):
 
 	# V: MCMC run
 	## reshape the result to have global parameters in the front and the local parameters following
-	changing_parameter = list(result[0,:3])
+	changing_parameter = list(result[0,:len(a.SSP_parameters)])
 	for i in range(result.shape[0]):
-		changing_parameter.append(list(result[i,3:]))
+		changing_parameter.append(list(result[i,len(a.SSP_parameters):]))
 	changing_parameter = np.hstack(changing_parameter)
 	## jitter the parameters to initialise the chain (add a validation later, i.e. testing that the particular parameters yield a result)
 	mcmc_multi(a, changing_parameter, error_list, elements)

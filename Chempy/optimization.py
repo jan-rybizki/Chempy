@@ -72,7 +72,7 @@ def posterior_probability(x,a):
 	s,t = posterior_function(x,a)#cem(x,a)#posterior_function(x,a)
 	return s,t
 
-def minimizer_initial(a):
+def minimizer_initial(identifier):
 	'''
 	This is a function that is minimizing the posterior of Chempy from initial conditions (and can be called in multiprocesses)
 
@@ -86,6 +86,11 @@ def minimizer_initial(a):
 	'''
 	from scipy.optimize import minimize
 	from .cem_function import posterior_function_for_minimization
+	from .parameter import ModelParameters
+
+	a = ModelParameters()
+	a.stellar_identifier = identifier
+
 	res = minimize(fun = posterior_function_for_minimization,
 		x0 = a.p0,
 		args = (a),
@@ -99,7 +104,13 @@ def minimizer_initial(a):
 def minimizer_local(args):
 	from scipy.optimize import minimize
 	from .cem_function import posterior_function_local_for_minimization
-	changing_parameter,a, global_parameters, errors, elements = args
+	from .parameter import ModelParameters
+
+	a = ModelParameters()
+
+	changing_parameter, identifier, global_parameters, errors, elements = args
+	
+	a.stellar_identifier = identifier
 	res = minimize(fun = posterior_function_local_for_minimization,
 		x0 = changing_parameter,
 		args = (a, global_parameters, errors, elements),

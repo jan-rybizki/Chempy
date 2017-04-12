@@ -126,7 +126,7 @@ def shorten_sfr(a):
 	# check whether the sfr is enough at end to produce reasonable number of stars (which is necessary in order to have a probability to observe a star at all)
 	sfr_at_end = float(basic_sfr.sfr[cut] / basic_sfr.dt)
 	fraction_of_mean_sfr = sfr_at_end / mean_sfr 	
-	assert fraction_of_mean_sfr > 0.05, 'The total SFR of the last age bin is below 5% of the mean SFR'
+	assert fraction_of_mean_sfr > 0.05, ('The total SFR of the last age bin is below 5% of the mean SFR', 'stellar identifier = ', a.stellar_identifier, 'star time = ', star_time, 'model time = ', time_model ) 
 	return a
 
 def cem(changing_parameter,a):

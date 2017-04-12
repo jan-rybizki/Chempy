@@ -229,8 +229,7 @@ def multi_star_optimization():
 	# 1: for each star make initial conditions (each star needs other model parameters)	
 	parameter_list = []
 	for item in a.stellar_identifier_list:
-		parameter_list.append(ModelParameters())
-		parameter_list[-1].stellar_identifier = item
+		parameter_list.append(item)
 	# 2: call posterior_function_for_minimization with scipy.optimize.minimize in multiprocess for each star and recover the found parameters
 	p = mp.Pool(len(parameter_list))
 	t = p.map(minimizer_initial, parameter_list)
@@ -282,8 +281,7 @@ def multi_star_optimization():
 		element_list_mp = []
 
 		for i,item in enumerate(a.stellar_identifier_list):
-			parameter_list.append(ModelParameters())
-			parameter_list[-1].stellar_identifier = item
+			parameter_list.append(item)
 			p0_list.append(result[i,len(a.SSP_parameters):])
 			x_list.append(x)
 			error_list_mp.append(error_list)

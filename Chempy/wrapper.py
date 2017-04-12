@@ -202,13 +202,13 @@ def Chempy_gross(a):
 	return cube, abundances
 
 
-def multi_star_optimization(a):
+def multi_star_optimization():
 	'''
 	This function will optimize the parameters of all stars in a hierachical manner (similar to gibbs sampling)
 
 	INPUT: 
 
-	   a = model parameters (different stellar data is given in a list of a.stellar_identifier_list. For all those stars the individual ISM parameters are optimized and the global SSP parameters)
+	   a = will be loaded from parameter.py (prepare all variables there)
 
 	OUTPUT:
 
@@ -219,6 +219,9 @@ def multi_star_optimization(a):
 	from .optimization import minimizer_initial, minimizer_global, minimizer_local
 	from .cem_function import global_optimization_error_returned
 	from .parameter import ModelParameters
+	
+	a = ModelParameters()
+
 	start_time = time.time()
 
 	log_list = []
@@ -311,7 +314,7 @@ def multi_star_optimization(a):
 		changing_parameter.append(list(result[i,len(a.SSP_parameters):]))
 	changing_parameter = np.hstack(changing_parameter)
 	## jitter the parameters to initialise the chain (add a validation later, i.e. testing that the particular parameters yield a result)
-	mcmc_multi(a, changing_parameter, error_list, elements)
+	mcmc_multi(changing_parameter, error_list, elements)
 	# 1: Free all parameters and optimize common error (SSP should be the same for all stars)
 	# 2: Plug everything into emcee and sample the posterior
 	return log_list
@@ -375,15 +378,13 @@ def mcmc(a):
 			break
 
 
-def mcmc_multi(a, changing_parameter, error_list, elements):
+def mcmc_multi(changing_parameter, error_list, elements):
 	'''
 	Convenience function to use the MCMC for multiple zones (and therefore multiple observations). A subdirectory mcmc/ will be created in the current directory and intermediate chains will be stored there.
 	The MCMC will sample the volume of best posterior for the likelihood functions that are declared in parameter.py. 
 	Default is a list of Proto-sun, Arcturus and B-stars. The MCMC uses many walkers and can use multiple threads. Each walker will evaluate a series of Chempy zones and add their posterior together which then will be returned.
 	
 	INPUT:
-
-	   a = the model parameters
 
 	   changing_parameter = the parameter vector for initialization (will usually be found from minimization before). The initial chain will be created by jittering slightly the initial parameter guess
 
@@ -401,8 +402,10 @@ def mcmc_multi(a, changing_parameter, error_list, elements):
 	import os
 	import multiprocessing as mp
 	from .cem_function import  posterior_function_many_stars
+	from .parameter import ModelParameters
 	import emcee
 
+	a = ModelParameters()
 	start1 = time.time()
 	directory = 'mcmc/'
 	if os.path.exists(directory):

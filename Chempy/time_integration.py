@@ -237,7 +237,7 @@ class ABUNDANCE_MATRIX(object):
 				infall_needed = float(self.gas_reservoir['gas'][index])
 			## for few parameter values of gas_power the infall_needed value could be too small
 			if infall_needed + gas_there <= self.sfr[index]:
-				print('too few gas requested')
+				print('too few gas requested', 'infall needed= ', infall_needed, 'gas there = ', gas_there, 'total SFR = ', self.sfr) 
 				infall_needed = self.sfr[index] - gas_there
 			self.infall[index] = float(infall_needed)
 			self.cube['infall'][index] = float(infall_needed)
@@ -250,7 +250,7 @@ class ABUNDANCE_MATRIX(object):
 
 		# sfr will be subtracted in the next step self.sfr[index]
 		self.cube['gas'][index] = sum(list(self.cube[self.elements][index]))
-		assert self.cube['gas'][index] >= self.sfr[index]
+		assert self.cube['gas'][index] >= self.sfr[index], print('time index: ', index, 'gas: ', self.cube['gas'][index], 'sfr: ', self.sfr[index], 'total SFR: ', self.sfr)
 		for i,item in enumerate(self.elements):
 			self.cube[item][index] -= self.sfr[index] * np.divide(self.cube[item][index],self.cube['gas'][index])
 		self.cube['gas'][index] -= self.sfr[index]

@@ -51,7 +51,7 @@ def mass_fraction_to_abundances(cube, solar_abundances):
 		#cube_abundances[item] = np.log10(cube_abundances[item]) + 12.
 		# supressing the warnings
 		assert cube_abundances[item].all() >= 0.
-		with np.errstate(divide='ignore'):
+		with np.errstate(invalid='ignore'):
 			cube_abundances[item] = np.where(cube_abundances[item] == 0. , -np.inf, np.log10(cube_abundances[item]) + 12.)
 
 	for i,item in enumerate(element_names):

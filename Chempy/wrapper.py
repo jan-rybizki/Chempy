@@ -239,6 +239,7 @@ def multi_star_optimization(a):
 	log_list.append('initial minimization')
 	initial = time.time()
 	print('first minimization for each star separately took: %2.f seconds' %(initial - start_time))
+	print(log_list)
 
 	# IV: repeat II and III until posterior does not change much
 	result[:,:len(a.SSP_parameters)] = np.mean(result[:,:len(a.SSP_parameters)], axis = 0)
@@ -263,7 +264,7 @@ def multi_star_optimization(a):
 
 		global_iteration1 = time.time()
 		print('first global minimization took: %2.f seconds' %(global_iteration1 - initial))	
-
+		print(log_list)
 		# III: Local parameter minimization:
 		# 1: Use fixed global parameters and fixed common errors make initial conditions
 		result[:,:len(a.SSP_parameters)] = x
@@ -299,9 +300,9 @@ def multi_star_optimization(a):
 
 		local_iteration1 = time.time()
 		print('first local minimization took: %2.f seconds' %(local_iteration1 - global_iteration1))	
-
+		print(log_list)
 	log_list.append(posteriors)
-
+	print(log_list)
 
 	# V: MCMC run
 	## reshape the result to have global parameters in the front and the local parameters following

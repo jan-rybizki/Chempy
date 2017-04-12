@@ -250,7 +250,7 @@ class ABUNDANCE_MATRIX(object):
 
 		# sfr will be subtracted in the next step self.sfr[index]
 		self.cube['gas'][index] = sum(list(self.cube[self.elements][index]))
-		assert self.cube['gas'][index] >= self.sfr[index], print('time index: ', index, 'gas: ', self.cube['gas'][index], 'sfr: ', self.sfr[index], 'total SFR: ', self.sfr)
+		assert self.cube['gas'][index] >= self.sfr[index], ('time index: ', index, 'gas: ', self.cube['gas'][index], 'sfr: ', self.sfr[index], 'total SFR: ', self.sfr)
 		for i,item in enumerate(self.elements):
 			self.cube[item][index] -= self.sfr[index] * np.divide(self.cube[item][index],self.cube['gas'][index])
 		self.cube['gas'][index] -= self.sfr[index]

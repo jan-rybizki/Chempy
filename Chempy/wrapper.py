@@ -248,7 +248,7 @@ def multi_star_optimization():
 	posteriors = []
 	while True:
 		if len(posteriors) > 1:
-			if np.abs(posteriors[-1] - posteriors[-2]) < 0.01:
+			if np.abs(posteriors[-1] - posteriors[-2]) < 0.5:
 				break
 
 		initial = time.time()

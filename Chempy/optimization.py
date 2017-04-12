@@ -110,7 +110,7 @@ def minimizer_local(args):
 		print(res.message)
 	return res.x
 
-def minimizer_global(changing_parameter, a, result):
+def minimizer_global(changing_parameter, tol, maxiter, verbose, result):
 	'''
 	This is a function that minimizes the posterior coming from global optimization
 
@@ -118,7 +118,11 @@ def minimizer_global(changing_parameter, a, result):
 
 	   changing_parameter = the global SSP parameters (parameters that all stars share)
 
-	   a = model parameters (here also maxiter and tolerance for the minimization are specified)
+	   tol = at which change in posterior the minimization should stop
+
+	   maxiter = maximum number of iteration
+
+	   verbose = print or print not result (bool)
 
 	   result = the complete parameter set is handed over as an array of shape(len(stars),len(all parameters)). From those the local ISM parameters are taken
 
@@ -133,8 +137,8 @@ def minimizer_global(changing_parameter, a, result):
 		x0 = changing_parameter,
 		args = (result),
 		method = 'Nelder-Mead',
-		tol = a.tol_minimization,
-		options = {'maxiter':a.maxiter_minimization})
-	if a.verbose:
+		tol = tol,
+		options = {'maxiter':maxiter})
+	if verbose:
 		print(res.message)
 	return res.x

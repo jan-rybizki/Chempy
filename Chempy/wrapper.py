@@ -255,7 +255,7 @@ def multi_star_optimization(a):
 		changing_parameter = result[0,:len(a.SSP_parameters)]
 		# 2: Call each star in multiprocess but only return the predictions
 		# 3: Calculate the likelihood for each star and optimize the common model error (is all done within minimizer global, which is calling 'global optimization')
-		x = minimizer_global(changing_parameter, a, result)
+		x = minimizer_global(changing_parameter,  a.tol_minimization, a.maxiter_minimization, a.verbose, result)
 
 		# 4: return global SSP parameters and common model error
 		posterior, error_list, elements = global_optimization_error_returned(x, result)

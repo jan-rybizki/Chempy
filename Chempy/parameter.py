@@ -19,7 +19,7 @@ class ModelParameters(object):
 
 	# Convergense parameters of minimization and MCMC
 	maxiter_minimization = 1000
-	tol_minimization = 1e-1
+	tol_minimization = 1e-3
 	nwalkers = 64
 	mburn = 1
 	save_state_every = 1

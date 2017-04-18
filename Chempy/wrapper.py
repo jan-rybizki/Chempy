@@ -421,10 +421,7 @@ def mcmc_multi(changing_parameter, error_list, elements):
 		while result == -np.inf:
 			jitter = np.random.normal(loc = 0, scale = 0.001, size = ndim)
 			result, dummy = posterior_function_many_stars(changing_parameter + jitter,error_list,elements)
-			print(i)
 		chain[i] = changing_parameter + jitter
-
-	print(chain[i])
 
 	sampler = emcee.EnsembleSampler(a.nwalkers,ndim,posterior_function_many_stars,threads=nthreads, args = [error_list,elements])
 	pos,prob,state,blobs = sampler.run_mcmc(chain,a.mburn)

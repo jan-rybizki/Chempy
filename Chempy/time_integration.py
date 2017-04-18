@@ -229,6 +229,7 @@ class ABUNDANCE_MATRIX(object):
 			gas_needed = np.power(self.sfr[index] / float(self.starformation_efficiency),1./float(self.gas_power))
 			gas_there = sum(list(self.cube[self.elements][index]))
 			infall_needed = gas_needed - gas_there
+			infall_needed += 1e-16 # to avoid less gas being requested than needed due to rounding errors (not sure what results from that, too little gas in the corona could be a result. lets see)
 			#assert infall_needed >= 0.
 			if infall_needed < 0. :
 				infall_needed = 0.

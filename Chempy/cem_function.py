@@ -708,14 +708,14 @@ def extract_parameters_and_priors(changing_parameter, a):
 		a.sn1a_parameter = [a.sn1a_norm,a.sn1a_a_parameter,a.sn1a_beginning,a.sn1a_scale]
 	return(a)
 
-def posterior_function_local_for_minimization(changing_parameter,a, global_parameters, errors, elements):
+def posterior_function_local_for_minimization(changing_parameter, stellar_identifier, global_parameters, errors, elements):
 	'''
 	calls the local posterior function but just returns the negative log posterior instead of posterior and blobs
 	'''
-	posterior, blobs = posterior_function_local(changing_parameter,a, global_parameters, errors, elements)
+	posterior, blobs = posterior_function_local(changing_parameter, stellar_identifier, global_parameters, errors, elements)
 	return -posterior
 
-def posterior_function_local(changing_parameter,a, global_parameters, errors, elements):
+def posterior_function_local(changing_parameter, stellar_identifier, global_parameters, errors, elements):
 	'''
 	The posterior function is the interface between the optimizing function and Chempy. Usually the likelihood will be calculated with respect to a so called 'stellar wildcard'.
 	Wildcards can be created according to the tutorial 6. A few wildcards are already stored in the input folder. Chempy will try the current folder first. If no wildcard npy file with the name a.stellar_identifier is found it will look into the Chempy/input/stars folder.
@@ -739,16 +739,19 @@ def posterior_function_local(changing_parameter,a, global_parameters, errors, el
 	   the blobs contain the actual values of each predicted data point (e.g. elemental abundance value)
 	'''
 	try:
-		posterior, blobs = posterior_function_local_real(changing_parameter,a, global_parameters, errors, elements)
+		posterior, blobs = posterior_function_local_real(changing_parameter, stellar_identifier, global_parameters, errors, elements)
 		return posterior, blobs
 	except Exception as ex:
 		import traceback; traceback.print_exc()
 	return -np.inf, [0]
 
-def posterior_function_local_real(changing_parameter,a, global_parameters, errors, elements):
+def posterior_function_local_real(changing_parameter, stellar_identifier, global_parameters, errors, elements):
 	'''
 	This is the actual posterior function. But the functionality is explained in posterior_function.
 	'''
+	from .parameter import ModelParameters
+	a = ModelParameters()
+	a.stellar_identifier = stellar_identifier
 	
 	start_time = time.time()
 	# the values in a are updated according to changing_parameters and the prior list is appended
@@ -764,11 +767,11 @@ def posterior_function_local_real(changing_parameter,a, global_parameters, error
 	#print('precalculation: ', start_time - precalculation)
 
 	# The endtime is changed for the actual calculation but restored to default afterwards
-	backup = a.end ,a.time_steps, a.total_mass
+	#backup = a.end ,a.time_steps, a.total_mass
 	
 	# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
 	abundance_list,elements_to_trace = cem_real2(a)
-	a.end ,a.time_steps, a.total_mass = backup
+	#a.end ,a.time_steps, a.total_mass = backup
 	
 	# The last two entries of the abundance list are the Corona metallicity and the SN-ratio
 	abundance_list = abundance_list[:-2]

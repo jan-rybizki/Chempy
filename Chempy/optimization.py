@@ -110,10 +110,9 @@ def minimizer_local(args):
 
 	changing_parameter, identifier, global_parameters, errors, elements = args
 	
-	a.stellar_identifier = identifier
 	res = minimize(fun = posterior_function_local_for_minimization,
 		x0 = changing_parameter,
-		args = (a, global_parameters, errors, elements),
+		args = (identifier , global_parameters, errors, elements),
 		method = 'Nelder-Mead',
 		tol = a.tol_minimization,
 		options = {'maxiter':a.maxiter_minimization})

@@ -248,7 +248,7 @@ def multi_star_optimization():
 	posteriors = []
 	while True:
 		if len(posteriors) > 1:
-			if np.abs(posteriors[-1] - posteriors[-2]) < 0.01:
+			if np.abs(posteriors[-1] - posteriors[-2]) < a.gibbs_sampler_tolerance:
 				break
 
 		initial = time.time()
@@ -447,5 +447,5 @@ def mcmc_multi(changing_parameter, error_list, elements):
 		#print("Mean acceptance fraction:", sampler.acceptance_fraction)
 		elapsed1 = (time.time() - start1)
 		print('calculation so far took', elapsed1, ' seconds')
-		if i>2000 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < 0.5 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < 0.5:
+		if i>a.min_mcmc_iterations and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < 0.5 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < 0.5:
 			break

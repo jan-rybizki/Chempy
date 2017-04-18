@@ -241,7 +241,6 @@ def multi_star_optimization():
 	log_list.append('initial minimization')
 	initial = time.time()
 	print('first minimization for each star separately took: %2.f seconds' %(initial - start_time))
-	print(log_list)
 
 	# IV: repeat II and III until posterior does not change much
 	result[:,:len(a.SSP_parameters)] = np.mean(result[:,:len(a.SSP_parameters)], axis = 0)
@@ -273,7 +272,7 @@ def multi_star_optimization():
 
 		log_list.append((np.copy(x),posterior, error_list,elements))
 		log_list.append('global minimization')
-		print(log_list)
+
 		p0_list = []
 		parameter_list = []
 		x_list = []
@@ -301,7 +300,7 @@ def multi_star_optimization():
 		log_list.append('local minimization')
 		local_iteration1 = time.time()
 		print('first local minimization took: %2.f seconds' %(local_iteration1 - global_iteration1))	
-		print(log_list)
+
 	log_list.append(posteriors)
 	print(log_list)
 

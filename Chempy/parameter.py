@@ -19,9 +19,9 @@ class ModelParameters(object):
 
 	# Convergense parameters of minimization and MCMC
 	maxiter_minimization = 1000
-	min_mcmc_iterations = 1000
-	gibbs_sampler_tolerance = 0.1
-	tol_minimization = 1e-2
+	min_mcmc_iterations = 700
+	gibbs_sampler_tolerance = 0.2
+	tol_minimization = 1e-1
 	nwalkers = 64
 	mburn = 1
 	save_state_every = 1

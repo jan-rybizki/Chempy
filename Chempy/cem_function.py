@@ -904,9 +904,10 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 	prior = sum(log_prior_list)
 	## Prior for global parameters is subtracted
 	prior -= (len(a.stellar_identifier_list)-1) * global_parameter_prior
-
+	posterior = prior+likelihood
+	assert np.isnan(posterior) == False, ('returned posterior = ', posterior , 'prior = ' , prior, 'likelihood = ', likelihood, 'changing parameter = ', changing_parameter )
 	########
 	if a.verbose:
 		print('prior = ', prior, 'likelihood = ', likelihood)
 
-	return(prior+likelihood,model_abundances)
+	return(posterior,model_abundances)

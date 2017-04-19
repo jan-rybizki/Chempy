@@ -232,13 +232,14 @@ class ABUNDANCE_MATRIX(object):
 			infall_needed *= 1.00000001 # to avoid less gas being requested than needed due to rounding errors (not sure what results from that, too little gas in the corona could be a result. lets see)
 			if infall_needed < 0. :
 				infall_needed = 0.
+			## for few parameter values of gas_power and SFE the infall_needed value could be too small
+			if infall_needed + gas_there <= self.sfr[index]:
+				print('too few gas requested', 'infall needed= ', infall_needed, 'gas there = ', gas_there, 'total SFR = ', self.sfr, 'gas needed = ', gas_needed, 'corona = ', self.gas_reservoir['gas'][index], 'sfe = ', starformation_efficiency , 'dt = ', self.dt) 
+				infall_needed = self.sfr[index] - gas_there
+				infall_needed *= 1.01 # to avoid the ISM being empty
 			if infall_needed > self.gas_reservoir['gas'][index]:
 				print('gas reservoir is empty')
 				infall_needed = float(self.gas_reservoir['gas'][index])
-			## for few parameter values of gas_power the infall_needed value could be too small
-			if infall_needed + gas_there <= self.sfr[index]:
-				print('too few gas requested', 'infall needed= ', infall_needed, 'gas there = ', gas_there, 'total SFR = ', self.sfr, 'gas needed = ', gas_needed, 'corona = ', self.gas_reservoir['gas'][index]) 
-				infall_needed = self.sfr[index] - gas_there
 			self.infall[index] = float(infall_needed)
 			self.cube['infall'][index] = float(infall_needed)
 		## gas reservoir gas is taken away and infalling on cube_gas

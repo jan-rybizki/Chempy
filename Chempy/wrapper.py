@@ -415,7 +415,7 @@ def mcmc_multi(changing_parameter, error_list, elements):
 	if nthreads == 4:
 		nthreads = 2
 	ndim = len(changing_parameter)
-	a.nwalkers = max(a.nwalkers, int(ndim/2.)+1)
+	a.nwalkers = max(a.nwalkers, int(ndim*2))
 	chain = np.empty(shape = (a.nwalkers,ndim))
 	for i in range(a.nwalkers):
 		result = -np.inf

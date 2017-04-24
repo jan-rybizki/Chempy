@@ -6,6 +6,7 @@ import time
 from .data_to_test import likelihood_function, wildcard_likelihood_function, elements_plot, arcturus, sol_norm, plot_processes, save_abundances,  cosmic_abundance_standard, ratio_function, star_function, gas_reservoir_metallicity
 import multiprocessing as mp
 from .wrapper import initialise_stuff, Chempy
+from scipy.misc import logsumexp
 
 def gaussian_log(x,x0,xsig):
 	'''
@@ -627,7 +628,7 @@ def global_optimization_real(changing_parameter, result):
 			star_abundances[new_element_index,star_index] = item[3][element_index]
 
 	# Brute force testing of a few model errors
-	model_errors = np.linspace(0.03,1.,50)
+	model_errors = np.linspace(a.flat_model_error_prior[0],a.flat_model_error_prior[1],a.flat_model_error_prior[2])
 	error_list = []
 	likelihood_list = []
 	for i,element in enumerate(elements):
@@ -638,7 +639,12 @@ def global_optimization_real(changing_parameter, result):
 		if len(cut) == 2:
 			cut = cut[0][0]
 		error_list.append(float(model_errors[cut]))
-		likelihood_list.append(np.max(error_temp))
+		## Adding the marginalization over the model error (within the prior borders). Taking the average of the likelihoods (they are log likelihoods so exp needs to be called)
+		if a.error_marginalization:
+			likelihood_list.append(logsumexp(error_temp, b = 1./float(a.flat_model_error_prior[2])))
+		else:
+			likelihood_list.append(np.max(error_temp))
+	
 	error_list = np.hstack(error_list)
 	likelihood_list = np.hstack(likelihood_list)
 	likelihood = np.sum(likelihood_list)
@@ -781,7 +787,16 @@ def posterior_function_local_real(changing_parameter, stellar_identifier, global
 	#print('model: ', precalculation - model)
 
 	# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
-	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = errors, elements = elements)
+	if a.error_marginalization:
+		likelihood_list = []
+		model_errors = np.linspace(a.flat_model_error_prior[0],a.flat_model_error_prior[1],a.flat_model_error_prior[2])
+		for i, item in enumerate(model_errors):
+			error_temp = np.ones_like(errors) * item 
+			likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = error_temp, elements = elements)
+			likelihood_list.append(likelihood)
+		likelihood = logsumexp(likelihood_list, b = 1./float(a.flat_model_error_prior[2]))
+	else:
+		likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = errors, elements = elements)
 	#likelihood = 0.
 	#abundance_list = [0]
 
@@ -898,7 +913,15 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 	model_error = np.hstack(model_error)
 
 	## likelihood is calculated (the model error vector is expanded)
-	likelihood = likelihood_evaluation(model_error[:,None], star_errors , model_abundances, star_abundances)
+	if a.error_marginalization:
+		likelihood_list = []
+		model_errors = np.linspace(a.flat_model_error_prior[0],a.flat_model_error_prior[1],a.flat_model_error_prior[2])
+		for i, item in enumerate(model_errors):
+			error_temp = np.ones_like(model_error) * item 
+			likelihood_list.append(likelihood_evaluation(error_temp[:,None], star_errors , model_abundances, star_abundances))
+		likelihood = logsumexp(likelihood_list, b = 1./float(a.flat_model_error_prior[2]))	
+	else:
+		likelihood = likelihood_evaluation(model_error[:,None], star_errors , model_abundances, star_abundances)
 	
 	## Prior from all stars is added
 	prior = sum(log_prior_list)

@@ -14,8 +14,7 @@ class ModelParameters(object):
 
 	# Observational constraints
 	#stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
-	#stellar_identifier_list = ['2M01233744+3414451', '2M02484368+3106550', '2M05510326+1129561', '2M09031459+0648573', '2M09422500+4846338', '2M02011031+2426397', '2M09055837+0505324', '2M20092234+5601366']
-	stellar_identifier_list = ['2M05510326+1129561', '2M09031459+0648573', '2M09422500+4846338', '2M02011031+2426397', '2M09055837+0505324', '2M20092234+5601366']
+	stellar_identifier_list = ['2M01233744+3414451', '2M02484368+3106550', '2M05510326+1129561', '2M09031459+0648573', '2M09422500+4846338', '2M02011031+2426397', '2M09055837+0505324', '2M20092234+5601366']
 	stellar_identifier = 'Proto-sun'
 
 	# Convergense parameters of minimization and MCMC
@@ -27,6 +26,8 @@ class ModelParameters(object):
 	mburn = 1
 	save_state_every = 1
 	m = 3000 # For 7 free parameters 300 iterations are usually enough. The mcmc routine is stopping after 300 if the posterior mean is converged for more than 200 iterations.
+	error_marginalization = True # Marginalizing over the model error or using the best model error value
+	flat_model_error_prior = [0.,1.,51] # Flat prior for the error marginalization [begin, end, number of evaluations inbetween]
 	
 	verbose = 0
 	# Time discretization, so far only linear time-steps are implemented

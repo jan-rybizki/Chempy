@@ -792,9 +792,10 @@ def posterior_function_local_real(changing_parameter, stellar_identifier, global
 		model_errors = np.linspace(a.flat_model_error_prior[0],a.flat_model_error_prior[1],a.flat_model_error_prior[2])
 		for i, item in enumerate(model_errors):
 			error_temp = np.ones_like(errors) * item 
-			likelihood_temp, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = error_temp, elements = elements)
+			likelihood_temp, element_list, model_error, star_error_list, abundance_list_dump, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = error_temp, elements = elements)
 			likelihood_list.append(likelihood_temp)
 		likelihood = logsumexp(likelihood_list, b = 1./float(a.flat_model_error_prior[2]))
+		abundance_list = abundance_list_dump
 	else:
 		likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = errors, elements = elements)
 	#likelihood = 0.

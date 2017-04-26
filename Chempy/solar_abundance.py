@@ -105,6 +105,47 @@ class solar_abundances(object):
 		self.y = self.fractions[1]
 		self.z = sum(self.fractions[2:])
 
+
+	def AG89(self):#									O 8.69             Mg 7.60 Fe 7.50
+		'''
+		Photospheric abundances and errors are loaded from Anders & Grevesse 1989. Also the elment fractions are calculated together with X, Y and Z the Hydrogen, Helium and metallicity fraction.
+		'''
+		abundances = [12.00,10.99,3.31,1.42,2.88,8.56,8.05,8.93,4.56,8.09,6.33,7.58,6.47,\
+		7.55,5.45,7.21,5.27,6.56,5.12,6.36,3.10,4.99,4.00,5.67,5.39,7.67,\
+		4.92,6.25,4.21,4.60,3.13,3.41,2.37,3.35,2.63,3.23,2.60,2.90,2.24,\
+		2.60,1.42,1.92,1.84,1.12,1.69,0.94,1.86,0.82,2.14,1.04,2.24,1.51,\
+		2.23,1.12,2.13,1.22,1.55,0.71,1.50,1.00,0.51,1.12,0.33,1.15,0.50,\
+		0.93,0.13,0.95,0.12,0.73,0.13,0.68,0.27,1.38,1.37,1.68,0.83,1.09,\
+		0.82,1.85,0.71,0.08,-0.49]
+
+		
+		errors = [0, 3, 4, 4, 4, 4, 4, 4, 3, 10, 3, 5, 7,\
+		5, 4, 6, 6, 10, 13, 2, 4, 2, 2, 3, 3, 3,\
+		4, 4, 4, 8, 3, 14, 5, 3, 8, 7, 3, 6, 3,\
+		3, 6, 5, 7, 12, 4, 1, 15, 3, 4, 7, 4, 8,\
+		8, 2, 5, 9, 20, 8, 6, 8, 8, 4, 1, 1, 1,\
+		6, 1, 1, 1, 1, 1, 2, 4, 3, 3, 3, 6, 5,\
+		4, 3, 3, 2, 4]
+
+		errors = list(np.array(errors)*0.01)
+		
+		numbers = [1, 2, 3, 4, 5, 6, 7, 8 , 9, 10, 11, 12,  13,\
+		14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,\
+		27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,\
+		40, 41, 42, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53,\
+		54, 55, 56, 57, 58, 59, 60, 62, 63, 64, 65, 66, 67,\
+		68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,\
+		81, 82, 83, 90, 92]
+		
+		for i,item in enumerate(numbers):
+			self.table['photospheric'][np.where(self.table['Number']==item)] = abundances[i]
+			self.table['error'][np.where(self.table['Number']==item)] = errors[i]		
+		self.fractions = abundance_to_mass_fraction(np.hstack(self.all_elements),np.hstack(self.all_element_masses),self.table['photospheric'],self.table['photospheric'],np.hstack(self.all_elements))
+
+		self.x = self.fractions[0]
+		self.y = self.fractions[1]
+		self.z = sum(self.fractions[2:])
+
 	def Asplund05_pure_solar(self):
 		'''
 		Photospheric abundances and errors are loaded from Asplund+ 2005. Also the elment fractions are calculated together with X, Y and Z the Hydrogen, Helium and metallicity fraction.

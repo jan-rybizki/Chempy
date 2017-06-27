@@ -43,13 +43,14 @@ class PRIMORDIAL_INFALL(object):
 		self.fractions[np.where(self.symbols=='H')] = 0.76
 		self.fractions[np.where(self.symbols=='He')] = 0.24
 		
-	def solar(self,metallicity_in_dex):
+	def solar(self, metallicity_in_dex, helium_fraction = 0.285):
 		'''
 		solar values scaled to a specific metallicity
 
 		INPUT 
 
-		   metallicity in dex
+		   metallicity_in_dex =
+		   helium_fraction = 
 		'''
 		self.symbols = []
 		self.abundances = []
@@ -66,6 +67,7 @@ class PRIMORDIAL_INFALL(object):
 				self.fractions[i] *= divisor
 				tmp += self.fractions[i]
 			if item in ['He']:
+				self.fractions[i] = helium_fraction
 				tmp += self.fractions[i]
 		self.fractions[np.where(self.symbols == 'H')] = 1-tmp
 		

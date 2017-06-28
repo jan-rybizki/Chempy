@@ -90,7 +90,7 @@ class ModelParameters(object):
 		infall_beginning = 0
 		infall_scale = 3.3
 
-	yield_table_name_sn2_list = ['chieffi04','Nugrid','Nomoto2013','Portinari']
+	yield_table_name_sn2_list = ['chieffi04','Nugrid','Nomoto2013','Portinari', 'chieffi04_net', 'Nomoto2013_net']
 	yield_table_name_sn2_index = 2
 	yield_table_name_sn2 = yield_table_name_sn2_list[yield_table_name_sn2_index]
 

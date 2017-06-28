@@ -363,6 +363,74 @@ class SN2_feedback(object):
 			yield_tables_final_structure[self.metallicities[metallicity_index]] = yield_tables_final_structure_subtable#[::-1]
 		self.table = yield_tables_final_structure
 
+
+	def chieffi04_net(self):
+
+		'''
+		Loading the yield table of chieffi04 corrected for Anders & Grevesse 1989 solar scaled initial yields
+		'''
+		DATADIR = localpath + 'input/yields/Chieffi04'
+		if not os.path.exists(DATADIR):
+			os.mkdir(DATADIR)
+
+		MASTERFILE = '{}/chieffi04_yields'.format(DATADIR)
+
+		def _download_chieffi04():
+			"""
+			Downloads chieffi 04 yields from Vizier.
+			"""
+			url = 'http://cdsarc.u-strasbg.fr/viz-bin/nph-Cat/tar.gz?J%2FApJ%2F608%2F405'
+			import urllib
+			print('Downloading Chieffi 04 yield tables from Vizier (should happen only at the first time)...')
+			if os.path.exists(MASTERFILE):
+				os.remove(MASTERFILE)
+			urllib.urlretrieve(url,MASTERFILE)
+
+			import tarfile
+			tar = tarfile.open(MASTERFILE)
+			tar.extractall(path=DATADIR)
+			tar.close()
+
+		if not os.path.exists(MASTERFILE):
+			_download_chieffi04()
+
+		tdtype =   [('metallicity',float),('date_after_explosion',float),('species','|S5'),('13',float),('15',float),('20',float),('25',float),('30',float),('35',float)]
+		
+
+
+		y = np.genfromtxt('%s/yields.dat' %(DATADIR), dtype = tdtype, names = None)
+		metallicity_list = np.unique(y['metallicity'])
+		self.metallicities = np.sort(metallicity_list)
+		number_of_species = int(len(y)/len(self.metallicities))
+		tables = []
+		for i, item in enumerate(self.metallicities):
+			tables.append(y[(i*number_of_species):((i+1)*number_of_species)])
+		
+		#############################################
+		for i in range(len(tables)):
+			tables[i] = tables[i][np.where(tables[i]['date_after_explosion']==0)]
+		element_list = tables[0]['species'][3:]
+		# For python 3 the bytes need to be changed into strings
+		element_list2 = []
+		for i, item in enumerate(element_list):
+			element_list2.append(item.decode('utf8'))
+		element_list = np.array(element_list2)
+		indexing = [re.split(r'(\d+)', s)[1:] for s in element_list]
+		element_position = []
+		for i,item in enumerate(element_list):
+			element_position.append(indexing[i][1])
+		self.elements = list(np.unique(element_position))
+		masses = tables[0].dtype.names[3:]
+		masses_list = []
+		for i,item in enumerate(masses):
+			masses_list.append(int(item))
+		self.masses = masses_list
+
+		yield_tables_final_structure = {}
+		for metallicity_index,metallicity in enumerate(self.metallicities):
+			yield_tables_final_structure[self.metallicities[metallicity_index]] = np.load(DATADIR + '/chieffi_net_met_ind_%d.npy' %(metallicity_index))
+		self.table = yield_tables_final_structure
+
 		#############################################
 	def Nugrid(self):
 		'''
@@ -651,7 +719,98 @@ class SN2_feedback(object):
 		self.table = yield_tables_final_structure
 
 
+	def Nomoto2013_net(self):
+		'''
+		Nomoto2013 sn2 yields from 13Msun onwards
+		'''
+		import numpy.lib.recfunctions as rcfuncs
 
+		dt = np.dtype('a13,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8,f8')
+		yield_tables = {}
+		self.metallicities = [0.0500,0.0200,0.0080,0.0040,0.0010]
+		self.masses = np.array((13,15,18,20,25,30,40))
+		z = np.genfromtxt(localpath + 'input/yields/Nomoto2013/nomoto_2013_z=0.0200.dat',dtype=dt,names = True)
+		
+		yield_tables_dict = {}
+		for item in self.metallicities:
+			z = np.genfromtxt(localpath + 'input/yields/Nomoto2013/nomoto_2013_z=%.4f.dat' %(item),dtype=dt,names = True)
+			yield_tables_dict[item]=z
+
+		hydrogen_list = ['H__1','H__2']
+		helium_list = ['He_3','He_4']
+		lithium_list = ['Li_6','Li_7']
+		berillium_list = ['Be_9']
+		boron_list = ['B_10','B_11']
+		carbon_list = ['C_12','C_13']
+		nitrogen_list = ['N_14','N_15']
+		oxygen_list = ['O_16','O_17','O_18']
+		fluorin_list = ['F_19']
+		neon_list = ['Ne20','Ne21','Ne22']
+		sodium_list = ['Na23']
+		magnesium_list = ['Mg24','Mg25','Mg26']
+		aluminium_list = ['Al27']
+		silicon_list = ['Si28','Si29','Si30']
+		phosphorus_list = ['P_31']
+		sulfur_list = ['S_32','S_33','S_34','S_36']
+		chlorine_list = ['Cl35','Cl37']
+		argon_list = ['Ar36','Ar38','Ar40']
+		potassium_list = ['K_39','K_41']
+		calcium_list = ['K_40','Ca40','Ca42','Ca43','Ca44','Ca46','Ca48']
+		scandium_list = ['Sc45']
+		titanium_list = ['Ti46','Ti47','Ti48','Ti49','Ti50']
+		vanadium_list = ['V_50','V_51']
+		chromium_list = ['Cr50','Cr52','Cr53','Cr54']
+		manganese_list = ['Mn55']
+		iron_list = ['Fe54', 'Fe56','Fe57','Fe58']
+		cobalt_list = ['Co59']
+		nickel_list = ['Ni58','Ni60','Ni61','Ni62','Ni64']
+		copper_list = ['Cu63','Cu65']
+		zinc_list = ['Zn64','Zn66','Zn67','Zn68','Zn70']
+		gallium_list = ['Ga69','Ga71']
+		germanium_list = ['Ge70','Ge72','Ge73','Ge74']
+
+		indexing = {}
+		indexing['H'] = hydrogen_list
+		indexing['He'] = helium_list
+		indexing['Li'] = lithium_list
+		indexing['Be'] = berillium_list
+		indexing['B'] = boron_list
+		
+		indexing['C'] = carbon_list
+		indexing['N'] = nitrogen_list
+		indexing['O'] = oxygen_list
+		indexing['F'] = fluorin_list
+		indexing['Ne'] = neon_list
+		indexing['Na'] = sodium_list
+		indexing['Mg'] = magnesium_list
+		indexing['Al'] = aluminium_list
+		indexing['Si'] = silicon_list
+		indexing['P'] = phosphorus_list
+		indexing['S'] = sulfur_list
+		indexing['Cl'] = chlorine_list
+		indexing['Ar'] = argon_list
+		indexing['K'] = potassium_list
+		indexing['Ca'] = calcium_list
+		indexing['Sc'] = scandium_list
+		indexing['Ti'] = titanium_list
+		indexing['V'] = vanadium_list
+		indexing['Cr'] = chromium_list
+		indexing['Mn'] = manganese_list
+		indexing['Fe'] = iron_list
+		indexing['Co'] = cobalt_list
+		indexing['Ni'] = nickel_list
+		indexing['Cu'] = copper_list
+		indexing['Zn'] = zinc_list
+		indexing['Ga'] = gallium_list
+		indexing['Ge'] = germanium_list
+
+		self.elements = list(indexing.keys())
+		### restructuring the tables such that it looks like the sn2 dictionary: basic_agb[metallicicty][element]
+		yield_tables_final_structure = {}
+		for metallicity_index,metallicity in enumerate(self.metallicities):
+
+			yield_tables_final_structure[metallicity] = np.load(localpath + 'input/yields/Nomoto2013/nomoto_net_met_ind_%d.npy' %(metallicity_index))
+		self.table = yield_tables_final_structure
 
 #######################
 class AGB_feedback(object):

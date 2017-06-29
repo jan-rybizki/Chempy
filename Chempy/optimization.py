@@ -3,6 +3,7 @@ import numpy as np
 import multiprocessing as mp
 import os
 from .parameter import ModelParameters
+from .cem_function import posterior_function
 
 def one_chain(args):
 	'''

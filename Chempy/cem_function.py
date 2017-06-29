@@ -613,8 +613,8 @@ def global_optimization_real(changing_parameter, result):
 	for item in args:
 		list_of_l_input.append(read_out_wildcard(*item))
 		list_of_l_input[-1] = list(list_of_l_input[-1])
-	# Now the input for the likelihood evaluating function is almost readySIKz17
-	
+	# Now the input for the likelihood evaluating function is almost ready
+
 
 	# Masking the elements that are not given for specific stars and preparing the likelihood input
 	star_errors = ma.array(np.zeros((len(elements),len(a.stellar_identifier_list))), mask = True)

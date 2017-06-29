@@ -580,6 +580,7 @@ def global_optimization_real(changing_parameter, result):
 	'''
 	import multiprocessing as mp
 	import numpy.ma as ma
+	from scipy.stats import beta
 	from .cem_function import get_prior, posterior_function_returning_predictions
 	from .data_to_test import likelihood_evaluation
 	from .parameter import ModelParameters
@@ -629,6 +630,11 @@ def global_optimization_real(changing_parameter, result):
 
 	# Brute force testing of a few model errors
 	model_errors = np.linspace(a.flat_model_error_prior[0],a.flat_model_error_prior[1],a.flat_model_error_prior[2])
+	if a.beta_error_distribution[0]:
+		error_weight = beta.pdf(model_errors, a = a.beta_error_distribution[1], b = a.beta_error_distribution[2])
+		error_weight/= sum(error_weight)
+	else:
+		error_weight = np.ones_like(model_errors) * 1./float(flat_model_error_prior[2])
 	error_list = []
 	likelihood_list = []
 	for i,element in enumerate(elements):
@@ -641,7 +647,7 @@ def global_optimization_real(changing_parameter, result):
 		error_list.append(float(model_errors[cut]))
 		## Adding the marginalization over the model error (within the prior borders). Taking the average of the likelihoods (they are log likelihoods so exp needs to be called)
 		if a.error_marginalization:
-			likelihood_list.append(logsumexp(error_temp, b = 1./float(a.flat_model_error_prior[2])))
+			likelihood_list.append(logsumexp(error_temp, b = error_weight))
 		else:
 			likelihood_list.append(np.max(error_temp))
 	
@@ -724,7 +730,7 @@ def posterior_function_local_for_minimization(changing_parameter, stellar_identi
 def posterior_function_local(changing_parameter, stellar_identifier, global_parameters, errors, elements):
 	'''
 	The posterior function is the interface between the optimizing function and Chempy. Usually the likelihood will be calculated with respect to a so called 'stellar wildcard'.
-	Wildcards can be created according to the tutorial 6. A few wildcards are already stored in the input folder. Chempy will try the current folder first. If no wildcard npy file with the name a.stellar_identifier is found it will look into the Chempy/input/stars folder.
+	Wildcards can be created according to the tutorial 6 from the github page. A few wildcards are already stored in the input folder. Chempy will try the current folder first. If no wildcard npy file with the name a.stellar_identifier is found it will look into the Chempy/input/stars folder.
 
 	INPUT: 
 	
@@ -788,13 +794,19 @@ def posterior_function_local_real(changing_parameter, stellar_identifier, global
 
 	# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
 	if a.error_marginalization:
+		from scipy.stats import beta
 		likelihood_list = []
 		model_errors = np.linspace(a.flat_model_error_prior[0],a.flat_model_error_prior[1],a.flat_model_error_prior[2])
+		if a.beta_error_distribution[0]:
+			error_weight = beta.pdf(model_errors, a = a.beta_error_distribution[1], b = a.beta_error_distribution[2])
+			error_weight/= sum(error_weight)
+		else:
+			error_weight = np.ones_like(model_errors) * 1./float(flat_model_error_prior[2])
 		for i, item in enumerate(model_errors):
 			error_temp = np.ones_like(errors) * item 
 			likelihood_temp, element_list, model_error, star_error_list, abundance_list_dump, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = error_temp, elements = elements)
 			likelihood_list.append(likelihood_temp)
-		likelihood = logsumexp(likelihood_list, b = 1./float(a.flat_model_error_prior[2]))
+		likelihood = logsumexp(likelihood_list, b = error_weight)
 		abundance_list = abundance_list_dump
 	else:
 		likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = errors, elements = elements)
@@ -915,12 +927,18 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 
 	## likelihood is calculated (the model error vector is expanded)
 	if a.error_marginalization:
+		from scipy.stats import beta
 		likelihood_list = []
 		model_errors = np.linspace(a.flat_model_error_prior[0],a.flat_model_error_prior[1],a.flat_model_error_prior[2])
+		if a.beta_error_distribution[0]:
+			error_weight = beta.pdf(model_errors, a = a.beta_error_distribution[1], b = a.beta_error_distribution[2])
+			error_weight/= sum(error_weight)
+		else:
+			error_weight = np.ones_like(model_errors) * 1./float(flat_model_error_prior[2])
 		for i, item in enumerate(model_errors):
 			error_temp = np.ones_like(model_error) * item 
 			likelihood_list.append(likelihood_evaluation(error_temp[:,None], star_errors , model_abundances, star_abundances))
-		likelihood = logsumexp(likelihood_list, b = 1./float(a.flat_model_error_prior[2]))	
+		likelihood = logsumexp(likelihood_list, b = error_weight)	
 	else:
 		likelihood = likelihood_evaluation(model_error[:,None], star_errors , model_abundances, star_abundances)
 	

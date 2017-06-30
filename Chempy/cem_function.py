@@ -650,7 +650,10 @@ def global_optimization_real(changing_parameter, result):
 		if a.error_marginalization:
 			likelihood_list.append(logsumexp(error_temp, b = error_weight))
 		else:
-			likelihood_list.append(np.max(error_temp))
+			if a.zero_model_error:
+				likelihood_list.append(error_temp[0])
+			else:	
+				likelihood_list.append(np.max(error_temp))
 	
 	error_list = np.hstack(error_list)
 	likelihood_list = np.hstack(likelihood_list)
@@ -810,6 +813,8 @@ def posterior_function_local_real(changing_parameter, stellar_identifier, global
 		likelihood = logsumexp(likelihood_list, b = error_weight)
 		abundance_list = abundance_list_dump
 	else:
+		if a.zero_model_error:
+			errors = np.zeros_like(errors)
 		likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace, fixed_model_error = errors, elements = elements)
 	#likelihood = 0.
 	#abundance_list = [0]
@@ -941,6 +946,8 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 			likelihood_list.append(likelihood_evaluation(error_temp[:,None], star_errors , model_abundances, star_abundances))
 		likelihood = logsumexp(likelihood_list, b = error_weight)	
 	else:
+		if a.zero_model_error:
+			model_error = np.zeros_like(model_error)
 		likelihood = likelihood_evaluation(model_error[:,None], star_errors , model_abundances, star_abundances)
 	
 	## Prior from all stars is added

@@ -30,6 +30,7 @@ class ModelParameters(object):
 	error_marginalization = False # Marginalizing over the model error or using the best model error value
 	flat_model_error_prior = [0.,1.,51] # Flat prior for the error marginalization [begin, end, number of evaluations inbetween]
 	beta_error_distribution = [True, 1, 3] # Instead of a flat prior for the error marginalization we use a beta distribution with a = 1 and b = 3 as default (wikipedia and scipy have the same parametrization) putting more weight to small model errors
+	zero_model_error = True # a boolean that can be used to restore the old Chempy behaviour of 0 model error, will only work if error_marginalization is set to False
 	
 	verbose = 0
 	# Time discretization, so far only linear time-steps are implemented

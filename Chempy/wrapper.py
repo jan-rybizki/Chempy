@@ -20,6 +20,7 @@ class SSP_wrap():
 		## loading the IMF and the yieldsets prescribed in a (containing all the model parameters)
 		basic_imf = IMF(a.mmin,a.mmax,a.mass_steps)
 		getattr(basic_imf, a.imf_type_name)(a.imf_parameter)
+		print(a.imf_parameter[2])
 		basic_sn2 = SN2_feedback()
 		getattr(basic_sn2, a.yield_table_name_sn2)()
 		basic_1a = SN1a_feedback()

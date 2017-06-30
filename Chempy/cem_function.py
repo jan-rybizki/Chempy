@@ -207,6 +207,8 @@ def cem_real(changing_parameter,a):
 		a.imf_parameter = (a.high_mass_slope)
 	elif a.imf_type_name == 'Chabrier_2':
 		a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.chabrier_para3,a.high_mass_slope)
+	elif a.imf_type_name == 'Chabrier_1':
+		a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.high_mass_slope)
 	elif a.imf_type_name == 'normed_3slope':	
 		a.imf_parameter = (a.imf_slope_1,a.imf_slope_2,a.high_mass_slope,a.imf_break_1,a.imf_break_2)
 	if a.time_delay_functional_form == 'maoz':

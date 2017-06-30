@@ -88,14 +88,24 @@ class IMF(object):
 		self.dn = np.divide(self.dm,self.x)
 		return(self.dm,self.dn)
 
-	def Chabrier_1(self, paramet = (0.852464, 0.237912, 0.69, 0.079)):
-		A, B, sigma, m_c = paramet
+	def Chabrier_1(self, paramet = (0.69, 0.079, -2.3)):
+		'''
+		Chabrier IMF from Chabrier 2003 equation 17 field IMF with variable high mass slope and automatic normalisation
+		'''
+		sigma, m_c, expo = paramet
 		dn = np.zeros_like(self.x)
 		for i in range(len(self.x)):
 			if self.x[i] <= 1:
-				dn[i] = (A / float(self.x[i])) * np.exp(-1*(((np.log10(self.x[i] / m_c))**2)/(2*sigma**2)))
+				index_with_mass_1 = i 
+				dn[i] = (1. / float(self.x[i])) * np.exp(-1*(((np.log10(self.x[i] / m_c))**2)/(2*sigma**2)))
 			else:
-				dn[i] = B*(pow(self.x[i],-2.3))
+				dn[i] = (pow(self.x[i],expo))
+		# Need to 'attach' the upper to the lower branch
+		derivative_at_1 = dn[index_with_mass_1] - dn[index_with_mass_1 - 1]
+		target_y_for_m_plus_1 = dn[index_with_mass_1] + derivative_at_1
+		rescale = target_y_for_m_plus_1 / dn[index_with_mass_1 + 1] 
+		dn[np.where(self.x>1.)] *= rescale
+		# Normalizing to 1 in mass space
 		self.dn = np.divide(dn,sum(dn))
 		dm = dn*self.x
 		self.dm = np.divide(dm,sum(dm))

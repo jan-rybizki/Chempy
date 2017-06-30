@@ -107,7 +107,7 @@ class ModelParameters(object):
 	yield_table_name_agb = yield_table_name_agb_list[yield_table_name_agb_index]
 
 	yield_table_name_1a_list = ['Iwamoto','Thielemann','Seitenzahl']
-	yield_table_name_1a_index = 3
+	yield_table_name_1a_index = 2
 	yield_table_name_1a = yield_table_name_1a_list[yield_table_name_1a_index]
 
 	mmin = 0.08

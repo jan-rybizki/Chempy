@@ -104,7 +104,7 @@ class IMF(object):
 	
 	def Chabrier_2(self,paramet = (22.8978, 716.4, 0.25,-2.3)):
 		'''
-		Chabrier IMF from Chabrier 2001, IMF 3 = equation 8 
+		Chabrier IMF from Chabrier 2001, IMF 3 = equation 8 parameters from table 1
 		'''
 
 		A,B,sigma,expo = paramet

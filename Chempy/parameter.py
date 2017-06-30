@@ -115,7 +115,7 @@ class ModelParameters(object):
 	mass_steps = 5000 #2000 # 200000
 
 	imf_type_name_list = ['normed_3slope','Chabrier_1','Chabrier_2','salpeter','BrokenPowerLaw']
-	imf_type_index = 0
+	imf_type_index = 1
 	imf_type_name = imf_type_name_list[imf_type_index]
 	if imf_type_name == 'Chabrier_2':
 		chabrier_para1 = 22.8978

@@ -18,12 +18,14 @@ class ModelParameters(object):
 	#indices = [78,130,122,156,113,34, 128,167] # low alpha sequence
 	#indices = [0, 163, 27,  98,  95,  17,  71,  79] # random
 	#indices = [158, 24, 152, 56, 100, 21, 17, 126] # This is the list for middle alpha sequence
-	#indices = [147, 0, 3, 128, 1, 156, 113, 110] # extremes in alpha over iron space
-	indices = [85, 94, 15, 110, 30, 11, 7, 3] # high alpha sequence
+	indices = [147, 0, 3, 128, 1, 156, 113, 110] # extremes in alpha over iron space
+	#indices = [85, 94, 15, 110, 30, 11, 7, 3] # high alpha sequence
 	stellar_identifier_list = []
 	for item in indices:
 		stellar_identifier_list.append("Rob_%d" %item)
 	#stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
+	# 'prior' can be used as stellar_identifier, then the prior will be sampled with Chempy.wrapper.mcmc() routine
+	#stellar_identifier_list = ['Proto-sun']
 	stellar_identifier = 'Proto-sun'
 
 	# Convergense parameters of minimization and MCMC

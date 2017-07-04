@@ -419,21 +419,25 @@ def posterior_function_real(changing_parameter,a):
 	# The endtime is changed for the actual calculation but restored to default afterwards
 	backup = a.end ,a.time_steps, a.total_mass
 	
-	# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
-	abundance_list,elements_to_trace = cem_real2(a)
-	a.end ,a.time_steps, a.total_mass = backup
-	
-	# The last two entries of the abundance list are the Corona metallicity and the SN-ratio
-	abundance_list = abundance_list[:-2]
-	elements_to_trace = elements_to_trace[:-2]
+	if a.stellar_identifier is 'prior':
+		likelihood = 0.
+		abundance_list = 0
+	else:
+		# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
+		abundance_list,elements_to_trace = cem_real2(a)
+		a.end ,a.time_steps, a.total_mass = backup
+		
+		# The last two entries of the abundance list are the Corona metallicity and the SN-ratio
+		abundance_list = abundance_list[:-2]
+		elements_to_trace = elements_to_trace[:-2]
 
-	model = time.time()
-	#print('model: ', precalculation - model)
+		model = time.time()
+		#print('model: ', precalculation - model)
 
-	# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
-	likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
-	#likelihood = 0.
-	#abundance_list = [0]
+		# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
+		likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
+		#likelihood = 0.
+		#abundance_list = [0]
 
 	error_optimization = time.time()
 	#print('error optimization: ', model - error_optimization)

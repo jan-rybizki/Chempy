@@ -316,6 +316,139 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False, only_first_
 	if set_scale:
 		np.save('%sprior_borders' %(directory), borders)
 
+def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = True):
+	'''
+	This routine takes the output from 'restructure_chain' function and plots the result in a corner plot
+	set_scale and use_scale can be used to put different PDFs on the same scale, in the sense that the plot is shown with the same axis range.
+	
+	In the paper this is used to plot the Posterior in comparison to the prior distribution.
+	'''
+	if use_prior:
+		from Chempy.cem_function import gaussian
+		from math import cos, sin
+		prior = [[-2.3, 0.3],[-2.75,0.3],[-0.8,0.3],[-0.3,0.3],[0.55,0.1],[0.5,0.1]]
+		prior = np.array(prior)
+
+	import corner
+	plt.clf()
+	text_size = 16
+	cor_text = 22
+	plt.rc('font', family='serif',size = text_size)
+	plt.rc('xtick', labelsize=text_size)
+	plt.rc('ytick', labelsize=text_size)
+	plt.rc('axes', labelsize=text_size, lw=1.0)
+	plt.rc('lines', linewidth = 1)
+	plt.rcParams['ytick.major.pad']='8'
+	plt.rcParams['text.latex.preamble']=[r"\usepackage{libertine}"]
+	params = {'text.usetex' : True,
+	          'font.size' : 10,
+	          'font.family' : 'libertine',
+	          'text.latex.unicode': True,
+	          }
+	plt.rcParams.update(params)
+	positions = np.load('%sposteriorPDF.npy' %(directory))
+	parameter_names = np.load("%sparameter_names.npy" %(directory))
+	
+	if only_first_star:
+		positions = positions[:,:6]
+		parameter_names = parameter_names[:6]
+
+	nparameter = len(positions[0])
+	cor_matrix = np.zeros(shape = (nparameter,nparameter))
+	for i in range(nparameter):
+		for j in range(nparameter):
+			cor_matrix[i,j] = np.corrcoef((positions[:,i],positions[:,j]))[1,0]
+	np.save('%scor_matrix' %(directory),cor_matrix)
+
+	fig, axes = plt.subplots(nrows=nparameter, ncols=nparameter,figsize=(14.69,8.0), dpi=300)#,sharex=True, sharey=True)
+
+	left  = 0.1  # the left side of the subplots of the figure
+	right = 0.925    # the right side of the subplots of the figure
+	bottom = 0.075   # the bottom of the subplots of the figure
+	top = 0.97      # the top of the subplots of the figure
+	wspace = 0.0   # the amount of width reserved for blank space between subplots
+	hspace = 0.0   # the amount of height reserved for white space between subplots
+	plt.subplots_adjust(left=left, bottom=bottom, right=right, top=top, wspace=wspace, hspace=hspace)
+
+	alpha=0.5
+	alpha_more = 0.8
+	alpha_less = 0.1
+	lw = 2
+
+	for i in range(nparameter):
+		for j in range(nparameter):
+			axes[i,j].locator_params(nbins=4)
+			if j==1:
+				axes[i,j].locator_params(nbins=4)
+			if i == j:
+				counts, edges = np.histogram(positions[:,j], bins=50)
+				max_count = float(np.max(counts))
+				counts = np.divide(counts,max_count)
+				axes[i,j].bar(left = edges[:-1], height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
+				if use_prior:
+					xmin = prior[i][0]-3.5*prior[i][1]
+					xmax = prior[i][0]+3.5*prior[i][1]
+					x_axe = np.linspace(xmin,xmax,100)
+					y_axe = gaussian(x_axe,prior[i][0],prior[i][1])
+					axes[i,j].set_xlim((xmin,xmax))
+					axes[i,j].plot( x_axe, y_axe/max(y_axe), c="k", linestyle = '--', alpha=1, lw=lw )
+				else:
+					axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
+				axes[i,j].set_ylim(0,1.05)
+				if j != 0:
+					plt.setp(axes[i,j].get_yticklabels(), visible=False)
+
+				axes[i,j].vlines(np.percentile(positions[:,j],15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')    
+				axes[i,j].vlines(np.percentile(positions[:,j],100-15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')  
+				axes[i,j].vlines(np.percentile(positions[:,j],50),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha, linewidth = lw)
+				axes[i,j].text( 0.5, 1.03, r'$%.2f_{-%.2f}^{+%.2f}$'%(np.percentile(positions[:,j],50),np.percentile(positions[:,j],50)-np.percentile(positions[:,j],15.865),np.percentile(positions[:,j],100-15.865)-np.percentile(positions[:,j],50)),fontsize=text_size, ha="center" ,transform=axes[i,j].transAxes)
+
+			if i>j:
+				if j != 0:
+					plt.setp(axes[i,j].get_yticklabels(), visible=False)
+				
+				corner.hist2d(positions[:,j],positions[:,i], ax = axes[i,j],bins = 15 , levels=(1-np.exp(-0.5),1-np.exp(-2.0),1-np.exp(-4.5)))
+				#axes[i,j].plot(positions_max[:,j],positions_max[:,i],'kx',markersize = 10,mew=2.5)
+				#im = axes[i,j].scatter(positions[:,j],positions[:,i],c='k',edgecolor='None',s=45,marker='o',alpha=alpha_less,rasterized=True)#,vmin=0,vmax=vmax)
+				#axes[i,j].hist2d(positions[:,j],positions[:,i],cmap = my_cmap, vmin=1)
+
+				if use_prior:
+					axes[i,j].annotate(s = 'i = %d, j = %d' %(i,j), xy = (positions[:,j][0],positions[:,i][0]))
+					xmin = prior[j][0]-3.5*prior[j][1]
+					xmax = prior[j][0]+3.5*prior[j][1]
+					axes[i,j].set_xlim((xmin,xmax))
+					
+					a_length = 3.*prior[j][1]
+					b_length = 3.*prior[i][1]
+					parametric = np.linspace(0,2*np.pi,100)
+					x_axis = a_length * cos(parametric) + prior[j][0]
+
+					
+					ymin = prior[i][0]-3.5*prior[i][1]
+					ymax = prior[i][0]+3.5*prior[i][1]
+					axes[i,j].set_ylim((ymin,ymax))
+					y_axis = b_length * sin(parametric) + prior[i][0]
+					axes[i,j].plt(x_axis,y_axis)
+					#axes[i,j].set_ylim(borders[t][1])
+				else:
+					axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
+					axes[i,j].set_ylim(min(positions[:,i]),max(positions[:,i]))
+
+
+			if j>i:
+				correlation_coefficient = np.corrcoef((positions[:,i],positions[:,j]))
+				axes[i,j].text( 0.6, 0.5, "%.2f"%(correlation_coefficient[1,0]),fontsize=cor_text, ha="center" ,transform=axes[i,j].transAxes)	
+				axes[i,j].axis('off')
+			if i == nparameter-1:
+				axes[i,j].set_xlabel(parameter_names[j])
+			if j == 0:
+				axes[i,j].set_ylabel(parameter_names[i])
+	#if nparameter>3:
+	#	axes[0,3].set_title('vmax = %.2f, obtained at %s' %(vmax,str(positions_max)))
+	#	#axes[0,1].set_title('vmax = %.2f, obtained at %s and %d evals thrown out' %(vmax,str(positions_max),throw_out))
+	
+	fig.savefig('%sparameter_space_sorted.png' %(directory),dpi=300,bbox_inches='tight')
+
 
 
 def plot_element_correlation(directory):

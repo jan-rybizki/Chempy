@@ -25,7 +25,7 @@ class ModelParameters(object):
 		stellar_identifier_list.append("Rob_%d" %item)
 	#stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
 	# 'prior' can be used as stellar_identifier, then the prior will be sampled with Chempy.wrapper.mcmc() routine
-	stellar_identifier_list = ['Proto-sun']
+	#stellar_identifier_list = ['Proto-sun']
 	stellar_identifier = 'Proto-sun'
 
 	# Convergense parameters of minimization and MCMC

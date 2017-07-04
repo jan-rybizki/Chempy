@@ -221,7 +221,7 @@ def multi_star_optimization():
 	from .parameter import ModelParameters
 	
 	a = ModelParameters()
-
+	print(a.stellar_identifier_list)
 	start_time = time.time()
 
 	log_list = []

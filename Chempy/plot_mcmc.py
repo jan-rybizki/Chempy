@@ -325,7 +325,6 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 	'''
 	if use_prior:
 		from Chempy.cem_function import gaussian
-		from math import cos, sin
 		prior = [[-2.3, 0.3],[-2.75,0.3],[-0.8,0.3],[-0.3,0.3],[0.55,0.1],[0.5,0.1]]
 		prior = np.array(prior)
 
@@ -421,14 +420,14 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 					a_length = 3.*prior[j][1]
 					b_length = 3.*prior[i][1]
 					parametric = np.linspace(0,2*np.pi,100)
-					x_axis = a_length * cos(parametric) + prior[j][0]
+					x_axis = a_length * np.cos(parametric) + prior[j][0]
 
 					
 					ymin = prior[i][0]-3.5*prior[i][1]
 					ymax = prior[i][0]+3.5*prior[i][1]
 					axes[i,j].set_ylim((ymin,ymax))
-					y_axis = b_length * sin(parametric) + prior[i][0]
-					axes[i,j].plt(x_axis,y_axis)
+					y_axis = b_length * np.sin(parametric) + prior[i][0]
+					axes[i,j].plot(x_axis,y_axis)
 					#axes[i,j].set_ylim(borders[t][1])
 				else:
 					axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))

@@ -191,7 +191,7 @@ def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'
 	plt.clf()
 	plt.close()
 
-def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
+def plot_mcmc_chain(directory, set_scale = False, use_scale = False, only_first_star = True):
 	'''
 	This routine takes the output from 'restructure_chain' function and plots the result in a corner plot
 	set_scale and use_scale can be used to put different PDFs on the same scale, in the sense that the plot is shown with the same axis range.
@@ -217,7 +217,10 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False):
 	plt.rcParams.update(params)
 	positions = np.load('%sposteriorPDF.npy' %(directory))
 	parameter_names = np.load("%sparameter_names.npy" %(directory))
-
+	
+	if only_first_star:
+		positions = positions[:,:6]
+		parameter_names = parameter_names[:6]
 
 	nparameter = len(positions[0])
 	cor_matrix = np.zeros(shape = (nparameter,nparameter))

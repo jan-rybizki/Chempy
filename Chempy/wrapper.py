@@ -245,9 +245,13 @@ def multi_star_optimization():
 	# IV: repeat II and III until posterior does not change much
 	result[:,:len(a.SSP_parameters)] = np.mean(result[:,:len(a.SSP_parameters)], axis = 0)
 	posteriors = []
+	counter = 0
 	while True:
+		counter += 1
 		if len(posteriors) > 1:
 			if np.abs(posteriors[-1] - posteriors[-2]) < a.gibbs_sampler_tolerance:
+				break
+			if len(posteriors) > a.gibbs_sampler_maxiter:
 				break
 
 		initial = time.time()
@@ -264,14 +268,14 @@ def multi_star_optimization():
 		print(posteriors)
 
 		global_iteration1 = time.time()
-		print('first global minimization took: %2.f seconds' %(global_iteration1 - initial))	
+		print('step %d global minimization took: %2.f seconds' %(counter, global_iteration1 - initial))	
 
 		# III: Local parameter minimization:
 		# 1: Use fixed global parameters and fixed common errors make initial conditions
 		result[:,:len(a.SSP_parameters)] = x
 
-		log_list.append((np.copy(x),posterior, error_list,elements))
-		log_list.append('global minimization')
+		log_list.append((np.copy(x),posterior))
+		log_list.append('step %d global minimization' %(counter))
 
 		p0_list = []
 		parameter_list = []
@@ -297,9 +301,9 @@ def multi_star_optimization():
 		result[:,len(a.SSP_parameters):] = local_parameters
 
 		log_list.append(np.copy(result))
-		log_list.append('local minimization')
+		log_list.append('step %d local minimization' %(counter))
 		local_iteration1 = time.time()
-		print('first local minimization took: %2.f seconds' %(local_iteration1 - global_iteration1))	
+		print('step %d local minimization took: %2.f seconds' %(counter, local_iteration1 - global_iteration1))	
 
 	log_list.append(posteriors)
 	print(log_list)

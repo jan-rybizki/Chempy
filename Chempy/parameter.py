@@ -16,6 +16,9 @@ class ModelParameters(object):
 	#stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
 	#stellar_identifier_list = ['2M01233744+3414451', '2M02484368+3106550', '2M05510326+1129561', '2M09031459+0648573', '2M09422500+4846338', '2M02011031+2426397', '2M09055837+0505324', '2M20092234+5601366']
 	#indices = [78,130,122,156,113,34, 128,167] # low alpha sequence
+	#indices = [0, 163, 27,  98,  95,  17,  71,  79] # random
+	#indices = [158, 24, 152, 56, 100, 21, 17, 126] # This is the list for middle alpha sequence
+	#indices = [147, 0, 3, 128, 1, 156, 113, 110] # extremes in alpha over iron space
 	indices = [85, 94, 15, 110, 30, 11, 7, 3] # high alpha sequence
 	stellar_identifier_list = []
 	for item in indices:
@@ -24,15 +27,16 @@ class ModelParameters(object):
 	stellar_identifier = 'Proto-sun'
 
 	# Convergense parameters of minimization and MCMC
-	maxiter_minimization = 2000
+	maxiter_minimization = 1000
 	min_mcmc_iterations = 300
-	mcmc_tolerance = 0.2
-	gibbs_sampler_tolerance = 1e-2
-	tol_minimization = 1e-2
+	mcmc_tolerance = 0.5
+	gibbs_sampler_tolerance = 1e-1
+	gibbs_sampler_maxiter = 20
+	tol_minimization = 1e-1
 	nwalkers = 64
 	mburn = 1
 	save_state_every = 1
-	m = 3000 # For 7 free parameters 300 iterations are usually enough. The mcmc routine is stopping after 300 if the posterior mean is converged for more than 200 iterations.
+	m = 2000 # For 7 free parameters 300 iterations are usually enough. The mcmc routine is stopping after 300 if the posterior mean is converged for more than 200 iterations.
 	error_marginalization = True # Marginalizing over the model error or using the best model error value
 	flat_model_error_prior = [0.,1.,51] # Flat prior for the error marginalization [begin, end, number of evaluations inbetween]
 	beta_error_distribution = [True, 1, 3] # Instead of a flat prior for the error marginalization we use a beta distribution with a = 1 and b = 3 as default (wikipedia and scipy have the same parametrization) putting more weight to small model errors

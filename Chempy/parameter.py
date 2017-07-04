@@ -15,15 +15,19 @@ class ModelParameters(object):
 	# Observational constraints
 	#stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
 	#stellar_identifier_list = ['2M01233744+3414451', '2M02484368+3106550', '2M05510326+1129561', '2M09031459+0648573', '2M09422500+4846338', '2M02011031+2426397', '2M09055837+0505324', '2M20092234+5601366']
-	stellar_identifier_list = ['Rob_0','Rob_1','Rob_2','Rob_3','Rob_4','Rob_5','Rob_6','Rob_7']
+	indices = [78,130,122,156,113,34, 128,167] # low alpha sequence
+	stellar_identifier_list = []
+	for item in indices:
+		stellar_identifier_list.append("Rob_%d" %item)
 	#stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
 	stellar_identifier = 'Proto-sun'
 
 	# Convergense parameters of minimization and MCMC
-	maxiter_minimization = 1000
+	maxiter_minimization = 2000
 	min_mcmc_iterations = 300
-	gibbs_sampler_tolerance = 0.1
-	tol_minimization = 1e-1
+	mcmc_tolerance = 0.2
+	gibbs_sampler_tolerance = 1e-2
+	tol_minimization = 1e-2
 	nwalkers = 64
 	mburn = 1
 	save_state_every = 1
@@ -103,14 +107,14 @@ class ModelParameters(object):
 
 	##### Karakas2016 needs much more calculational resources (order of magnitude) using 2010 net yields from Karakas are faster and only N is significantly underproduced
 	yield_table_name_agb_list = ['Karakas','Nugrid','Karakas_net_yield','Ventura','Karakas16_net']
-	yield_table_name_agb_index = 0
+	yield_table_name_agb_index = 2
 	yield_table_name_agb = yield_table_name_agb_list[yield_table_name_agb_index]
 
 	yield_table_name_1a_list = ['Iwamoto','Thielemann','Seitenzahl']
 	yield_table_name_1a_index = 2
 	yield_table_name_1a = yield_table_name_1a_list[yield_table_name_1a_index]
 
-	mmin = 0.08
+	mmin = 0.1
 	mmax = 100
 	mass_steps = 5000 #2000 # 200000
 
@@ -126,8 +130,8 @@ class ModelParameters(object):
 	if imf_type_name == 'Chabrier_1':
 		chabrier_para1 = 0.69
 		chabrier_para2 = 0.079
-		high_mass_slope = -2.3
-		imf_parameter = (0.69, 0.079, -2.3)
+		high_mass_slope = -2.29
+		imf_parameter = (0.69, 0.079, -2.29)
 	if imf_type_name == 'salpeter':
 		imf_slope = 2.35
 		imf_parameter = (2.35)
@@ -280,13 +284,13 @@ class ModelParameters(object):
 	# for functional form 1 read (mean,factor,1)
 	priors = {
 	## gaussian priors
-	'high_mass_slope' : (-2.29,0.2,0),	
+	'high_mass_slope' : (-2.3,0.3,0),	
 	'log10_N_0' : (-2.75,0.3,0),
 	'log10_sn1a_time_delay' : (-0.8,0.3,0),
 	'log10_starformation_efficiency' : (-0.3,0.3,0),
 	'log10_sfr_scale' : (0.55,0.1,0),
 	'sfr_scale' : (3.5,1.5,0),
-	'outflow_feedback_fraction' : (0.5,0.2,0),
+	'outflow_feedback_fraction' : (0.5,0.1,0),
 	'log10_gas_reservoir_mass_factor' : (0.3,0.3,0),
 
 	'a_parameter' : (3.,3.,0),

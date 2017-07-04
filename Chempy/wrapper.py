@@ -371,7 +371,7 @@ def mcmc(a):
 		#print("Mean acceptance fraction:", sampler.acceptance_fraction)
 		elapsed1 = (time.time() - start1)
 		print('calculation so far took', elapsed1, ' seconds')
-		if i>300 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < 0.5 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < 0.5:
+		if i>a.min_mcmc_iterations and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < a.mcmc_tolerance and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < a.mcmc_tolerance:
 			break
 
 
@@ -449,5 +449,5 @@ def mcmc_multi(changing_parameter, error_list, elements):
 		#print("Mean acceptance fraction:", sampler.acceptance_fraction)
 		elapsed1 = (time.time() - start1)
 		print('calculation so far took', elapsed1, ' seconds')
-		if i>a.min_mcmc_iterations and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < 0.5 and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < 0.5:
+		if i>a.min_mcmc_iterations and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < a.mcmc_tolerance and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < a.mcmc_tolerance:
 			break

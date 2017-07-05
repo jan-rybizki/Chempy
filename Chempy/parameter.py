@@ -17,8 +17,8 @@ class ModelParameters(object):
 	#stellar_identifier_list = ['2M01233744+3414451', '2M02484368+3106550', '2M05510326+1129561', '2M09031459+0648573', '2M09422500+4846338', '2M02011031+2426397', '2M09055837+0505324', '2M20092234+5601366']
 	#indices = [78,130,122,156,113,34, 128,167] # low alpha sequence
 	#indices = [0, 163, 27,  98,  95,  17,  71,  79] # random
-	indices = [158, 24, 152, 56, 100, 21, 17, 126] # This is the list for middle alpha sequence
-	#indices = [147, 0, 3, 128, 1, 156, 113, 110] # extremes in alpha over iron space
+	#indices = [158, 24, 152, 56, 100, 21, 17, 126] # This is the list for middle alpha sequence
+	indices = [147, 0, 3, 128, 1, 156, 113, 110] # extremes in alpha over iron space
 	#indices = [85, 94, 15, 110, 30, 11, 7, 3] # high alpha sequence
 	stellar_identifier_list = []
 	for item in indices:

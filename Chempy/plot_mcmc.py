@@ -412,7 +412,6 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 				#axes[i,j].hist2d(positions[:,j],positions[:,i],cmap = my_cmap, vmin=1)
 
 				if use_prior:
-					axes[i,j].annotate(s = 'i = %d, j = %d' %(i,j), xy = (positions[:,j][0],positions[:,i][0]))
 					xmin = prior[j][0]-3.5*prior[j][1]
 					xmax = prior[j][0]+3.5*prior[j][1]
 					axes[i,j].set_xlim((xmin,xmax))
@@ -427,7 +426,7 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 					ymax = prior[i][0]+3.5*prior[i][1]
 					axes[i,j].set_ylim((ymin,ymax))
 					y_axis = b_length * np.sin(parametric) + prior[i][0]
-					axes[i,j].plot(x_axis,y_axis)
+					axes[i,j].plot(x_axis,y_axis, c="k", linestyle = '--', alpha=1, lw=lw)
 					#axes[i,j].set_ylim(borders[t][1])
 				else:
 					axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
@@ -444,7 +443,7 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 				axes[i,j].set_ylabel(parameter_names[i])
 	#if nparameter>3:
 	#	axes[0,3].set_title('vmax = %.2f, obtained at %s' %(vmax,str(positions_max)))
-	#	#axes[0,1].set_title('vmax = %.2f, obtained at %s and %d evals thrown out' %(vmax,str(positions_max),throw_out))
+	#	axes[0,1].set_title('vmax = %.2f, obtained at %s and %d evals thrown out' %(vmax,str(positions_max),throw_out))
 	
 	fig.savefig('%sparameter_space_sorted.png' %(directory),dpi=300,bbox_inches='tight')
 

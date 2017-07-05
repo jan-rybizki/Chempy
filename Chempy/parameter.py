@@ -18,15 +18,16 @@ class ModelParameters(object):
 	#indices = [78,130,122,156,113,34, 128,167] # low alpha sequence
 	#indices = [0, 163, 27,  98,  95,  17,  71,  79] # random
 	#indices = [158, 24, 152, 56, 100, 21, 17, 126] # This is the list for middle alpha sequence
-	indices = [147, 0, 3, 128, 1, 156, 113, 110] # extremes in alpha over iron space
+	#indices = [147, 0, 3, 128, 1, 156, 113, 110] # extremes in alpha over iron space
 	#indices = [85, 94, 15, 110, 30, 11, 7, 3] # high alpha sequence
+	indices = [78,130,122,156,113,34, 128,167,85, 94, 15, 110, 30, 11, 7, 3]
 	stellar_identifier_list = []
 	for item in indices:
 		stellar_identifier_list.append("Rob_%d" %item)
 	#stellar_identifier_list = ['Proto-sun', 'Arcturus', 'B-stars']
 	# 'prior' can be used as stellar_identifier, then the prior will be sampled with Chempy.wrapper.mcmc() routine
-	stellar_identifier_list = ['prior']
-	stellar_identifier = 'prior'
+	#stellar_identifier_list = ['prior']
+	stellar_identifier = 'Proto-sun'
 
 	# Convergense parameters of minimization and MCMC
 	maxiter_minimization = 500
@@ -39,10 +40,10 @@ class ModelParameters(object):
 	mburn = 1
 	save_state_every = 1
 	m = 1000 # For 7 free parameters 300 iterations are usually enough. The mcmc routine is stopping after 300 if the posterior mean is converged for more than 200 iterations.
-	error_marginalization = False # Marginalizing over the model error or using the best model error value
+	error_marginalization = True # Marginalizing over the model error or using the best model error value
 	flat_model_error_prior = [0.,1.,51] # Flat prior for the error marginalization [begin, end, number of evaluations inbetween]
 	beta_error_distribution = [True, 1, 3] # Instead of a flat prior for the error marginalization we use a beta distribution with a = 1 and b = 3 as default (wikipedia and scipy have the same parametrization) putting more weight to small model errors
-	zero_model_error = True # a boolean that can be used to restore the old Chempy behaviour of 0 model error, will only work if error_marginalization is set to False
+	zero_model_error = False # a boolean that can be used to restore the old Chempy behaviour of 0 model error, will only work if error_marginalization is set to False
 	
 	verbose = 0
 	# Time discretization, so far only linear time-steps are implemented

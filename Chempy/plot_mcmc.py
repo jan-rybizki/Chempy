@@ -316,13 +316,17 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False, only_first_
 	if set_scale:
 		np.save('%sprior_borders' %(directory), borders)
 
-def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = True):
+def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = True, plot_true_parameters = True, plot_only_SSP_parameter = True):
 	'''
 	This routine takes the output from 'restructure_chain' function and plots the result in a corner plot
 	set_scale and use_scale can be used to put different PDFs on the same scale, in the sense that the plot is shown with the same axis range.
 	
 	In the paper this is used to plot the Posterior in comparison to the prior distribution.
 	'''
+	if plot_true_parameters:
+		true_parameters = [-2.37, -2.75, -1.2]
+		true_parameters = np.array(true_parameters)
+
 	if use_prior:
 		from Chempy.cem_function import gaussian
 		prior = [[-2.3, 0.3],[-2.75,0.3],[-0.8,0.3],[-0.3,0.3],[0.55,0.1],[0.5,0.1]]
@@ -347,10 +351,17 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 	plt.rcParams.update(params)
 	positions = np.load('%sposteriorPDF.npy' %(directory))
 	parameter_names = np.load("%sparameter_names.npy" %(directory))
+	posterior = np.load('%sposteriorvalues.npy' %(directory))
+	positions_max = np.load('%sbest_parameter_values.npy' %(directory))
 	
 	if only_first_star:
 		positions = positions[:,:6]
 		parameter_names = parameter_names[:6]
+		positions_max = positions_max[0][:6]
+	if plot_only_SSP_parameter:
+		positions = positions[:,:3]
+		parameter_names = parameter_names[:3]
+		positions_max = positions_max[:3]
 
 	nparameter = len(positions[0])
 	cor_matrix = np.zeros(shape = (nparameter,nparameter))
@@ -384,6 +395,7 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 				max_count = float(np.max(counts))
 				counts = np.divide(counts,max_count)
 				axes[i,j].bar(left = edges[:-1], height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
+
 				if use_prior:
 					xmin = prior[i][0]-3.5*prior[i][1]
 					xmax = prior[i][0]+3.5*prior[i][1]
@@ -401,6 +413,11 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 				axes[i,j].vlines(np.percentile(positions[:,j],100-15.865),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha,linewidth = lw,linestyle = 'dashed')  
 				axes[i,j].vlines(np.percentile(positions[:,j],50),axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'k',alpha=alpha, linewidth = lw)
 				axes[i,j].text( 0.5, 1.03, r'$%.2f_{-%.2f}^{+%.2f}$'%(np.percentile(positions[:,j],50),np.percentile(positions[:,j],50)-np.percentile(positions[:,j],15.865),np.percentile(positions[:,j],100-15.865)-np.percentile(positions[:,j],50)),fontsize=text_size, ha="center" ,transform=axes[i,j].transAxes)
+				
+				if plot_true_parameters:
+					if i < 3:
+						axes[i,j].vlines(true_parameters[i],axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'r',alpha=alpha,linewidth = lw,linestyle = 'solid')
+
 
 			if i>j:
 				if j != 0:
@@ -432,6 +449,13 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 					axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
 					axes[i,j].set_ylim(min(positions[:,i]),max(positions[:,i]))
 
+				if plot_true_parameters:
+					#if i < 3:
+					#	axes[i,j].hlines(true_parameters[i],axes[i,j].get_xlim()[0],axes[i,j].get_xlim()[1], color = 'r',alpha=alpha,linewidth = lw,linestyle = 'solid')
+					#if j < 3:
+					#	axes[i,j].vlines(true_parameters[j],axes[i,j].get_ylim()[0],axes[i,j].get_ylim()[1], color = 'r',alpha=alpha,linewidth = lw,linestyle = 'solid')
+					if i < 3 and j < 3:
+						axes[i,j].plot(true_parameters[j],true_parameters[i], 'rx', lw = lw, alpha = 1)
 
 			if j>i:
 				correlation_coefficient = np.corrcoef((positions[:,i],positions[:,j]))
@@ -441,9 +465,8 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 				axes[i,j].set_xlabel(parameter_names[j])
 			if j == 0:
 				axes[i,j].set_ylabel(parameter_names[i])
-	#if nparameter>3:
-	#	axes[0,3].set_title('vmax = %.2f, obtained at %s' %(vmax,str(positions_max)))
-	#	axes[0,1].set_title('vmax = %.2f, obtained at %s and %d evals thrown out' %(vmax,str(positions_max),throw_out))
+	if nparameter>=2:
+		axes[0,1].set_title('best posterior = %.2f, obtained at %s and %d evals (4992 total)' %(np.max(posterior),str(positions_max),len(posterior)))
 	
 	fig.savefig('%sparameter_space_sorted.png' %(directory),dpi=300,bbox_inches='tight')
 

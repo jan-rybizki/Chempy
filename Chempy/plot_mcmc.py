@@ -323,6 +323,8 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 	
 	In the paper this is used to plot the Posterior in comparison to the prior distribution.
 	'''
+	how_many_ssp_parameters = 3
+
 	if plot_true_parameters:
 		true_parameters = [-2.37, -2.75, -1.2]
 		true_parameters = np.array(true_parameters)
@@ -359,9 +361,9 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 		parameter_names = parameter_names[:6]
 		positions_max = positions_max[0][:6]
 	if plot_only_SSP_parameter:
-		positions = positions[:,:3]
-		parameter_names = parameter_names[:3]
-		positions_max = positions_max[:3]
+		positions = positions[:,:how_many_ssp_parameters]
+		parameter_names = parameter_names[:how_many_ssp_parameters]
+		positions_max = positions_max[:how_many_ssp_parameters]
 
 	nparameter = len(positions[0])
 	cor_matrix = np.zeros(shape = (nparameter,nparameter))
@@ -370,7 +372,9 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 			cor_matrix[i,j] = np.corrcoef((positions[:,i],positions[:,j]))[1,0]
 	np.save('%scor_matrix' %(directory),cor_matrix)
 
-	fig, axes = plt.subplots(nrows=nparameter, ncols=nparameter,figsize=(14.69,8.0), dpi=300)#,sharex=True, sharey=True)
+	#fig, axes = plt.subplots(nrows=nparameter, ncols=nparameter,figsize=(14.69,8.0), dpi=300)#,sharex=True, sharey=True)
+
+	fig, axes = plt.subplots(nrows=nparameter, ncols=nparameter,figsize=(5.69,3.0), dpi=300)#,sharex=True, sharey=True)
 
 	left  = 0.1  # the left side of the subplots of the figure
 	right = 0.925    # the right side of the subplots of the figure
@@ -391,7 +395,7 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 			if j==1:
 				axes[i,j].locator_params(nbins=4)
 			if i == j:
-				counts, edges = np.histogram(positions[:,j], bins=50)
+				counts, edges = np.histogram(positions[:,j], bins=20)
 				max_count = float(np.max(counts))
 				counts = np.divide(counts,max_count)
 				axes[i,j].bar(left = edges[:-1], height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
@@ -469,6 +473,8 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 		axes[0,1].set_title('best posterior = %.2f, obtained at %s and %d evals (4992 total)' %(np.max(posterior),str(positions_max),len(posterior)))
 	
 	fig.savefig('%sparameter_space_sorted.png' %(directory),dpi=300,bbox_inches='tight')
+
+
 
 
 

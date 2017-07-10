@@ -377,6 +377,9 @@ def mcmc(a):
 		print('calculation so far took', elapsed1, ' seconds')
 		if i>a.min_mcmc_iterations and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < a.mcmc_tolerance and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < a.mcmc_tolerance:
 			break
+	if a.send_email:
+		send_email(a.nthreads, i, np.mean(posterior, axis = 0)[0]mean_posterior_at_beginning, np.mean(posterior, axis = 0)[-1], a, elapsed1)
+
 
 
 def mcmc_multi(changing_parameter, error_list, elements):
@@ -455,3 +458,29 @@ def mcmc_multi(changing_parameter, error_list, elements):
 		print('calculation so far took', elapsed1, ' seconds')
 		if i>a.min_mcmc_iterations and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < a.mcmc_tolerance and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < a.mcmc_tolerance:
 			break
+	if a.send_email:
+		send_email(nthreads, i, np.mean(posterior, axis = 0)[0]mean_posterior_at_beginning, np.mean(posterior, axis = 0)[-1], a, elapsed1)
+
+
+def send_email(thread_count, iteration_count, posterior_beginning, posterior_end, parameters, time)
+	from email.MIMEMultipart import MIMEMultipart
+	from email.MIMEText import MIMEText
+	import smtplib
+
+
+	fromaddr = "pythonspeaking@gmail.com"
+	toaddr = "rybizki@mpia.de"
+	msg = MIMEMultipart()
+	msg['From'] = fromaddr
+	msg['To'] = toaddr
+	msg['Subject'] = "Threads = %d, Run finished after %.2f hours" %(a.nthreads,elapsed1/3600.)
+	body = "After %.1f hours %d threads produced %d iterations.\n The posterior at beginning was: %.2f. The posterior now is: %.2f.\n The stellar identifier list = %s.\n The error marginalization is %s \n  The yields are: %s %s %s \n " %(time/3600., thread_count, iteration_count, posterior_beginning, posterior_end, str(parameters.stellar_identifier_list), str(parameters.error_marginalization), parameters.yield_table_name_sn2, parameters.yield_table_name_agb, parameters.yield_table_name_1a)
+	msg.attach(MIMEText(body, 'plain'))
+
+	server = smtplib.SMTP('smtp.gmail.com', 587)
+	server.ehlo()
+	server.starttls()
+	server.ehlo()
+	server.login("pythonspeaking@gmail.com", "MPIA_Server_runs")
+	text = msg.as_string()
+	server.sendmail(fromaddr, toaddr, text)	

@@ -378,7 +378,7 @@ def mcmc(a):
 		if i>a.min_mcmc_iterations and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < a.mcmc_tolerance and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < a.mcmc_tolerance:
 			break
 	if a.send_email:
-		send_email(a.nthreads, i, np.mean(posterior, axis = 0)[0]mean_posterior_at_beginning, np.mean(posterior, axis = 0)[-1], a, elapsed1)
+		send_email(a.nthreads, i, np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1], a, elapsed1)
 
 
 
@@ -459,10 +459,10 @@ def mcmc_multi(changing_parameter, error_list, elements):
 		if i>a.min_mcmc_iterations and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-100]) < a.mcmc_tolerance and np.abs(np.mean(posterior, axis = 0)[-1] - np.mean(posterior, axis = 0)[-200]) < a.mcmc_tolerance:
 			break
 	if a.send_email:
-		send_email(nthreads, i, np.mean(posterior, axis = 0)[0]mean_posterior_at_beginning, np.mean(posterior, axis = 0)[-1], a, elapsed1)
+		send_email(nthreads, i, np.mean(posterior, axis = 0)[0], np.mean(posterior, axis = 0)[-1], a, elapsed1)
 
 
-def send_email(thread_count, iteration_count, posterior_beginning, posterior_end, parameters, time)
+def send_email(thread_count, iteration_count, posterior_beginning, posterior_end, parameters, time):
 	from email.MIMEMultipart import MIMEMultipart
 	from email.MIMEText import MIMEText
 	import smtplib

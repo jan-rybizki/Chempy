@@ -20,7 +20,8 @@ class ModelParameters(object):
 	#indices = [158, 24, 152, 56, 100, 21, 17, 126] # This is the list for middle alpha sequence
 	#indices = [147, 0, 3, 128, 1, 156, 113, 110] # extremes in alpha over iron space
 	#indices = [85, 94, 15, 110, 30, 11, 7, 3] # high alpha sequence
-	indices = [78,130,122,156,113,34, 128,167,85, 94, 15, 110, 30, 11, 7, 3] #double run
+	#indices = [78,130,122,156,113,34, 128,167,85, 94, 15, 110, 30, 11, 7, 3] #low alpha + high alpha
+	indices = [0, 163, 27,  98,  95,  17,  71,  79, 78,130,122,156,113,34, 128,167,85, 94, 15, 110, 30, 11, 7, 3] #low alpha + high alpha + random
 	stellar_identifier_list = []
 	for item in indices:
 		stellar_identifier_list.append("Rob_%d" %item)
@@ -107,7 +108,7 @@ class ModelParameters(object):
 		infall_scale = 3.3
 
 	yield_table_name_sn2_list = ['chieffi04','Nugrid','Nomoto2013','Portinari', 'chieffi04_net', 'Nomoto2013_net']
-	yield_table_name_sn2_index = 0
+	yield_table_name_sn2_index = 2
 	yield_table_name_sn2 = yield_table_name_sn2_list[yield_table_name_sn2_index]
 
 	yield_table_name_hn_list = ['Nomoto2013']
@@ -116,11 +117,11 @@ class ModelParameters(object):
 
 	##### Karakas2016 needs much more calculational resources (order of magnitude) using 2010 net yields from Karakas are faster and only N is significantly underproduced
 	yield_table_name_agb_list = ['Karakas','Nugrid','Karakas_net_yield','Ventura','Karakas16_net']
-	yield_table_name_agb_index = 3
+	yield_table_name_agb_index = 2
 	yield_table_name_agb = yield_table_name_agb_list[yield_table_name_agb_index]
 
 	yield_table_name_1a_list = ['Iwamoto','Thielemann','Seitenzahl']
-	yield_table_name_1a_index = 1
+	yield_table_name_1a_index = 2
 	yield_table_name_1a = yield_table_name_1a_list[yield_table_name_1a_index]
 
 	mmin = 0.1

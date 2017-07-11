@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 from . import localpath
 
-def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\mathrm{SFR}_\mathrm{peak}$',r'$\mathrm{x}_\mathrm{out}$',r'$\log_{10}\left(\mathrm{f}_\mathrm{corona}\right)$']):
+def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)$',r'$\mathrm{x}_\mathrm{out}$']):
 	'''
 	This function restructures the chains and blobs coming from the emcee routine so that we have a flattened posterior PDF in the end.
 	
@@ -170,16 +170,16 @@ def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'
 
 	np.save("%sparameter_names" %(directory), parameter_names)
 	
-	if len(parameter_names) != dimensions:
-		raise Exception('parameter_names not equally numbered as parameter in chain')
-	for j in range(len(parameter_names)):
-		print(parameter_names[j], positions[:,j].mean(), '+-', positions[:,j].std())
+	#if len(parameter_names) != dimensions:
+	#	raise Exception('parameter_names not equally numbered as parameter in chain')
+	for j in range(dimensions):
+		print(j, positions[:,j].mean(), '+-', positions[:,j].std())
 
 
 	fig, axes = plt.subplots(nrows=dimensions+1, ncols=1,figsize=(14.69,30.27), dpi=100,sharex=True)
 	for i in range(dimensions):
 		axes[i].plot(positions[:,i])
-		axes[i].set_ylabel(parameter_names[i])
+		axes[i].set_ylabel(i)
 	axes[i+1].plot(posterior)
 	axes[i+1].set_ylabel('posterior')	
 

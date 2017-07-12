@@ -473,7 +473,7 @@ def send_email(thread_count, iteration_count, posterior_beginning, posterior_end
 	msg = MIMEMultipart()
 	msg['From'] = fromaddr
 	msg['To'] = toaddr
-	msg['Subject'] = "Threads = %d, Run finished after %.2f hours" %(a.nthreads,elapsed1/3600.)
+	msg['Subject'] = "Threads = %d, Run finished after %.2f hours" %(parameters.nthreads,elapsed1/3600.)
 	body = "After %.1f hours %d threads produced %d iterations.\n The posterior at beginning was: %.2f. The posterior now is: %.2f.\n The stellar identifier list = %s.\n The error marginalization is %s \n  The yields are: %s %s %s \n " %(time/3600., thread_count, iteration_count, posterior_beginning, posterior_end, str(parameters.stellar_identifier_list), str(parameters.error_marginalization), parameters.yield_table_name_sn2, parameters.yield_table_name_agb, parameters.yield_table_name_1a)
 	msg.attach(MIMEText(body, 'plain'))
 

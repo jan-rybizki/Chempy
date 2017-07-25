@@ -926,18 +926,19 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 	        star_abundances[new_element_index,star_index] = item[3][element_index]
 
 	## given model error from error_list is read out and brought into the same element order (compatibility between python 2 and 3 makes the decode method necessary)
-	error_elements_decoded = []
-	for item in error_element_list:
-	    error_elements_decoded.append(item.decode('utf8'))
-	error_element_list = np.hstack(error_elements_decoded)
+	if not a.error_marginalization:
+		error_elements_decoded = []
+		for item in error_element_list:
+			error_elements_decoded.append(item.decode('utf8'))
+		error_element_list = np.hstack(error_elements_decoded)
 
 
-	error_list = np.hstack(error_list)
-	model_error = []
-	for element in elements:
-	    assert element in error_element_list, 'for this element the model error was not given, %s' %(element)
-	    model_error.append(error_list[np.where(error_element_list == element)])
-	model_error = np.hstack(model_error)
+		error_list = np.hstack(error_list)
+		model_error = []
+		for element in elements:
+			assert element in error_element_list, 'for this element the model error was not given, %s' %(element)
+			model_error.append(error_list[np.where(error_element_list == element)])
+		model_error = np.hstack(model_error)
 
 	## likelihood is calculated (the model error vector is expanded)
 	if a.error_marginalization:

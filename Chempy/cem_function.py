@@ -951,7 +951,7 @@ def posterior_function_many_stars_real(changing_parameter,error_list,error_eleme
 		else:
 			error_weight = np.ones_like(model_errors) * 1./float(flat_model_error_prior[2])
 		for i, item in enumerate(model_errors):
-			error_temp = np.ones_like(model_error) * item 
+			error_temp = np.ones(len(elements)) * item 
 			likelihood_list.append(likelihood_evaluation(error_temp[:,None], star_errors , model_abundances, star_abundances))
 		likelihood = logsumexp(likelihood_list, b = error_weight)	
 	else:

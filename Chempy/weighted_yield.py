@@ -755,6 +755,57 @@ class SSP(object):
 				#self.table['mass_in_remnants'] -= self.sn1a_feedback_mass/float(len(metallicity_list)) #tables_to_interpolate[i]['mass_in_remnants'] * metallicity_weight[i]
 				tmp.append(sum((self.sn1a_feedback_mass * tables_to_interpolate[i][element_name])))
 
+
+	def bh_feedback(self,bhmmin,bhmmax,element_list,fractions_in_gas,percentage_of_bh_mass):
+		'''
+		BH enrichment routine, just no enrichment for a specific mass range. A set percentage is fed back into the ISM
+		
+		Inputs:
+			Min/Max black hole mass (40-100 is default - see parameter file).
+			
+			Element list to be calculated
+			
+			Fractions of each element in the ISM gas
+			
+			Percentage of BH progenitor fed back into the ISM (75% default)
+		'''
+		cut = np.where(np.logical_and(self.x>=bhmmin,self.x<bhmmax))
+		weight = sum(self.dm[cut])
+		self.bhmmin = bhmmin
+		self.bhmmax = bhmmax
+		
+		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants','unprocessed_ejecta']
+		names = additional_keys + self.elements # not sure if all elements should be taken (might be easier to add the 3 tables in order to get total yield)
+		base = np.zeros(len(self.t))
+		list_of_arrays = []
+		for i in range(len(names)):
+			list_of_arrays.append(base)
+		self.bh_table = np.core.records.fromarrays(list_of_arrays,names=names)
+		
+		self.table['mass_in_remnants'][1] += percentage_of_bh_mass*weight
+		self.bh_table['mass_in_remnants'][1] += percentage_of_bh_mass*weight
+		
+		####### counting the BH events
+		for i,item in enumerate(self.inverse_imf[:-1]):
+			lower_cut = max(self.inverse_imf[i+1],self.bhmmin)
+			upper_cut = min(self.inverse_imf[i],self.bhmmax)
+			self.table['bh'][i+1] += imf_mass_fraction_non_nativ(self.dn,self.x,lower_cut,upper_cut)
+			self.bh_table['number_of_events'][i+1] += imf_mass_fraction_non_nativ(self.dn,self.x,lower_cut,upper_cut)
+			if upper_cut<lower_cut and self.inverse_imf[i+1]<self.bhmmin:
+				break
+		
+		for i,item in enumerate(element_list):
+			self.table[item][1] += (1 - percentage_of_bh_mass)*weight*fractions_in_gas[i]
+			if self.net_yields:
+				self.bh_table[item][1] += 0.
+			else:
+				self.bh_table[item][1] += (1-percentage_of_bh_mass)*weight*fractions_in_gas[i]
+		self.bh_table['unprocessed_ejecta'][1] += (1-percentage_of_bh_mass)*weight
+		self.table['unprocessed_ejecta'][1] += (1-percentage_of_bh_mass)*weight
+		self.table['bh'][1] = imf_mass_fraction_non_nativ(self.dn,self.x,bhmmin,bhmmax)	
+
+
+
 ## old declarations, the above ones are improved and should be used. BH and PAGB feedback are dummies for feeding back wind without enrichment
 
 	def sn2_feedback_IRA(self, sn2_elements, sn2_yields, sn2_metallicities, sn2_mmin, sn2_mmax,fractions_in_gas):	
@@ -860,18 +911,6 @@ class SSP(object):
 		### here the number of stars going sn2 is calculated
 		self.table['sn2'][1] = imf_mass_fraction_non_nativ(self.dn,self.x,sn2_mmin,sn2_mmax)
 		self.sn2_table['number_of_events'][1] = imf_mass_fraction_non_nativ(self.dn,self.x,sn2_mmin,sn2_mmax)
-
-	def bh_feedback(self,bhmmin,bhmmax,element_list,fractions_in_gas,percentage_of_bh_mass):
-		'''
-		Old routine, just no enrichment for a specific mass range
-		'''
-		cut = np.where(np.logical_and(self.x>=bhmmin,self.x<bhmmax))
-		weight = sum(self.dm[cut])
-
-		self.table['mass_in_remnants'][1] += percentage_of_bh_mass*weight
-		for i,item in enumerate(element_list):
-			self.table[item][1] += (1 - percentage_of_bh_mass)*weight*fractions_in_gas[i]
-		self.table['bh'][1] = imf_mass_fraction_non_nativ(self.dn,self.x,bhmmin,bhmmax)	
 
 	def post_agb_feedback(self,mmin,mmax,element_list,fractions_in_gas,percentage_to_remnant):
 		'''

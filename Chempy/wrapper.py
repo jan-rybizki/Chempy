@@ -67,11 +67,13 @@ class SSP_wrap():
 		basic_ssp.sn2_feedback(list(self.sn2.elements), dict(self.sn2.table), np.copy(self.sn2.metallicities), float(self.a.sn2mmin), float(self.a.sn2mmax),list(element_fractions))
 		basic_ssp.agb_feedback(list(self.agb.elements), dict(self.agb.table), list(self.agb.metallicities), float(self.a.agbmmin), float(self.a.agbmmax),np.hstack(element_fractions))
 		basic_ssp.sn1a_feedback(list(self.sn1a.elements), list(self.sn1a.metallicities), dict(self.sn1a.table), str(self.a.time_delay_functional_form), float(self.a.sn1ammin), float(self.a.sn1ammax), self.a.sn1a_parameter, float(self.a.total_mass), bool(self.a.stochastic_IMF))
+		basic_ssp.bh_feedback(float(self.a.bhmmin),float(self.a.bhmmax),list(elements), np.hstack(element_fractions) , float(self.a.percentage_of_bh_mass))
 		# exposing these tables to the outside wrapper
 		self.table = basic_ssp.table
 		self.sn2_table = basic_ssp.sn2_table
 		self.agb_table = basic_ssp.agb_table
 		self.sn1a_table = basic_ssp.sn1a_table
+		self.bh_table = basic_ssp.bh_table
 		self.inverse_imf = basic_ssp.inverse_imf
 
 def initialise_stuff(a):
@@ -139,7 +141,7 @@ def Chempy(a):
 		metallicity = float(cube.cube['Z'][i])
 		time_steps = np.copy(basic_sfr.t[:j])
 		basic_ssp.calculate_feedback(float(metallicity), list(elements_to_trace), list(element_fractions), np.copy(time_steps))
-		cube.advance_one_step(i+1,np.copy(basic_ssp.table),np.copy(basic_ssp.sn2_table),np.copy(basic_ssp.agb_table),np.copy(basic_ssp.sn1a_table))
+		cube.advance_one_step(i+1,np.copy(basic_ssp.table),np.copy(basic_ssp.sn2_table),np.copy(basic_ssp.agb_table),np.copy(basic_ssp.sn1a_table),np.copy(basic_ssp.bh_table))
 		if cube.cube['gas'][i] < 0:
 			print(i, basic_sfr.t[i])
 			print('gas became negative. returning -inf')

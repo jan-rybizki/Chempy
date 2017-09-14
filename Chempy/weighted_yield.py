@@ -127,7 +127,7 @@ class SSP(object):
 			self.inverse_imf = np.interp(self.t,lifetime_functions[self.stellar_lifetimes](self.x[::-1],self.z),self.x[::-1])
 		else:
 			raise Exception("Lifetime function named '%s' not implemented" % self.stellar_lifetimes)
-		additional_keys = ['mass_of_ms_stars_dying','mass_in_ms_stars','mass_in_remnants','sn2','sn1a','pn','bh','hydrogen_mass_accreted_onto_white_dwarfs']
+		additional_keys = ['mass_of_ms_stars_dying','mass_in_ms_stars','mass_in_remnants','sn2','sn1a','pn','bh','hydrogen_mass_accreted_onto_white_dwarfs', 'unprocessed_ejecta']
 		names = additional_keys + self.elements
 		base = np.zeros(len(self.t))
 		list_of_arrays = []
@@ -168,7 +168,7 @@ class SSP(object):
 		the classes table will be filled up and a sn2_table will be added (so that the individual processes can be tracked)
 		'''
 		# tracking the elemental feedback of individual processes
-		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants']
+		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants', 'unprocessed_ejecta']
 		names = additional_keys + self.elements # not sure if all elements should be taken (might be easier to add the 3 tables in order to get total yield)
 		base = np.zeros(len(self.t))
 		list_of_arrays = []
@@ -256,12 +256,16 @@ class SSP(object):
 				if 'unprocessed_mass_in_winds' in self.sn2[metallicity_key].dtype.names:
 					for element_i,element_n in enumerate(self.elements):
 						tables_to_interpolate[s][element_n][time_index+1] += sum(self.sn2[metallicity_key]['unprocessed_mass_in_winds']*weights*fractions_in_gas[element_i])
+					# here the unprocessed ejecta are included
+					tables_to_interpolate[s]['unprocessed_ejecta'][time_index+1] += sum(self.sn2[metallicity_key]['unprocessed_mass_in_winds']*weights)
+					if self.net_yields:
+						net_tables_to_interpolate[s]['unprocessed_ejecta'][time_index+1] += sum(self.sn2[metallicity_key]['unprocessed_mass_in_winds']*weights)
 		metallicity_weight = []
 		if len(metallicity_list) == 1:
 			metallicity_weight.append(1.)
 			# next line is the old way. might be much faster. But now also the elements in the wind are feed back into the ism.
 			#for element_name in list(set(self.elements).intersection(self.sn2_elements))+['mass_in_remnants']:
-			for element_name in list(self.elements)+['mass_in_remnants']:
+			for element_name in list(self.elements)+['mass_in_remnants', 'unprocessed_ejecta']:
 				self.table[element_name] += tables_to_interpolate[0][element_name]
 				if self.net_yields:
 					self.sn2_table[element_name] += net_tables_to_interpolate[0][element_name]
@@ -280,7 +284,7 @@ class SSP(object):
 				metallicity_weight.append(( np.log10(metallicity_list[1]) - np.log10(self.z)) / float(distance))
 				metallicity_weight.append(( np.log10(self.z) - np.log10(metallicity_list[0])) / float(distance))
 			for i,item in enumerate(metallicity_list):
-				for element_name in list(self.elements)+['mass_in_remnants']:
+				for element_name in list(self.elements)+['mass_in_remnants', 'unprocessed_ejecta']:
 					self.table[element_name] += tables_to_interpolate[i][element_name] * metallicity_weight[i]
 					if self.net_yields:
 						self.sn2_table[element_name] += net_tables_to_interpolate[i][element_name] * metallicity_weight[i]
@@ -318,7 +322,7 @@ class SSP(object):
 		# The breaks and weights do not need to be calculated every time. Only when the stellar lifetimes change significantly, though it does not take up too much time either
 		# tracking the elemental feedback of individual processes
 
-		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants']
+		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants', 'unprocessed_ejecta']
 		names = additional_keys + self.elements # not sure if all elements should be taken (might be easier to add the 3 tables in order to get total yield)
 		base = np.zeros(len(self.t))
 		list_of_arrays = []
@@ -459,6 +463,12 @@ class SSP(object):
 				for element_i,element_n in enumerate(self.elements):
 					for t in range(max_different_masses_per_time_step):	
 						tables_to_interpolate[s][element_n] += (self.agb[metallicity_key]['unprocessed_mass_in_winds'][mass_index_array[:,t]] * mass_weight_array[:,t]) * fractions_in_gas[element_i]
+				# here the unprocessed ejecta are included
+				for t in range(max_different_masses_per_time_step):	
+					tables_to_interpolate[s]['unprocessed_ejecta'] += (self.agb[metallicity_key]['unprocessed_mass_in_winds'][mass_index_array[:,t]] * mass_weight_array[:,t])
+				if self.net_yields:
+					for t in range(max_different_masses_per_time_step):	
+						net_tables_to_interpolate[s]['unprocessed_ejecta'] += (self.agb[metallicity_key]['unprocessed_mass_in_winds'][mass_index_array[:,t]] * mass_weight_array[:,t])
 			#print 'after adding wind' 
 			#print tables_to_interpolate[s][['O','C']]
 
@@ -472,7 +482,7 @@ class SSP(object):
 		metallicity_weight = []
 		if len(metallicity_list) == 1:
 			metallicity_weight.append(1.)
-			for element_name in list(self.elements)+['mass_in_remnants']:
+			for element_name in list(self.elements)+['mass_in_remnants', 'unprocessed_ejecta']:
 				self.table[element_name] += tables_to_interpolate[0][element_name]
 				if self.net_yields:
 					self.agb_table[element_name] += net_tables_to_interpolate[0][element_name]
@@ -493,7 +503,7 @@ class SSP(object):
 				metallicity_weight.append(( np.log10(metallicity_list[1]) - np.log10(self.z)) / float(distance))
 				metallicity_weight.append(( np.log10(self.z) - np.log10(metallicity_list[0])) / float(distance))
 			for i,item in enumerate(metallicity_list):
-				for element_name in list(self.elements)+['mass_in_remnants']:
+				for element_name in list(self.elements)+['mass_in_remnants', 'unprocessed_ejecta']:
 					self.table[element_name] += tables_to_interpolate[i][element_name] * metallicity_weight[i]
 					if self.net_yields:
 						self.agb_table[element_name] += net_tables_to_interpolate[i][element_name] * metallicity_weight[i]
@@ -540,7 +550,7 @@ class SSP(object):
 		   dummy = not in use anymore
 		'''
 		end_of_time = 15 #Gyrs Over this time-span the SN1a explosions will be distributed, for mass normalisation reasons
-		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants']
+		additional_keys = ['kinetic_energy','number_of_events','mass_in_remnants','unprocessed_ejecta']
 		names = additional_keys + self.elements # not sure if all elements should be taken (might be easier to add the 3 tables in order to get total yield)
 		base = np.zeros(len(self.t))
 		list_of_arrays = []

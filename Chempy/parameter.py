@@ -43,7 +43,7 @@ class ModelParameters(object):
 	m = 1000 # For 7 free parameters 300 iterations are usually enough. The mcmc routine is stopping after 300 if the posterior mean is converged for more than 200 iterations.
 	error_marginalization = True # Marginalizing over the model error or using the best model error value
 	flat_model_error_prior = [0.,1.,51] # Flat prior for the error marginalization [begin, end, number of evaluations inbetween]
-	beta_error_distribution = [True, 1, 3] # Instead of a flat prior for the error marginalization we use a beta distribution with a = 1 and b = 3 as default (wikipedia and scipy have the same parametrization) putting more weight to small model errors
+	beta_error_distribution = [True, 1, 10] # Instead of a flat prior for the error marginalization we use a beta distribution with a = 1 and b = 3 as default (wikipedia and scipy have the same parametrization) putting more weight to small model errors
 	zero_model_error = False # a boolean that can be used to restore the old Chempy behaviour of 0 model error, will only work if error_marginalization is set to False
 	send_email = False
 	
@@ -239,8 +239,8 @@ class ModelParameters(object):
 	# If some parameter is in to optimise there needs to be a prior and constraints defined
 	if True:
 		#prior
-		SSP_parameters =  [-2.29 ,-2.75 ,	-0.8 ]#,0.2]#, 0.7, 0.3, 0.0]
-		SSP_parameters_to_optimize = ['high_mass_slope', 'log10_N_0', 'log10_sn1a_time_delay']#,'log10_sfr_factor_for_cosmic_accretion']#,'log10_gas_reservoir_mass_factor','log10_a_parameter','log10_gas_power']
+		SSP_parameters =  [1.0 , -2.29 ,-2.75 ]#,	-0.8 ]#,0.2]#, 0.7, 0.3, 0.0]
+		SSP_parameters_to_optimize = ['log10_beta_parameter', 'high_mass_slope', 'log10_N_0']#, 'log10_sn1a_time_delay']#,'log10_sfr_factor_for_cosmic_accretion']#,'log10_gas_reservoir_mass_factor','log10_a_parameter','log10_gas_power']
 	else:
 		SSP_parameters = []
 		SSP_parameters_to_optimize = []
@@ -259,6 +259,7 @@ class ModelParameters(object):
 	ndim = len(to_optimize)
 
 	constraints = {
+	'log10_beta_parameter' : (0,None),
 	'high_mass_slope' : (-4.,-1.),
 	'log10_N_0' : (-5,-1), 
 	'log10_sn1a_time_delay' : (-3,1.),
@@ -294,6 +295,7 @@ class ModelParameters(object):
 	# for functional form 1 read (mean,factor,1)
 	priors = {
 	## gaussian priors
+	'log10_beta_parameter' : (1.0,0.5,0),	
 	'high_mass_slope' : (-2.3,0.3,0),	
 	'log10_N_0' : (-2.75,0.3,0),
 	'log10_sn1a_time_delay' : (-0.8,0.3,0),

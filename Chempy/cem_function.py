@@ -202,6 +202,8 @@ def cem_real(changing_parameter,a):
 		a.gas_reservoir_mass_factor = np.power(10,a.log10_gas_reservoir_mass_factor)
 	if 'log10_sfr_scale' in a.to_optimize:
 		a.sfr_scale = np.power(10,a.log10_sfr_scale)
+	if 'log10_beta_parameter' in a.to_optimize:
+		a.beta_error_distribution[2] = np.power(10,a.log10_beta_parameter)
 
 	if a.imf_type_name == 'salpeter':
 		a.imf_parameter = (a.high_mass_slope)
@@ -715,6 +717,8 @@ def extract_parameters_and_priors(changing_parameter, a):
 		a.gas_reservoir_mass_factor = np.power(10,a.log10_gas_reservoir_mass_factor)
 	if 'log10_sfr_scale' in a.to_optimize:
 		a.sfr_scale = np.power(10,a.log10_sfr_scale)
+	if 'log10_beta_parameter' in a.to_optimize:
+		a.beta_error_distribution[2] = np.power(10,a.log10_beta_parameter)
 
 	if a.imf_type_name == 'salpeter':
 		a.imf_parameter = (a.high_mass_slope)

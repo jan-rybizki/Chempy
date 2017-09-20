@@ -93,10 +93,11 @@ class ABUNDANCE_MATRIX(object):
 			list_of_arrays.append(self.base)
 		self.cube = np.core.records.fromarrays(list_of_arrays,names=self.names)
 		if self.check_processes:
-			self.process_feedback_names = ['kinetic_energy','number_of_events','mass_in_remnants'] + self.elements
+			self.process_feedback_names = ['kinetic_energy','number_of_events','mass_in_remnants', 'unprocessed_ejecta'] + self.elements
 			self.sn2_cube = np.core.records.fromarrays(list_of_arrays,names=self.process_feedback_names)
 			self.sn1a_cube = np.core.records.fromarrays(list_of_arrays,names=self.process_feedback_names)
 			self.agb_cube = np.core.records.fromarrays(list_of_arrays,names=self.process_feedback_names)
+			self.bh_cube = np.core.records.fromarrays(list_of_arrays,names=self.process_feedback_names)
 		self.gas_reservoir = np.core.records.fromarrays(list_of_arrays,names=self.names)
 		# Setting up the table for the gas and feedback composition
 		self.cube['time'] = time
@@ -169,9 +170,10 @@ class ABUNDANCE_MATRIX(object):
 			self.sn2_feedback = np.core.records.fromarrays(list_of_arrays,names=self.process_feedback_names)
 			self.sn1a_feedback = np.core.records.fromarrays(list_of_arrays,names=self.process_feedback_names)
 			self.agb_feedback = np.core.records.fromarrays(list_of_arrays,names=self.process_feedback_names)
+			self.bh_feedback = np.core.records.fromarrays(list_of_arrays,names=self.process_feedback_names)
 
 		
-	def advance_one_step(self,index,ssp_yield,sn2_yield,agb_yield,sn1a_yield):
+	def advance_one_step(self,index,ssp_yield,sn2_yield,agb_yield,sn1a_yield,bh_yield):
 		'''
 		This method advances the chemical evolution one time-step.
 
@@ -186,6 +188,8 @@ class ABUNDANCE_MATRIX(object):
 		   agb_yield = yield of agb only
 		
 		   sn1a_yield = yield of sn1a only
+
+           bh_yield = yield of bh only
 		'''
 		### This aligns the SSP yield such that it becomes a simple vector multiplication with a little memory overhead
 		# self.all_feedback has the following data structure: [element][time_index_of_the_born_ssp][time_index_of_this_ssp_giving_back_the_elements_mass]
@@ -197,6 +201,7 @@ class ABUNDANCE_MATRIX(object):
 				self.sn2_feedback[item][index-1][index-1:] = sn2_yield[item] 
 				self.sn1a_feedback[item][index-1][index-1:] = sn1a_yield[item]
 				self.agb_feedback[item][index-1][index-1:] = agb_yield[item]
+				self.bh_feedback[item][index-1][index-1:] = bh_yield[item]
 		feedback_mass = []
 		for i,item in enumerate(self.all_feedback_names):
 			tmp = self.sfr[:index] * self.all_feedback[item][:index,index]
@@ -214,6 +219,8 @@ class ABUNDANCE_MATRIX(object):
 				self.sn1a_cube[item][index] = sum(tmp_sn1a)
 				tmp_agb = self.sfr[:index] * self.agb_feedback[item][:index,index]
 				self.agb_cube[item][index] = sum(tmp_agb)
+				tmp_bh = self.sfr[:index] * self.bh_feedback[item][:index,index]
+				self.bh_cube[item][index] = sum(tmp_bh)
 
 
 		### First add the cosmic inflow to the corona

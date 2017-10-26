@@ -8,7 +8,7 @@ class ModelParameters(object):
 	'''
 	
 	# Which zero point of abundances shall be used. Asplund 2005 is corrected to VESTA abundances
-	solar_abundance_name_list = ['Lodders09','Asplund09','Asplund05_pure_solar','Asplund05_apogee_correction']
+	solar_abundance_name_list = ['Lodders09','Asplund09','Asplund05_pure_solar','Asplund05_apogee_correction', 'AG89']
 	solar_abundance_name_index = 1
 	solar_abundance_name = solar_abundance_name_list[solar_abundance_name_index]
 

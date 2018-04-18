@@ -44,7 +44,5 @@ git clone https://github.com/jan-rybizki/Chempy.git@v0.1
 Then you can ```jupyter notebook``` from within the tutorial folder (it will run if you have installed *Chempy*). 
 If you did not install Chempy you can still run the tutorial but need to point to the files in the Chempy folder. Basically you have to ```cd ../Chempy/``` and then replace each ```from Chempy import ...``` with ```from . import ...```.
 
-You can also have a look at the *preliminary* [documentaion](http://www.mpia.de/homes/rybizki/html/index.html) which gives an overview over the Chempy classes and functions.
-
 ## Attribution
-Please cite the [paper](https://arxiv.org/abs/1702.08729) when using the code in your research (so far only arxiv link, will be updated).
+Please cite the [paper](http://adsabs.harvard.edu/abs/2017A%26A...605A..59R) when using the code in your research.

@@ -1,6 +1,12 @@
 # Chempy
 Flexible one-zone open-box chemical evolution modeling. Abundance fitting and stellar feedback calculation
 
+## Recent Developments
+
+[Oliver Philcox](https://github.com/oliverphilcox), during his 2017 summer internship at MPIA coded a [NeuralNet add-on of Chempy](https://github.com/oliverphilcox/ChempyScoring) (together with a very nice jupyter tutorial), which is orders of magnitudes faster than the original version and used it to score different yield-tables from the literature which lead to this [publication](https://arxiv.org/abs/1712.05686)
+
+[Nathan Sandford](https://github.com/NathanSandford), produced an interactive and very instructive [Widget](https://hub.mybinder.org/user/nathansandford-chempy-widget-ibik9tdn/notebooks/chempy_widget.ipynb) which you can run in your browser to see the effect that the star formation history has on abundance patterns.
+
 ## Installation
 
 ```

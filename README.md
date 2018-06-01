@@ -51,4 +51,4 @@ Then you can ```jupyter notebook``` from within the tutorial folder (it will run
 If you did not install Chempy you can still run the tutorial but need to point to the files in the Chempy folder. Basically you have to ```cd ../Chempy/``` and then replace each ```from Chempy import ...``` with ```from . import ...```.
 
 ## Attribution
-Please cite the [paper](https://ascl.net/code/v/1981). A paper describing the method is also in preparation.
+Please cite the [paper](https://arxiv.org/abs/1702.08729) when using the code in your research (so far only arxiv link, will be updated).

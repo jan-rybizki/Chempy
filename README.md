@@ -54,4 +54,7 @@ If you did not install Chempy you can still run the tutorial but need to point t
 If you want to compare your abundance model/data to Chempy paper one results, look at the [tutorial 7](https://github.com/jan-rybizki/Chempy/blob/master/tutorials/7-Acessing%20Chempy%20paper%201%20abundance%20tracks.ipynb) where the stored abundance tracks are loaded and plotted for one element.
 
 ## Attribution
-Please cite the [paper](https://arxiv.org/abs/1702.08729) when using the code in your research (so far only arxiv link, will be updated).
+Please cite the [paper](http://adsabs.harvard.edu/abs/2017A%26A...605A..59R) when using the code in your research.
+
+
+\bibitem[Rybizki et al.(2017)]{2017A&A...605A..59R} Rybizki, J., Just, A., \& Rix, H.-W.\ 2017, \aap, 605, A59

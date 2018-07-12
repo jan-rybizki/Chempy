@@ -3,7 +3,7 @@ Flexible one-zone open-box chemical evolution modeling. Abundance fitting and st
 
 ## Recent Developments
 
-[Oliver Philcox](https://github.com/oliverphilcox), during his 2017 summer internship at MPIA coded a [NeuralNet add-on of Chempy](https://github.com/oliverphilcox/ChempyScoring) (together with a very nice jupyter tutorial), which is orders of magnitudes faster than the original version and used it to score different yield-tables from the literature which lead to this [publication](https://arxiv.org/abs/1712.05686)
+[Oliver Philcox](https://github.com/oliverphilcox), during his 2017 summer internship at MPIA coded a [NeuralNet add-on of Chempy](https://github.com/oliverphilcox/ChempyScoring) (together with a very nice jupyter tutorial), which is orders of magnitudes faster than the original version and used it to score different yield-tables from the literature which lead to this [publication](http://adsabs.harvard.edu/abs/2018ApJ...861...40P)
 
 [Nathan Sandford](https://github.com/NathanSandford), produced an interactive and very instructive [Widget](https://hub.mybinder.org/user/nathansandford-chempy-widget-ibik9tdn/notebooks/chempy_widget.ipynb) which you can run in your browser to see the effect that the star formation history has on abundance patterns.
 
@@ -50,5 +50,11 @@ git clone https://github.com/jan-rybizki/Chempy.git@v0.1
 Then you can ```jupyter notebook``` from within the tutorial folder (it will run if you have installed *Chempy*). 
 If you did not install Chempy you can still run the tutorial but need to point to the files in the Chempy folder. Basically you have to ```cd ../Chempy/``` and then replace each ```from Chempy import ...``` with ```from . import ...```.
 
+## Compare to Chempy data
+If you want to compare your abundance model/data to Chempy paper one results, look at the [tutorial 7](https://github.com/jan-rybizki/Chempy/blob/master/tutorials/7-Acessing%20Chempy%20paper%201%20abundance%20tracks.ipynb) where the stored abundance tracks are loaded and plotted for one element.
+
 ## Attribution
-Please cite the [paper](https://arxiv.org/abs/1702.08729) when using the code in your research (so far only arxiv link, will be updated).
+Please cite the [paper](http://adsabs.harvard.edu/abs/2017A%26A...605A..59R) when using the code in your research.
+
+
+\bibitem[Rybizki et al.(2017)]{2017A&A...605A..59R} Rybizki, J., Just, A., \& Rix, H.-W.\ 2017, \aap, 605, A59

@@ -15,7 +15,7 @@ def readme():
         return f.read()
 
 setup(name = "Chempy",
-    version = 0.1,
+    version = 0.2,
     description = "chemical evolution modeling",
     long_description = readme(),
     author = "Jan Rybizki",

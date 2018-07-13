@@ -202,19 +202,6 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False, only_first_
 	plt.clf()
 	text_size = 16
 	cor_text = 22
-	plt.rc('font', family='serif',size = text_size)
-	plt.rc('xtick', labelsize=text_size)
-	plt.rc('ytick', labelsize=text_size)
-	plt.rc('axes', labelsize=text_size, lw=1.0)
-	plt.rc('lines', linewidth = 1)
-	plt.rcParams['ytick.major.pad']='8'
-	plt.rcParams['text.latex.preamble']=[r"\usepackage{libertine}"]
-	params = {'text.usetex' : True,
-	          'font.size' : 10,
-	          'font.family' : 'libertine',
-	          'text.latex.unicode': True,
-	          }
-	plt.rcParams.update(params)
 	positions = np.load('%sposteriorPDF.npy' %(directory))
 	parameter_names = np.load("%sparameter_names.npy" %(directory))
 	
@@ -485,43 +472,36 @@ def plot_element_correlation(directory):
 	For that the name-list of the blobs needs to be provided which can be generated running Chempy in the 'testing_output' mode.
 	'''
 	import corner
-	names = np.load('%sname_list.npy' %(directory))
-	blobs = np.load('%sblobs_distribution.npy' %(directory))
-	positions = np.load('%sposteriorPDF.npy' %(directory))
-	posterior = np.load('%sposteriorvalues.npy' %(directory))
-
-	blobs = np.concatenate((blobs,positions,posterior.reshape(len(positions),1)),axis = 1)
-	names = np.append(names,['v-%s' %item for item in names[-2:]])#[r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\mathrm{SFR}_\mathrm{peak}$',r'$\mathrm{x}_\mathrm{out}$',r'$\log_{10}\left(\mathrm{f}_\mathrm{corona}\right)$']
+	where_to_cut = 500
+	blobs = np.load('%sflatblobs.npy' %(directory))
+	positions = np.load('%sflatchain.npy' %(directory))
+	posterior = np.load('%sflatlnprobability.npy' %(directory))
+	positions = np.reshape(positions,(-1,len(positions[0,0])))[-where_to_cut:]
+	posterior = np.hstack(posterior)[-where_to_cut:]
+	blobs = np.swapaxes(blobs,0,1)
+	blobs = np.reshape(blobs,(-1,len(blobs[0,0])))[-where_to_cut:]
+	blobs = np.concatenate((blobs,positions,posterior[:,None]),axis = 1)
+	names = ['He','C', 'N', 'O', 'F','Ne','Na', 'Mg', 'Al', 'Si', 'P','S', 'Ar','K', 'Ca','Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'IMF', 'NIa'] # Elements of ProtoSun run	
+	names = ['m-%s' %item for item in names]	
 	names = np.append(names,'v-posterior')
-	element_names = ['He','C', 'N', 'O', 'F','Ne','Na', 'Mg', 'Al', 'Si', 'P','S', 'Ar','K', 'Ca','Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni']#, 'Zn','Y', 'Ba']# Runs with sun
-		
-	#element_names = ['C', 'N', 'O','Na','Mg',  'Al', 'Si', 'Mn', 'Fe', 'Ni','Y', 'Ba']## SSP run
-	element_names_for_triangle_plot = ['Fe','Mg','Mn','C','Ca','Co','Na']
-
-	element_names = ['He','C','N','O','Na','Mg','Al','Ca','Ti','Cr','Mn','Fe','Co','Ni']
-	element_names = ['O','Mg','Si','Fe']
-	#element_names = []
-	parameter_names = ['m-%s' %item for item in element_names]
-	parameter_names += [names[25]]
-
-	
-	
+	parameter_names = ['O','Mg','Si','Fe']
+	parameter_names = ['m-%s' %item for item in parameter_names]
 	parameter_names = [names[-1]] + parameter_names
 	parameter_names += [names[-3]]
 	parameter_names += [names[-2]]
 	nparameter = len(parameter_names)
 
-	positions = np.zeros(shape=(positions.shape[0],nparameter))
+	positions = np.zeros(shape=(len(posterior),nparameter))
 
-	print(parameter_names)
-
+	#print(parameter_names)
+	#print(names)
+	#print(positions.shape)
+	#print(blobs.shape)
+	names = np.array(names)
 	for i,item in enumerate(parameter_names):
 		positions[:,i] = blobs[:,np.where(names == item)[0][0]]
 
 	parameter_names = [item[2:] for item in parameter_names]
-	### only to make the tutorial look nice. Uncomment the next two lines if you want to use your own example
-	parameter_names[-2] = r'$\alpha_\mathrm{IMF}$'
-	parameter_names[-1] = r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$'
 	fig, axes = plt.subplots(nrows=nparameter, ncols=nparameter,figsize=(14.69,8.0), dpi=300)#,sharex=True, sharey=True)
 
 	left  = 0.1  # the left side of the subplots of the figure

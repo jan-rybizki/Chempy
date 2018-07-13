@@ -239,8 +239,8 @@ class ModelParameters(object):
 	# If some parameter is in to optimise there needs to be a prior and constraints defined
 	if True:
 		#prior
-		SSP_parameters =  [1.0 , -2.29 ,-2.75 ]#,	-0.8 ]#,0.2]#, 0.7, 0.3, 0.0]
-		SSP_parameters_to_optimize = ['log10_beta_parameter', 'high_mass_slope', 'log10_N_0']#, 'log10_sn1a_time_delay']#,'log10_sfr_factor_for_cosmic_accretion']#,'log10_gas_reservoir_mass_factor','log10_a_parameter','log10_gas_power']
+		SSP_parameters =  [-2.29 ,-2.75 ,-0.8]#,	-0.8 ]#,0.2]#, 0.7, 0.3, 0.0]
+		SSP_parameters_to_optimize = ['high_mass_slope', 'log10_N_0','log10_sn1a_time_delay'] #,'log10_beta_parameter' ]#,'log10_sfr_factor_for_cosmic_accretion']#,'log10_gas_reservoir_mass_factor','log10_a_parameter','log10_gas_power']
 	else:
 		SSP_parameters = []
 		SSP_parameters_to_optimize = []

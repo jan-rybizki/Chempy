@@ -325,6 +325,7 @@ def multi_star_optimization():
 def mcmc(a):
 	'''
 	Convenience function to use the MCMC. A subdirectory mcmc/ will be created in the current directory and intermediate chains will be stored there.
+	The chains are not actually flattened as the file name suggests.
 	
 	The MCMC will sample the volume of best posterior for the likelihood functions that are declared in parameter.py. Default is ['sol_norm','gas_reservoir','sn_ratio'] which corresponds to 'Sun+' from the paper.
 	'''

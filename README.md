@@ -10,7 +10,7 @@ Flexible one-zone open-box chemical evolution modeling. Abundance fitting and st
 ## Installation
 
 ```
-pip install git+https://github.com/jan-rybizki/Chempy.git@v0.1
+pip install git+https://github.com/jan-rybizki/Chempy.git@v0.2
 ```
 Chempy should run with the latest python 2 and python 3 version.
 Its dependencies are: [Numpy](http://numpy.scipy.org/), [SciPy](http://www.scipy.org/), [matplotlib](http://matplotlib.sourceforge.net/), [multiprocessing](https://docs.python.org/2/library/multiprocessing.html#module-multiprocessing) and [emcee](http://dan.iel.fm/emcee/current/) (for the MCMC), and [corner](http://corner.readthedocs.io/en/latest/) (for the MCMC plots). They are all pip installable and you can also get part of it with [Anaconda](https://www.continuum.io/downloads).
@@ -18,7 +18,7 @@ Its dependencies are: [Numpy](http://numpy.scipy.org/), [SciPy](http://www.scipy
 ### Installation without admin rights:
 You can install *Chempy* into a folder where you have write access:
 ```
-pip install --install-option='--prefix=~/extra_package/' git+https://github.com/jan-rybizki/Chempy.git@v0.1
+pip install --install-option='--prefix=~/extra_package/' git+https://github.com/jan-rybizki/Chempy.git@v0.2
 ```
 Then you have to add the `site-packages/` folder which will be one of the newly created subfolders in `extra_package/` into the ```PYTHONPATH``` variable, e.g.:
 ```
@@ -52,6 +52,9 @@ If you did not install Chempy you can still run the tutorial but need to point t
 
 ## Compare to Chempy data
 If you want to compare your abundance model/data to Chempy paper one results, look at the [tutorial 7](https://github.com/jan-rybizki/Chempy/blob/master/tutorials/7-Acessing%20Chempy%20paper%201%20abundance%20tracks.ipynb) where the stored abundance tracks are loaded and plotted for one element.
+
+## Extract yield tables for chemical evolution
+If you want to use the flexible framework of Chempy to produce IMF integrated metallicity dependent yield tables for your SPH or other Chemical Evolution model you can use [tutorial 8][https://github.com/jan-rybizki/Chempy/blob/master/tutorials/8-Yield%20tables%20for%20SPH%20simulations%20and%20comparison%20to%20other%20tables.ipynb]. You can use net or gross yields and also look at individual processes contribution to the overall SSP yield table.
 
 ## Attribution
 Please cite the [paper](http://adsabs.harvard.edu/abs/2017A%26A...605A..59R) when using the code in your research.

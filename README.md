@@ -3,7 +3,7 @@ Flexible one-zone open-box chemical evolution modeling. Abundance fitting and st
 
 ## Recent Developments
 
-[Oliver Philcox](https://github.com/oliverphilcox), during his 2017 summer internship at MPIA coded a [NeuralNet add-on of Chempy](https://github.com/oliverphilcox/ChempyScoring) (together with a very nice jupyter tutorial), which is orders of magnitudes faster than the original version and used it to score different yield-tables from the literature which lead to this [publication](http://adsabs.harvard.edu/abs/2018ApJ...861...40P)
+[Oliver Philcox](https://github.com/oliverphilcox), during his 2017 summer internship at MPIA coded a [NeuralNet add-on of Chempy](https://github.com/oliverphilcox/ChempyScoring) (together with a very nice jupyter tutorial), which is orders of magnitudes faster than the original version and used it to score different yield-tables from the literature which lead to this [publication](http://adsabs.harvard.edu/abs/2018ApJ...861...40P). He also included many more CC-SN yieldsets.
 
 [Nathan Sandford](https://github.com/NathanSandford), produced an interactive and very instructive [Widget](https://hub.mybinder.org/user/nathansandford-chempy-widget-ibik9tdn/notebooks/chempy_widget.ipynb) which you can run in your browser to see the effect that the star formation history has on abundance patterns.
 
@@ -54,7 +54,7 @@ If you did not install Chempy you can still run the tutorial but need to point t
 If you want to compare your abundance model/data to Chempy paper one results, look at the [tutorial 7](https://github.com/jan-rybizki/Chempy/blob/master/tutorials/7-Acessing%20Chempy%20paper%201%20abundance%20tracks.ipynb) where the stored abundance tracks are loaded and plotted for one element.
 
 ## Extract yield tables for chemical evolution
-If you want to use the flexible framework of Chempy to produce IMF integrated metallicity dependent yield tables for your SPH or other Chemical Evolution model you can use [tutorial 8][https://github.com/jan-rybizki/Chempy/blob/master/tutorials/8-Yield%20tables%20for%20SPH%20simulations%20and%20comparison%20to%20other%20tables.ipynb]. You can use net or gross yields and also look at individual processes contribution to the overall SSP yield table.
+If you want to use the flexible framework of Chempy to produce IMF integrated metallicity dependent yield tables for your SPH or other Chemical Evolution model you can use [tutorial 8](https://github.com/jan-rybizki/Chempy/blob/master/tutorials/8-Yield%20tables%20for%20SPH%20simulations%20and%20comparison%20to%20other%20tables.ipynb). You can use net or gross yields and also look at individual processes contribution to the overall SSP yield table.
 
 ## Attribution
 Please cite the [paper](http://adsabs.harvard.edu/abs/2017A%26A...605A..59R) when using the code in your research.

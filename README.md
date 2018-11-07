@@ -50,6 +50,8 @@ git clone https://github.com/jan-rybizki/Chempy.git@v0.1
 Then you can ```jupyter notebook``` from within the tutorial folder (it will run if you have installed *Chempy*). 
 If you did not install Chempy you can still run the tutorial but need to point to the files in the Chempy folder. Basically you have to ```cd ../Chempy/``` and then replace each ```from Chempy import ...``` with ```from . import ...```.
 
+You can also read the automatically generated [manual](https://chempy.readthedocs.io/en/latest/).
+
 ## Compare to Chempy data
 If you want to compare your abundance model/data to Chempy paper one results, look at the [tutorial 7](https://github.com/jan-rybizki/Chempy/blob/master/tutorials/7-Acessing%20Chempy%20paper%201%20abundance%20tracks.ipynb) where the stored abundance tracks are loaded and plotted for one element.
 

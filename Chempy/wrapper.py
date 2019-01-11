@@ -2,7 +2,7 @@ import numpy as np
 from .weighted_yield import SSP, lifetime_Argast, lifetime_Raiteri
 from .imf import IMF
 from .yields import SN2_feedback, AGB_feedback, SN1a_feedback, Hypernova_feedback
-
+import copy
 
 class SSP_wrap():
 	'''
@@ -49,7 +49,7 @@ class SSP_wrap():
 		self.sn1a = basic_1a
 		self.agb = basic_agb
 
-	def calculate_feedback(self, z, elements, element_fractions, time_steps):
+	def calculate_feedback(self, z, elements, element_fractions, time_steps, ssp_mass):
 		'''
 		The feedback is calculated for the initializes SSP.
 
@@ -63,10 +63,15 @@ class SSP_wrap():
 		
 		   time_steps = the time-steps for which the enrichment of the SSP should be calculated (usually the time-steps until the end of the chempy simulation)
 		'''
-		basic_ssp = SSP(False, float(z), np.copy(self.imf.x), np.copy(self.imf.dm), np.copy(self.imf.dn), np.copy(time_steps), list(elements), str(self.a.stellar_lifetimes), str(self.a.interpolation_scheme), bool(self.a.only_net_yields_in_process_tables))
+		if self.a.stochastic_IMF:
+			imf_copy = copy.copy(self.imf)
+			imf_copy.stochastic_sampling(ssp_mass)
+		else:
+			imf_copy = copy.copy(self.imf)
+		basic_ssp = SSP(False, float(z), imf_copy.x, imf_copy.dm, imf_copy.dn, np.copy(time_steps), list(elements), str(self.a.stellar_lifetimes), str(self.a.interpolation_scheme), bool(self.a.only_net_yields_in_process_tables))
 		basic_ssp.sn2_feedback(list(self.sn2.elements), dict(self.sn2.table), np.copy(self.sn2.metallicities), float(self.a.sn2mmin), float(self.a.sn2mmax),list(element_fractions))
 		basic_ssp.agb_feedback(list(self.agb.elements), dict(self.agb.table), list(self.agb.metallicities), float(self.a.agbmmin), float(self.a.agbmmax),np.hstack(element_fractions))
-		basic_ssp.sn1a_feedback(list(self.sn1a.elements), list(self.sn1a.metallicities), dict(self.sn1a.table), str(self.a.time_delay_functional_form), float(self.a.sn1ammin), float(self.a.sn1ammax), self.a.sn1a_parameter, float(self.a.total_mass), bool(self.a.stochastic_IMF))
+		basic_ssp.sn1a_feedback(list(self.sn1a.elements), list(self.sn1a.metallicities), dict(self.sn1a.table), str(self.a.time_delay_functional_form), float(self.a.sn1ammin), float(self.a.sn1ammax), self.a.sn1a_parameter, ssp_mass, bool(self.a.stochastic_IMF))
 		basic_ssp.bh_feedback(float(self.a.bhmmin),float(self.a.bhmmax),list(elements), np.hstack(element_fractions) , float(self.a.percentage_of_bh_mass))
 		# exposing these tables to the outside wrapper
 		self.table = basic_ssp.table
@@ -134,13 +139,15 @@ def Chempy(a):
 	cube = ABUNDANCE_MATRIX(np.copy(basic_sfr.t),np.copy(basic_sfr.sfr),np.copy(basic_infall.infall),list(elements_to_trace),list(basic_primordial.symbols),list(basic_primordial.fractions),float(a.gas_at_start),list(basic_primordial.symbols),list(basic_primordial.fractions),float(a.gas_reservoir_mass_factor),float(a.outflow_feedback_fraction),bool(a.check_processes),float(a.starformation_efficiency),float(a.gas_power), float(a.sfr_factor_for_cosmic_accretion), list(basic_primordial.symbols), list(basic_primordial.fractions))
 	basic_ssp = SSP_wrap(a)
 	for i in range(len(basic_sfr.t)-1):
+		ssp_mass = float(basic_sfr.sfr[i])
+		#print(ssp_mass)		
 		j = len(basic_sfr.t)-i
 		element_fractions = []
 		for item in elements_to_trace:
 			element_fractions.append(float(np.copy(cube.cube[item][max(i-1,0)]/cube.cube['gas'][max(i-1,0)])))## gas element fractions from one time step before	
 		metallicity = float(cube.cube['Z'][i])
 		time_steps = np.copy(basic_sfr.t[:j])
-		basic_ssp.calculate_feedback(float(metallicity), list(elements_to_trace), list(element_fractions), np.copy(time_steps))
+		basic_ssp.calculate_feedback(float(metallicity), list(elements_to_trace), list(element_fractions), np.copy(time_steps), ssp_mass)
 		cube.advance_one_step(i+1,np.copy(basic_ssp.table),np.copy(basic_ssp.sn2_table),np.copy(basic_ssp.agb_table),np.copy(basic_ssp.sn1a_table),np.copy(basic_ssp.bh_table))
 		if cube.cube['gas'][i] < 0:
 			print(i, basic_sfr.t[i])

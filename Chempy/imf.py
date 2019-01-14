@@ -1,19 +1,19 @@
-import numpy as np 
+import numpy as np
 
 def slope_imf(x,p1,p2,p3,kn1,kn2):
 	'''
 	Is calculating a three slope IMF
-	
+
 	INPUT:
 
 	   x = An array of masses for which the IMF should be calculated
-	
+
 	   p1..p3 = the slopes of the power law
-	
+
 	   kn1, kn2 = Where the breaks of the power law are
 
 	OUTPUT:
-	
+
 	   An array of frequencies matching the mass base array x
 	'''
 	if(x > kn2):
@@ -29,14 +29,14 @@ def lifetime(m,Z):
 	"""
 	here we will calculate the MS lifetime of the star after Argast et al., 2000, A&A, 356, 873
 	INPUT:
-	
+
 	   m = mass in Msun
-	
+
 	   Z = metallicity in Zsun
-	
+
 
 	OUTPUT:
-	
+
 	   returns the lifetime of the star in Gyrs
 	"""
 	lm = np.log10(m)
@@ -49,22 +49,22 @@ def lifetime(m,Z):
 
 class IMF(object):
 	'''
-	This class represents the IMF normed to 1 in units of M_sun. 
-	
+	This class represents the IMF normed to 1 in units of M_sun.
+
 	Input for initialisation:
 
 	   mmin = minimal mass of the IMF
-	
+
 	   mmax = maximal mass of the IMF
-	
+
 	   intervals = how many steps inbetween mmin and mmax should be given
-	
+
 	Then one of the IMF functions can be used
-	
+
 	   self.x = mass base
-	
-	   self.dn = the number of stars at x 
-	
+
+	   self.dn = the number of stars at x
+
 	   self.dm = the masses for each mass interval x
 	'''
 	def __init__(self, mmin = 0.08 , mmax = 100., intervals = 5000):
@@ -96,22 +96,22 @@ class IMF(object):
 		dn = np.zeros_like(self.x)
 		for i in range(len(self.x)):
 			if self.x[i] <= 1:
-				index_with_mass_1 = i 
+				index_with_mass_1 = i
 				dn[i] = (1. / float(self.x[i])) * np.exp(-1*(((np.log10(self.x[i] / m_c))**2)/(2*sigma**2)))
 			else:
 				dn[i] = (pow(self.x[i],expo))
 		# Need to 'attach' the upper to the lower branch
 		derivative_at_1 = dn[index_with_mass_1] - dn[index_with_mass_1 - 1]
 		target_y_for_m_plus_1 = dn[index_with_mass_1] + derivative_at_1
-		rescale = target_y_for_m_plus_1 / dn[index_with_mass_1 + 1] 
+		rescale = target_y_for_m_plus_1 / dn[index_with_mass_1 + 1]
 		dn[np.where(self.x>1.)] *= rescale
 		# Normalizing to 1 in mass space
 		self.dn = np.divide(dn,sum(dn))
 		dm = dn*self.x
 		self.dm = np.divide(dm,sum(dm))
 		self.dn = np.divide(self.dm,self.x)
-		return(self.dm,self.dn)       
-	
+		return(self.dm,self.dn)
+
 	def Chabrier_2(self,paramet = (22.8978, 716.4, 0.25,-2.3)):
 		'''
 		Chabrier IMF from Chabrier 2001, IMF 3 = equation 8 parameters from table 1
@@ -220,5 +220,8 @@ class IMF(object):
 				cut = np.where(np.logical_and(random_number>counting[i-1],random_number<=counting[i]))
 			number_of_stars_in_mass_bin = len(random_number[cut])
 			self.dm[i] = number_of_stars_in_mass_bin * self.x[i]
-		self.dm = np.divide(self.dm,sum(self.dm))
+		if number_of_stars:
+			self.dm = np.divide(self.dm,sum(self.dm))
+		else:
+			self.dm = np.divide(self.dm, 1)
 		self.dn = np.divide(self.dm,self.x)

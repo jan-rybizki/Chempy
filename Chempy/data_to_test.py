@@ -4,13 +4,13 @@ import numpy as np
 def gaussian(x,x0,xsig):
 	'''
 	function to calculate the gaussian probability (its normed to Pmax and given in log)
-	
+
 	INPUT:
-	
+
 	   x = where is the data point or parameter value
-	
+
 	   x0 = mu
-	
+
 	   xsig = sigma
 	'''
 	factor = 1. / (np.sqrt(xsig * xsig * 2. * np.pi))
@@ -20,7 +20,7 @@ def gaussian(x,x0,xsig):
 def likelihood_evaluation(model_error, star_error_list, abundance_list, star_abundance_list):
 	'''
 	This function evaluates the Gaussian for the prediction/observation comparison and returns the resulting log likelihood. The model error and the observed error are added quadratically
-	
+
 	INPUT:
 
 	   model_error = the error coming from the models side
@@ -53,17 +53,17 @@ def sample_stars(weight,selection,element1,element2,error1,error2,nsample):
 	INPUT
 
 	   weight: The SFR of the model
-	
+
 	   selection: The age-distribution of a stellar population (e.g. red-clump stars). The time intervals need to be the same as for 'weight'.
-	
+
 	   element1 = the values of one element for the ISM of the model (same time-intervals as SFR)
-	
+
 	   element2 = the values of the other element for the ISM
-	
+
 	   error1 = the measurement error of that element
-	
+
 	   error2 = measurement error
-	
+
 	   nsample = number of stars that should be realized
 	'''
 	weight = np.cumsum(weight*selection)
@@ -93,6 +93,138 @@ def sample_stars(weight,selection,element1,element2,error1,error2,nsample):
 	sun_mgfe += perturbation
 	return sun_feh,sun_mgfe
 
+def SampleStars(weight, selection, elements, errors, nsample):
+	'''
+	This function samples stars along a chemical evolution track properly taking into account the SFR and the selection function of the stellar population (e.g. red-clump stars). It can be used to produce mock observations which can be compared to survey data.
+
+	*This is an updated version of sample_stars() and can return mock observations with abundances for as many elements as are tracked*
+
+	INPUT
+
+	   weight: The SFR of the model
+
+	   selection: The age-distribution of a stellar population (e.g. red-clump stars). The time intervals need to be the same as for 'weight'.
+
+	   elements = the ISM abundance of all tracked elements of the model (same time-intervals as SFR)
+
+	   errors = the measurement error of each element
+
+	   nsample = number of stars that should be realized
+	'''
+    weight = np.cumsum(weight*selection)
+    weight /= weight[-1]
+    sample = np.random.random(nsample)
+    sample = np.sort(sample)
+    stars = np.zeros_like(weight)
+    for i, item in enumerate(weight):
+        if i == 0:
+            count = len(sample[np.where(np.logical_and(sample > 0., sample <= item))])
+            stars[i] = count
+        else:
+            count = len(sample[np.where(np.logical_and(sample > weight[i-1], sample <= item))])
+            stars[i] = count
+
+    abundances = np.zeros((len(elements), nsample))
+    n = 0
+    for i in range(len(weight)):
+        if stars[i] != 0:
+            for j in range(int(stars[i])):
+                for k in range(len(elements)):
+                    abundances[k][n] = elements[k][i]
+                n += 1
+    abundances = np.array(abundances)
+    for i, element in enumerate(elements):
+        perturbation = np.random.normal(0, errors[i], len(abundances[i]))
+        abundances[i] += perturbation
+    return abundances
+
+def MockAbundances(a, nsample, elements_to_sample=a.elements_to_trace, abundances, element_error='solar', tracer='red_clump'):
+	'''
+	This function provides a convenient wrapper for the SampleStars() function.
+	1) Loads selection function and interpolates to time steps of Chempy run.
+	2) Compiles and formats abundances and errors for each element
+	3) Passes abundances, errors, selection function, and SFR to SampleStars()
+
+
+	INPUT
+
+	   a: The Model Parameters used for the Chempy run.
+
+	   nsample: Number of stars that should be realized
+
+	   elements_to_sample: List of strings corresponding to element symbols that you'd like to sample
+
+	   abundances: Abundance output from Chempy()
+
+	   element_error: Observational error to provide scatter to sample.
+	   				   -'solar': for observational errors of solar abundances
+	   				   -float: uniform observational error accross all abundances
+	   				   -np.ndarray: array of observational errors for each element (must be same length as elements_to_sample)
+	   				   -dict: Of the form {<element symbol>: <observaational error for element>}
+
+	   tracer: Stellar tracer to sample. Looks for age distribution in inputs/selection/<tracer>.npz
+
+	OUTPUT
+
+	sampled_abundances: Dictionary with an array of nsample abundances for each key in elements_to_sample.
+						All abundances are given as [X/Fe] except for iron, which is given as [Fe/H]
+						i.e. [Al/Fe] for star0 is sampled_abundances['Al'][0]
+							 [Fe/H] for star0 is sampled_abundances['Fe'][0]
+	'''
+	from .solar_abundance import solar_abundances
+
+    basic_solar = solar_abundances()
+    getattr(basic_solar, a.solar_abundance_name)()
+
+    # Red Clump Selection Criteria
+    try:
+        temp = np.load(localpath + "input/selection/{}.npz".format(tracer))
+    except:
+        raise Exception('Valid age distribution file not found for {}'.format(tracer))
+    selection_raw = temp['age_dist']
+    time_selection_raw = temp['time']
+
+    sample = np.interp(abundances['time'], time_selection_raw[::-1], selection_raw)
+    selection = np.interp(abundances['time'], time_selection_raw[::-1], selection_raw)
+
+    elements = []
+    errors = []
+    for i, element in enumerate(elements_to_sample):
+        if element == 'Fe':
+            elements.append(abundances[element][1:])
+            if element_error == 'solar':
+                errors.append(float(basic_solar.table['error']
+                                    [np.where(basic_solar.table['Symbol'] == element)]))
+            elif type(element_error) == float:
+                errors.append(element_error)
+            elif type(element_error) == np.ndarray:
+                assert len(element_error) == len(elements_to_sample), "Length of element_error array must match length of elements_to_sample"
+                errors.append(element_error[i])
+            elif type(element_error) == dict:
+                assert element in list(element_error.keys()), '{} not found in element_error dictionary'.format(element)
+                errors.append(element_error[element])
+            else:
+                assert 1 == 0, "Improper element_error provided"
+        else:
+            elements.append(abundances[element][1:]-abundances['Fe'][1:])
+            if element_error == 'solar':
+                errors.append(float(basic_solar.table['error']
+                                    [np.where(basic_solar.table['Symbol'] == element)]))
+            elif type(element_error) == float:
+                errors.append(element_error)
+            elif type(element_error) == np.ndarray:
+                assert len(element_error) == len(elements_to_sample), "Length of element_error array must match length of elements_to_sample"
+                errors.append(element_error[i])
+            elif type(element_error) == dict:
+                assert element in list(element_error.keys()), '{} not found in element_error dictionary'.format(element)
+                errors.append(element_error[element])
+            else:
+                assert 1 == 0, "Improper element_error provided"
+    sampled_abundances = SampleStars(abundances['weights'][1:], selection[1:], elements, errors, nsample)
+    sampled_abundances = {y: z for y, z in zip(elements_to_sample, sampled_abundances)}
+
+    return(sampled_abundances)
+
 def gaussian_1d_log(x,x0,xsig):
 	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
 
@@ -101,17 +233,17 @@ def yield_plot(name_string, yield_class, solar_class, element):
 	This function plots [X/Fe] for the complete mass and metallicity range of a yield class.
 
 	INPUT:
-	
+
 	   name_string = a string which is included in the saved file name
-	
+
 	   yield_class = a Chempy yield class (e.g 'Nomoto2013' from SN2_Feedback, see tutorial)
-	
+
 	   solar_class = a Chempy solar class (needed for normalisation)
-	
+
 	   element = the element for which to plot the yield table
 
 	OUTPUT
-	
+
 	   the figure will be saved into the current directory
 	'''
 	elements = np.hstack(solar_class.all_elements)
@@ -147,21 +279,21 @@ def yield_comparison_plot(yield_name1, yield_name2, yield_class, yield_class2, s
 	a function to plot a comparison between two yield sets. It is similar to 'yield_plot' only that a second yield set can be plotted.
 
 	INPUT
-	
+
 	   yield_name1 = Name of the first yield class
-	
+
 	   yield_name2 = Name of the second yield class
-	
+
 	   yield_class = a Chempy yield class (e.g 'Nomoto2013' from SN2_Feedback, see tutorial)
-	
+
 	   yield_class2 = a Chempy yield class (e.g 'Nomoto2013' from SN2_Feedback, see tutorial)
-	
+
 	   solar_class = a Chempy solar class (needed for normalisation)
-	
+
 	   element = the element for which to plot the yield table
 
 	OUTPUT
-	
+
 	   the figure will be saved into the current directory
 	'''
 	elements = np.hstack(solar_class.all_elements)
@@ -212,21 +344,21 @@ def fractional_yield_comparison_plot(yield_name1, yield_name2, yield_class, yiel
 	a function to plot a comparison between the fractional yield of two yield sets. The fractional yield is the mass fraction of the star that is expelled as the specific element. Depending on the yield class it will be net or total yield.
 
 	INPUT
-	
+
 	   yield_name1 = Name of the first yield class
-	
+
 	   yield_name2 = Name of the second yield class
-	
+
 	   yield_class = a Chempy yield class (e.g 'Nomoto2013' from SN2_Feedback, see tutorial)
-	
+
 	   yield_class2 = a Chempy yield class (e.g 'Nomoto2013' from SN2_Feedback, see tutorial)
-	
+
 	   solar_class = a Chempy solar class (needed for normalisation)
-	
+
 	   element = the element for which to plot the yield table
 
 	OUTPUT
-	
+
 	   the figure will be saved into the current directory
 	'''
 
@@ -274,23 +406,23 @@ def elements_plot(name_string,agb, sn2, sn1a,elements_to_trace, all_elements,max
 	This function plots the available elements for specific yield sets.
 
 	INPUT:
-	
+
 	   name_string = a string that will be added to the file name
-	   
+
 	   agb = agb yield class
-	
+
 	   sn2 = sn2 yield class
-	
+
 	   sn1a = sn1a yield class
-	
+
 	   elements_to_trace = which elements do we want to follow (a list)
-	
+
 	   all_elements = Symbols of all elements (available in the solar abundances class)
-	
+
 	   max_entry = until which element number the figure should be plotted
 
 	OUTPUT:
-	
+
 	   a figure in the current directory
 	'''
 	plt.clf()
@@ -326,27 +458,27 @@ def elements_plot(name_string,agb, sn2, sn1a,elements_to_trace, all_elements,max
 	for i, item in enumerate(all_elements['Symbol']):
 		ax.text(all_elements['Number'][i], 3, item, fontsize=15,bbox={'facecolor':'red', 'alpha':0.5, 'pad':10}, clip_on=True)
 		if item in elements_to_trace:
-			ax.text(all_elements['Number'][i], 4, "X", fontsize=15, clip_on=True)		
+			ax.text(all_elements['Number'][i], 4, "X", fontsize=15, clip_on=True)
 		if item in sn1a:
-			ax.text(all_elements['Number'][i], 8, "X", fontsize=15, clip_on=True)	
+			ax.text(all_elements['Number'][i], 8, "X", fontsize=15, clip_on=True)
 		if item in sn2:
-			ax.text(all_elements['Number'][i], 6, "X", fontsize=15, clip_on=True)	
+			ax.text(all_elements['Number'][i], 6, "X", fontsize=15, clip_on=True)
 		if item in agb:
-			ax.text(all_elements['Number'][i], 7, "X", fontsize=15, clip_on=True)	
+			ax.text(all_elements['Number'][i], 7, "X", fontsize=15, clip_on=True)
 		if item in agb and item in sn2 and item in sn1a:
-			ax.text(all_elements['Number'][i], 5, "X", fontsize=15, clip_on=True)	
+			ax.text(all_elements['Number'][i], 5, "X", fontsize=15, clip_on=True)
 		if item in BB:
 			ax.text(all_elements['Number'][i], -2, "X", fontsize=15, clip_on=True)
 		if item in iron:
-			ax.text(all_elements['Number'][i], 1, "X", fontsize=15, clip_on=True)	
+			ax.text(all_elements['Number'][i], 1, "X", fontsize=15, clip_on=True)
 		if item in alpha:
-			ax.text(all_elements['Number'][i], -3, "X", fontsize=15, clip_on=True)	
+			ax.text(all_elements['Number'][i], -3, "X", fontsize=15, clip_on=True)
 		if item in s_process:
-			ax.text(all_elements['Number'][i], 0, "X", fontsize=15, clip_on=True)	
+			ax.text(all_elements['Number'][i], 0, "X", fontsize=15, clip_on=True)
 		if item in r_process:
-			ax.text(all_elements['Number'][i], -1, "X", fontsize=15, clip_on=True)	
+			ax.text(all_elements['Number'][i], -1, "X", fontsize=15, clip_on=True)
 		if item in apogee:
-			ax.text(all_elements['Number'][i], 2, "X", fontsize=15, clip_on=True)		
+			ax.text(all_elements['Number'][i], 2, "X", fontsize=15, clip_on=True)
 
 	plt.savefig('elements_%s.png' %(name_string),bbox_inches='tight')
 	return [0.]
@@ -358,31 +490,31 @@ def cosmic_abundance_standard(summary_pdf,name_string,abundances,cube,elements_t
 	INPUT:
 
 	   summary_pdf = boolean, should a pdf be created?
-	
+
 	   name_string = string to be added in the saved file name
-	
+
 	   abundances = abundances of the IMS (can be calculated from cube)
-	
+
 	   cube = the ISM mass fractions per element (A Chempy class containing the model evolution)
-	
+
 	   elements_to_trace = Which elements should be used for the analysis
-	
+
 	   solar = solar abundance class
-	
+
 	   number_of_models_overplotted = default is 1, if more the results will be saved and in the last iteration all former models will be plotted at once
-	
+
 	   produce_mock_data = should the predictions be saved with an error added to them (default=False)
-	
+
 	   use_mock_data = instead of the real data use the formerly produced mock data (default = False)
-	
+
 	   error_inflation = a factor with which the mock data should be perturbed with the observational data (default = 1.0)
 
 	OUTPUT:
-	   
-	   probabilities = each elements likelihood in a list 
-	
+
+	   probabilities = each elements likelihood in a list
+
 	   model_abundances = each elements model prediction as a list
-	
+
 	   elements_list = the names of the elements in a list
 	'''
 	log_abundances_cosmic = np.array([10.99,8.76,7.56,7.5,7.52,8.09,8.33,7.79])#
@@ -425,7 +557,7 @@ def cosmic_abundance_standard(summary_pdf,name_string,abundances,cube,elements_t
 			old = []
 		old.append(np.array(model_abundances))
 		np.save('output/comparison/cas',old)
-		
+
 		if os.path.isfile('output/comparison/cas_likelihood.npy'):
 			old_likelihood = np.load('output/comparison/cas_likelihood.npy')
 			old_likelihood = list(old_likelihood)
@@ -454,7 +586,7 @@ def cosmic_abundance_standard(summary_pdf,name_string,abundances,cube,elements_t
 		plt.xticks(np.arange(len(elements_list1)), elements_list1)
 		plt.ylabel("abundance relative to solar in dex")
 		plt.xlabel("Element")
-		plt.title('ln(probability) of fulfilling cas= %.2f' %(probability))	
+		plt.title('ln(probability) of fulfilling cas= %.2f' %(probability))
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
 		plt.savefig('cas_%s.png' %(name_string))
 	return probabilities, model_abundances, elements_list
@@ -466,33 +598,33 @@ def sol_norm(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 	INPUT:
 
 	   summary_pdf = boolean, should a pdf be created?
-	
+
 	   name_string = string to be added in the saved file name
-	
+
 	   abundances = abundances of the IMS (can be calculated from cube)
-	   
+
 	   cube = the ISM mass fractions per element (A Chempy class containing the model evolution)
-	
+
 	   elements_to_trace = which elements are tracked by Chempy
-	   
+
 	   element_names = which elements should be used for the likelihood
 
 	   sol_table = solar abundance class
-	
+
 	   number_of_models_overplotted = default is 1, if more the results will be saved and in the last iteration all former models will be plotted at once
-	
+
 	   produce_mock_data = should the predictions be saved with an error added to them (default=False)
-	
+
 	   use_mock_data = instead of the real data use the formerly produced mock data (default = False)
-	
+
 	   error_inflation = a factor with which the mock data should be perturbed with the observational data (default = 1.0)
 
 	OUTPUT:
-	
-	   probabilities = each elements likelihood in a list 
-	
+
+	   probabilities = each elements likelihood in a list
+
 	   model_abundances = each elements model prediction as a list
-	
+
 	   elements_list = the names of the elements in a list
 	'''
 
@@ -570,9 +702,9 @@ def sol_norm(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 		fig = plt.figure(figsize=(30.69,8.27), dpi=100)
 		ax = fig.add_subplot(111)
 		plt.errorbar(np.arange(len(elements_to_trace)),sun_list,xerr=None,yerr=error_list,linestyle = '',mew=3,marker='x',capthick =3,capsize = 20, ms = 10,elinewidth=3,label='solar')
-		
+
 		plt.plot(np.arange(len(elements_to_trace)),np.array(abundance_list),label='model after %.2f Gyr' %(time_model),linestyle='-')
-		
+
 		if number_of_models_overplotted > 1:
 			for item in old:
 				plt.plot(np.arange(len(elements_to_trace)),np.array(item),linestyle='-', color = 'g', alpha = 0.2)
@@ -586,7 +718,7 @@ def sol_norm(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 		plt.xticks(np.arange(len(elements_to_trace)), elements_to_trace)
 		plt.ylabel("abundance relative to solar in dex")
 		plt.xlabel("Element")
-		plt.title('joint probability of agreeing with the sun (normed to pmax) = %.2f' %(probability))	
+		plt.title('joint probability of agreeing with the sun (normed to pmax) = %.2f' %(probability))
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
 		plt.savefig('sol_norm_%s.png' %(name_string))
 	return probabilities, abundance_list, elements_to_trace
@@ -600,31 +732,31 @@ def arcturus(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 	INPUT:
 
 	   summary_pdf = boolean, should a pdf be created?
-	
+
 	   name_string = string to be added in the saved file name
-	   
+
 	   abundances = abundances of the IMS (can be calculated from cube)
-	
+
 	   cube = the ISM mass fractions per element (A Chempy class containing the model evolution)
-	
+
 	   elements_to_trace = Which elements should be used for the analysis
-	
+
 	   sol_table = solar abundance class
-	
+
 	   number_of_models_overplotted = default is 1, if more the results will be saved and in the last iteration all former models will be plotted at once
-	
+
 	   produce_mock_data = should the predictions be saved with an error added to them (default = False)
-	
+
 	   use_mock_data = instead of the real data use the formerly produced mock data (default = False)
-	   
+
 	   error_inflation = a factor with which the mock data should be perturbed with the observational data (default = 1.0)
 
 	OUTPUT:
-	
-	   probabilities = each elements likelihood in a list 
-	
+
+	   probabilities = each elements likelihood in a list
+
 	   model_abundances = each elements model prediction as a list
-	   
+
 	   elements_list = the names of the elements in a list
 	'''
 	#### Arcturus abundances taken from Worley+ 2009 MNRAS all elements except Fe are given [X/Fe]
@@ -718,7 +850,7 @@ def arcturus(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 		plt.xticks(np.arange(len(elements_in_common)), element_labels)
 		plt.ylabel("abundance relative to solar in dex")
 		plt.xlabel("Element")
-		plt.title('joint probability of agreeing with the sun (normed to pmax) = %.2f' %(probability))	
+		plt.title('joint probability of agreeing with the sun (normed to pmax) = %.2f' %(probability))
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
 		plt.savefig('arcturus_%s.png' %(name_string))
 
@@ -731,36 +863,36 @@ def gas_reservoir_metallicity(summary_pdf,name_string,abundances,cube,elements_t
 	INPUT:
 
 	   summary_pdf = boolean, should a pdf be created?
-	
+
 	   name_string = string to be added in the saved file name
-	
+
 	   abundances = abundances of the IMS (can be calculated from cube)
-	
+
 	   cube = the ISM mass fractions per element (A Chempy class containing the model evolution)
-	
+
 	   elements_to_trace = Which elements should be used for the analysis
-	
+
 	   gas_reservoir = the gas_reservoir class containing the gas_reservoir evolution
-	
+
 	   number_of_models_overplotted = default is 1, if more the results will be saved and in the last iteration all former models will be plotted at once
-	
+
 	   produce_mock_data = should the predictions be saved with an error added to them (default=False)
-	
+
 	   use_mock_data = instead of the real data use the formerly produced mock data (default = False)
-	   
+
 	   error_inflation = a factor with which the mock data should be perturbed with the observational data (default = 1.0)
-	
+
 	   solZ = solar metallicity
 
 	OUTPUT:
-	
-	   probabilities = each elements likelihood in a list 
-	
+
+	   probabilities = each elements likelihood in a list
+
 	   model_abundances = each elements model prediction as a list
-	
+
 	   elements_list = the names of the elements in a list
 	'''
-	### data from Smith cloud 
+	### data from Smith cloud
 	log10_metallicity_at_end = -0.28
 	log10_std = 0.14
 	if produce_mock_data:
@@ -790,14 +922,14 @@ def gas_reservoir_metallicity(summary_pdf,name_string,abundances,cube,elements_t
 			old_likelihood = []
 		old_likelihood.append(np.array(probability))
 		np.save('output/comparison/gas_reservoir_likelihood',old_likelihood)
-		
+
 		if os.path.isfile('output/comparison/gas_metallicity.npy'):
 			old1 = np.load('output/comparison/gas_metallicity.npy')
 			old1 = list(old1)
 		else:
 			old1 = []
 		old1.append(np.array(np.log10(cube['Z']/solZ)))
-		np.save('output/comparison/gas_metallicity',old1)	
+		np.save('output/comparison/gas_metallicity',old1)
 
 	if summary_pdf:
 		plt.clf()
@@ -823,7 +955,7 @@ def gas_reservoir_metallicity(summary_pdf,name_string,abundances,cube,elements_t
 		plt.grid("on")
 		plt.ylabel("log 10 metallicity in Z (mass fraction of gas in metals)")
 		plt.xlabel("time in Gyr")
-		plt.title('ln(probability) gas content (normed to pmax) = %.2f' %(probability))	
+		plt.title('ln(probability) gas content (normed to pmax) = %.2f' %(probability))
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
 		plt.savefig('gas_reservoir_%s.png' %(name_string))
 
@@ -838,31 +970,31 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 	INPUT:
 
 	   summary_pdf = boolean, should a pdf be created?
-	
+
 	   name_string = string to be added in the saved file name
-	
+
 	   abundances = abundances of the IMS (can be calculated from cube)
-	
+
 	   cube = the ISM mass fractions per element (A Chempy class containing the model evolution)
-	
+
 	   elements_to_trace = Which elements should be used for the analysis
-	
+
 	   gas_reservoir = the gas_reservoir class containing the gas_reservoir evolution
-	
+
 	   number_of_models_overplotted = default is 1, if more the results will be saved and in the last iteration all former models will be plotted at once
-	
+
 	   produce_mock_data = should the predictions be saved with an error added to them (default=False)
-	
+
 	   use_mock_data = instead of the real data use the formerly produced mock data (default = False)
-	
+
 	   error_inflation = a factor with which the mock data should be perturbed with the observational data (default = 1.0)
 
 	OUTPUT:
-	
-	   probabilities = each elements likelihood in a list 
-	
+
+	   probabilities = each elements likelihood in a list
+
 	   model_abundances = each elements model prediction as a list
-	
+
 	   elements_list = the names of the elements in a list
 	'''
 	log10_ratio_at_end = 0.7
@@ -884,7 +1016,7 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 		else:
 			old = []
 		old.append(np.array( np.log10(np.divide(np.diff(cube['sn2'])[1:],np.diff(cube['sn1a'])[1:]))))
-		np.save('output/comparison/ratio',old)		
+		np.save('output/comparison/ratio',old)
 
 		if os.path.isfile('output/comparison/ratio_likelihood.npy'):
 			old_likelihood = np.load('output/comparison/ratio_likelihood.npy')
@@ -892,7 +1024,7 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 		else:
 			old_likelihood = []
 		old_likelihood.append(np.array(probability ))
-		np.save('output/comparison/ratio_likelihood',old_likelihood)		
+		np.save('output/comparison/ratio_likelihood',old_likelihood)
 
 		if os.path.isfile('output/comparison/number_sn2.npy'):
 			old1 = np.load('output/comparison/number_sn2.npy')
@@ -900,7 +1032,7 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 		else:
 			old1 = []
 		old1.append(cube['sn2'])
-		np.save('output/comparison/number_sn2',old1)	
+		np.save('output/comparison/number_sn2',old1)
 
 		if os.path.isfile('output/comparison/number_sn1a.npy'):
 			old2 = np.load('output/comparison/number_sn1a.npy')
@@ -908,7 +1040,7 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 		else:
 			old2 = []
 		old2.append(cube['sn1a'])
-		np.save('output/comparison/number_sn1a',old2)	
+		np.save('output/comparison/number_sn1a',old2)
 
 
 	if summary_pdf:
@@ -926,7 +1058,7 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 		plt.grid("on")
 		plt.ylabel("sn2/sn1a")
 		plt.xlabel("time in Gyr")
-		plt.title('ln(probability) of sn ratio (normed to pmax) = %.2f' %(probability))	
+		plt.title('ln(probability) of sn ratio (normed to pmax) = %.2f' %(probability))
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
 		plt.savefig('sn_ratio_%s.png' %(name_string))
 
@@ -960,7 +1092,7 @@ def star_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas_
 			old1 = []
 		old1.append(np.array(cube['infall']*(1./dt)))
 		np.save('output/comparison/infall',old1)
-		
+
 		if os.path.isfile('output/comparison/gas_mass.npy'):
 			old2 = np.load('output/comparison/gas_mass.npy')
 			old2 = list(old2)
@@ -1022,7 +1154,7 @@ def star_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas_
 		plt.yscale('log')
 		plt.ylabel(r"M$_\odot$")
 		plt.xlabel("time in Gyr")
-		plt.title('ln(probability) star content (normed to pmax) = %.2f' %(probability))	
+		plt.title('ln(probability) star content (normed to pmax) = %.2f' %(probability))
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
 		plt.savefig('stars_%s.png' %(name_string))
 
@@ -1031,7 +1163,7 @@ def star_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas_
 		ax = fig.add_subplot(111)
 		plt.plot(cube['time'],cube['infall']*(1./dt),linestyle='-', color = 'r',label = "infall %.2f" %(sum(cube['infall'])))
 		plt.plot(cube['time'],cube['sfr']*(1./dt),linestyle='-', color = 'b',label = "sfr %.2f" %(sum(cube['sfr'])))
-		
+
 		if number_of_models_overplotted > 1:
 			for item in old:
 				plt.plot(cube['time'],np.array(item),linestyle='-', color = 'b', alpha = 0.2)
@@ -1042,7 +1174,7 @@ def star_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas_
 		plt.grid("on")
 		plt.ylabel(r"M$_\odot$Gyr$^{-1}$")
 		plt.xlabel("time in Gyr")
-		plt.title('ln(probability) star content (normed to pmax) = %.2f' %(probability))	
+		plt.title('ln(probability) star content (normed to pmax) = %.2f' %(probability))
 		plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
 		plt.savefig('infall_%s.png' %(name_string))
 	return [0.]
@@ -1055,23 +1187,23 @@ def plot_processes(summary_pdf,name_string,sn2_cube,sn1a_cube,agb_cube,elements,
 	INPUT:
 
 	   summary_pdf = boolean, should a pdf be created?
-	
+
 	   name_string = string to be added in the saved file name
-	
+
 	   sn2_cube = the sn2_feeback class
-	
+
 	   sn1a_cube = the sn1a_feeback class
-	
+
 	   agb_cube = the agb feedback class
-	   
+
 	   elements = which elements should be plotted
-	
+
 	   cube1 = the ISM mass fractions per element (A Chempy class containing the model evolution)
-	   
+
 	   number_of_models_overplotted = default is 1, if more the results will be saved and in the last iteration all former models will be plotted at once
-	
+
 	OUTPUT:
-	
+
 	   A plotfile in the current directory
 	'''
 
@@ -1087,10 +1219,10 @@ def plot_processes(summary_pdf,name_string,sn2_cube,sn1a_cube,agb_cube,elements,
 			sn2.append(sn2_temp)
 			sn1a_temp = np.sum(sn1a_cube['C'])
 			sn1a_temp += np.sum(sn1a_cube['N'])
-			sn1a.append(sn1a_temp)	
+			sn1a.append(sn1a_temp)
 			agb_temp = np.sum(agb_cube['C'])
 			agb_temp += np.sum(agb_cube['N'])
-			agb.append(agb_temp)				
+			agb.append(agb_temp)
 		else:
 			sn2.append(np.sum(sn2_cube[item]))
 			sn1a.append(np.sum(sn1a_cube[item]))
@@ -1098,10 +1230,10 @@ def plot_processes(summary_pdf,name_string,sn2_cube,sn1a_cube,agb_cube,elements,
 	sn2 = np.array(sn2)
 	agb = np.array(agb)
 	sn1a = np.array(sn1a)
-	
+
 	total_feedback = sn2 + sn1a + agb
-	
-	
+
+
 	all_4 = np.vstack((sn2,sn1a,agb,total_feedback))
 	if number_of_models_overplotted > 1:
 		np.save('output/comparison/elements', elements)
@@ -1131,7 +1263,7 @@ def plot_processes(summary_pdf,name_string,sn2_cube,sn1a_cube,agb_cube,elements,
 			ax1.vlines(np.arange(len(elements)),0,1)
 			ax1.set_ylabel("fractional feedback")
 			ax1.set_xlabel("element")
-			
+
 			ax2 = ax1.twinx()
 			l4 = ax2.bar(np.arange(len(elements)),total_feedback, color = 'k', alpha = 0.2 ,label='total', width = 1)
 			ax2.set_yscale('log')
@@ -1165,16 +1297,16 @@ def save_abundances(summary_pdf,name_string,abundances):
 	a function that saves the abundances in the current directory
 
 	INPUT:
-	
+
 	   summary_pdf = boolean should the abundances be saved?
-	
+
 	   name_string = name for the saved file
-	
+
 	   abundances = the abundance instance derived from the cube_class
 
 	OUTPUT:
-	
-	   Saves the abundances as a npy file        
+
+	   Saves the abundances as a npy file
 	'''
 	if summary_pdf:
 		np.save('abundances_%s' %(name_string),abundances)
@@ -1183,25 +1315,25 @@ def save_abundances(summary_pdf,name_string,abundances):
 def produce_wildcard_stellar_abundances(stellar_identifier, age_of_star, sigma_age, element_symbols, element_abundances, element_errors):
     '''
     This produces a structured array that can be used by the Chempy wildcard likelihood function.
-    
+
     INPUT:
-    
+
        stellar_identifier = name of the files
-    
+
        age_of_star = age of star in Gyr
-    
+
        sigma_age = the gaussian error of the age (so far not implemented in the likelihood function)
-    
+
        element_symbols = a list of the element symbols
-    
+
        element_abundances = the corresponding abundances in [X/Fe] except for Fe where it is [Fe/H]
-    
+
        element_errors = the corresponding gaussian errors of the abundances
-    
+
     OUTPUT:
-    
+
        it will produce a .npy file in the current directory with stellar_identifier as its name.
-    '''    
+    '''
     names = element_symbols + ['age']
     base = np.zeros(2)
     base_list = []
@@ -1220,21 +1352,21 @@ def plot_abundance_wildcard(stellar_identifier, wildcard,abundance_list, element
     this function plots the abundances of a stellar wildcard and the abundances of a chempy model together with the resulting likelihood values
 
     INPUT:
-    
+
        stellar_identifier = str, name of the Star
-    
+
        wildcard = the wildcard recarray
-    
+
        abundance_list = the abundance list from the model
-    
+
        element_list = the corresponding element symbols
-    
+
        probabilities = the corresponding single likelihoods as a list
-    
+
        time_model = the time of the chempy model which is compared to the stellar abundance (age of the star form the wildcard)
 
     OUTPUT:
-    
+
        This saves a png plot to the current directory
     '''
     star_abundance_list = []
@@ -1242,7 +1374,7 @@ def plot_abundance_wildcard(stellar_identifier, wildcard,abundance_list, element
     for item in element_list:
         star_abundance_list.append(float(wildcard[item][0]))
         star_error_list.append(float(wildcard[item][1]))
-        
+
     text_size = 14
     plt.rc('font', family='serif',size = text_size)
     plt.rc('xtick', labelsize=text_size)
@@ -1264,42 +1396,42 @@ def plot_abundance_wildcard(stellar_identifier, wildcard,abundance_list, element
     plt.xticks(np.arange(len(element_list)), element_labels)
     plt.ylabel("abundance relative to solar in dex")
     plt.xlabel("Element")
-    plt.title('joint probability of agreeing with %s (normed to pmax) = %.2f' %(stellar_identifier,sum(probabilities)))	
+    plt.title('joint probability of agreeing with %s (normed to pmax) = %.2f' %(stellar_identifier,sum(probabilities)))
     plt.legend(loc='best',numpoints=1).get_frame().set_alpha(0.5)
     plt.savefig('%s.png' %(stellar_identifier))
-	
 
-def wildcard_likelihood_function(summary_pdf, stellar_identifier, abundances):    
+
+def wildcard_likelihood_function(summary_pdf, stellar_identifier, abundances):
     '''
     This function produces Chempy conform likelihood output for a abundance wildcard that was produced before with 'produce_wildcard_stellar_abundances'.
-    
+
     INPUT:
-    
+
        summary_pdf = bool, should there be an output
-    
+
        stellar_identifier = str, name of the star
-    
+
        abundances = the abundances instance from a chempy chemical evolution
 
     OUTPUT:
-    
+
        probabilities = a list of the likelihoods for each element
-    
+
        abundance_list = the abundances of the model for each element
-    
+
        element_list = the symbols of the corresponding elements
 
     These list will be used to produce the likelihood and the blobs. See cem_function.py
     '''
 
     wildcard = np.load(stellar_identifier + '.npy')
-    
+
     star_time = abundances['time'][-1] - wildcard['age'][0]
     cut = [np.where(np.abs(abundances['time'] - star_time) == np.min(np.abs(abundances['time'] - star_time)))]
     if len(cut[0][0]) != 1:
         cut = cut[0][0][0]
     time_model = abundances['time'][cut]
-    
+
     abundance_list = []
     element_list = []
     probabilities = []
@@ -1317,7 +1449,7 @@ def wildcard_likelihood_function(summary_pdf, stellar_identifier, abundances):
     return probabilities, abundance_list, element_list
 
 
-def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trace, **keyword_parameters):    
+def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trace, **keyword_parameters):
 	'''
 	This function calculates analytically an optimal model error and the resulting likelihood from the comparison of predictions and observations
 
@@ -1332,13 +1464,13 @@ def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trac
 	   likelihood = the added log likelihood
 
 	   element_list = the elements that were in common between the predictions and the observations, has the same sequence as the following arrays
-	   
+
 	   model_error = the analytic optimal model error
-	   
+
 	   star_error_list = the observed error
-	   
+
 	   abundance_list = the predictions
-	   
+
 	   star_abundance_list = the observations
 	'''
 	try:
@@ -1386,15 +1518,15 @@ def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trac
 
 	## Uncomment next line if you do not want to use model errors
 	#model_error = np.zeros_like(model_error)
-	
+
 	# This is the best model error at the median posterior of the Proto-sun (just used to see how this effects the posterior distribution)
 	#model_error = np.array([ 0.0780355, 0., 0.15495525, 0.00545988,  0.3063154,   0., 0.1057009,  0.05165564,  0., 0.72038212,  0., 0.08926388,  0., 0.27583715,  0.22945499,  0.09774014,  0.17965589 , 0. ,0.17686723,  0.21137374,  0.37973184,  0.2263486 ])
-	
+
 	# Now the likelihood is evaluated
 	likelihood = likelihood_evaluation(model_error, star_error_list, abundance_list, star_abundance_list)
 	return likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list
 
-def read_out_wildcard(stellar_identifier, list_of_abundances, elements_to_trace):    
+def read_out_wildcard(stellar_identifier, list_of_abundances, elements_to_trace):
 	'''
 	This function calculates analytically an optimal model error and the resulting likelihood from the comparison of predictions and observations
 
@@ -1409,13 +1541,13 @@ def read_out_wildcard(stellar_identifier, list_of_abundances, elements_to_trace)
 	   likelihood = the added log likelihood
 
 	   element_list = the elements that were in common between the predictions and the observations, has the same sequence as the following arrays
-	   
+
 	   model_error = the analytic optimal model error
-	   
+
 	   star_error_list = the observed error
-	   
+
 	   abundance_list = the predictions
-	   
+
 	   star_abundance_list = the observations
 	'''
 	try:

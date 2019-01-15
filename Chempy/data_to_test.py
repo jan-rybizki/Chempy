@@ -93,7 +93,7 @@ def sample_stars(weight,selection,element1,element2,error1,error2,nsample):
 	sun_mgfe += perturbation
 	return sun_feh,sun_mgfe
 
-def SampleStars(weight, selection, elements, errors, nsample):
+def sample_stars_all_elements(weight, selection, elements, errors, nsample):
 	'''
 	This function samples stars along a chemical evolution track properly taking into account the SFR and the selection function of the stellar population (e.g. red-clump stars). It can be used to produce mock observations which can be compared to survey data.
 
@@ -111,34 +111,34 @@ def SampleStars(weight, selection, elements, errors, nsample):
 
 	   nsample = number of stars that should be realized
 	'''
-    weight = np.cumsum(weight*selection)
-    weight /= weight[-1]
-    sample = np.random.random(nsample)
-    sample = np.sort(sample)
-    stars = np.zeros_like(weight)
-    for i, item in enumerate(weight):
-        if i == 0:
-            count = len(sample[np.where(np.logical_and(sample > 0., sample <= item))])
-            stars[i] = count
-        else:
-            count = len(sample[np.where(np.logical_and(sample > weight[i-1], sample <= item))])
-            stars[i] = count
+	weight = np.cumsum(weight*selection)
+	weight /= weight[-1]
+	sample = np.random.random(nsample)
+	sample = np.sort(sample)
+	stars = np.zeros_like(weight)
+	for i, item in enumerate(weight):
+	    if i == 0:
+	        count = len(sample[np.where(np.logical_and(sample > 0., sample <= item))])
+	        stars[i] = count
+	    else:
+	        count = len(sample[np.where(np.logical_and(sample > weight[i-1], sample <= item))])
+	        stars[i] = count
 
-    abundances = np.zeros((len(elements), nsample))
-    n = 0
-    for i in range(len(weight)):
-        if stars[i] != 0:
-            for j in range(int(stars[i])):
-                for k in range(len(elements)):
-                    abundances[k][n] = elements[k][i]
-                n += 1
-    abundances = np.array(abundances)
-    for i, element in enumerate(elements):
-        perturbation = np.random.normal(0, errors[i], len(abundances[i]))
-        abundances[i] += perturbation
-    return abundances
+	abundances = np.zeros((len(elements), nsample))
+	n = 0
+	for i in range(len(weight)):
+	    if stars[i] != 0:
+	        for j in range(int(stars[i])):
+	            for k in range(len(elements)):
+	                abundances[k][n] = elements[k][i]
+	            n += 1
+	abundances = np.array(abundances)
+	for i, element in enumerate(elements):
+	    perturbation = np.random.normal(0, errors[i], len(abundances[i]))
+	    abundances[i] += perturbation
+	return abundances
 
-def MockAbundances(a, nsample, elements_to_sample=a.elements_to_trace, abundances, element_error='solar', tracer='red_clump'):
+def mock_abundances(a, nsample, abundances, elements_to_sample, element_error='solar', tracer='red_clump'):
 	'''
 	This function provides a convenient wrapper for the SampleStars() function.
 	1) Loads selection function and interpolates to time steps of Chempy run.
@@ -152,9 +152,9 @@ def MockAbundances(a, nsample, elements_to_sample=a.elements_to_trace, abundance
 
 	   nsample: Number of stars that should be realized
 
-	   elements_to_sample: List of strings corresponding to element symbols that you'd like to sample
-
 	   abundances: Abundance output from Chempy()
+
+	   elements_to_sample: List of strings corresponding to element symbols that you'd like to sample
 
 	   element_error: Observational error to provide scatter to sample.
 	   				   -'solar': for observational errors of solar abundances
@@ -172,58 +172,59 @@ def MockAbundances(a, nsample, elements_to_sample=a.elements_to_trace, abundance
 							 [Fe/H] for star0 is sampled_abundances['Fe'][0]
 	'''
 	from .solar_abundance import solar_abundances
+	from . import localpath
 
-    basic_solar = solar_abundances()
-    getattr(basic_solar, a.solar_abundance_name)()
+	basic_solar = solar_abundances()
+	getattr(basic_solar, a.solar_abundance_name)()
 
-    # Red Clump Selection Criteria
-    try:
-        temp = np.load(localpath + "input/selection/{}.npz".format(tracer))
-    except:
-        raise Exception('Valid age distribution file not found for {}'.format(tracer))
-    selection_raw = temp['age_dist']
-    time_selection_raw = temp['time']
+	# Red Clump Selection Criteria
+	try:
+	    temp = np.load(localpath + "input/selection/{}.npz".format(tracer))
+	except:
+	    raise Exception('Valid age distribution file not found for {}'.format(tracer))
+	selection_raw = temp['age_dist']
+	time_selection_raw = temp['time']
 
-    sample = np.interp(abundances['time'], time_selection_raw[::-1], selection_raw)
-    selection = np.interp(abundances['time'], time_selection_raw[::-1], selection_raw)
+	sample = np.interp(abundances['time'], time_selection_raw[::-1], selection_raw)
+	selection = np.interp(abundances['time'], time_selection_raw[::-1], selection_raw)
 
-    elements = []
-    errors = []
-    for i, element in enumerate(elements_to_sample):
-        if element == 'Fe':
-            elements.append(abundances[element][1:])
-            if element_error == 'solar':
-                errors.append(float(basic_solar.table['error']
-                                    [np.where(basic_solar.table['Symbol'] == element)]))
-            elif type(element_error) == float:
-                errors.append(element_error)
-            elif type(element_error) == np.ndarray:
-                assert len(element_error) == len(elements_to_sample), "Length of element_error array must match length of elements_to_sample"
-                errors.append(element_error[i])
-            elif type(element_error) == dict:
-                assert element in list(element_error.keys()), '{} not found in element_error dictionary'.format(element)
-                errors.append(element_error[element])
-            else:
-                assert 1 == 0, "Improper element_error provided"
-        else:
-            elements.append(abundances[element][1:]-abundances['Fe'][1:])
-            if element_error == 'solar':
-                errors.append(float(basic_solar.table['error']
-                                    [np.where(basic_solar.table['Symbol'] == element)]))
-            elif type(element_error) == float:
-                errors.append(element_error)
-            elif type(element_error) == np.ndarray:
-                assert len(element_error) == len(elements_to_sample), "Length of element_error array must match length of elements_to_sample"
-                errors.append(element_error[i])
-            elif type(element_error) == dict:
-                assert element in list(element_error.keys()), '{} not found in element_error dictionary'.format(element)
-                errors.append(element_error[element])
-            else:
-                assert 1 == 0, "Improper element_error provided"
-    sampled_abundances = SampleStars(abundances['weights'][1:], selection[1:], elements, errors, nsample)
-    sampled_abundances = {y: z for y, z in zip(elements_to_sample, sampled_abundances)}
+	elements = []
+	errors = []
+	for i, element in enumerate(elements_to_sample):
+	    if element == 'Fe':
+	        elements.append(abundances[element][1:])
+	        if element_error == 'solar':
+	            errors.append(float(basic_solar.table['error']
+	                                [np.where(basic_solar.table['Symbol'] == element)]))
+	        elif type(element_error) == float:
+	            errors.append(element_error)
+	        elif type(element_error) == np.ndarray:
+	            assert len(element_error) == len(elements_to_sample), "Length of element_error array must match length of elements_to_sample"
+	            errors.append(element_error[i])
+	        elif type(element_error) == dict:
+	            assert element in list(element_error.keys()), '{} not found in element_error dictionary'.format(element)
+	            errors.append(element_error[element])
+	        else:
+	            assert 1 == 0, "Improper element_error provided"
+	    else:
+	        elements.append(abundances[element][1:]-abundances['Fe'][1:])
+	        if element_error == 'solar':
+	            errors.append(float(basic_solar.table['error']
+	                                [np.where(basic_solar.table['Symbol'] == element)]))
+	        elif type(element_error) == float:
+	            errors.append(element_error)
+	        elif type(element_error) == np.ndarray:
+	            assert len(element_error) == len(elements_to_sample), "Length of element_error array must match length of elements_to_sample"
+	            errors.append(element_error[i])
+	        elif type(element_error) == dict:
+	            assert element in list(element_error.keys()), '{} not found in element_error dictionary'.format(element)
+	            errors.append(element_error[element])
+	        else:
+	            assert 1 == 0, "Improper element_error provided"
+	sampled_abundances = sample_stars_all_elements(abundances['weights'][1:], selection[1:], elements, errors, nsample)
+	sampled_abundances = {y: z for y, z in zip(elements_to_sample, sampled_abundances)}
 
-    return(sampled_abundances)
+	return(sampled_abundances)
 
 def gaussian_1d_log(x,x0,xsig):
 	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)

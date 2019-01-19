@@ -170,6 +170,8 @@ def mock_abundances(a, nsample, abundances, elements_to_sample, element_error='s
 						All abundances are given as [X/Fe] except for iron, which is given as [Fe/H]
 						i.e. [Al/Fe] for star0 is sampled_abundances['Al'][0]
 							 [Fe/H] for star0 is sampled_abundances['Fe'][0]
+						Also includes abundance error for each star under the element key + '_err'
+						i.e. sigma[Fe/H] for star0 is sampled_abundances['Fe_err'][0]
 	'''
 	from .solar_abundance import solar_abundances
 	from . import localpath
@@ -185,7 +187,6 @@ def mock_abundances(a, nsample, abundances, elements_to_sample, element_error='s
 	selection_raw = temp['age_dist']
 	time_selection_raw = temp['time']
 
-	sample = np.interp(abundances['time'], time_selection_raw[::-1], selection_raw)
 	selection = np.interp(abundances['time'], time_selection_raw[::-1], selection_raw)
 
 	elements = []
@@ -223,6 +224,8 @@ def mock_abundances(a, nsample, abundances, elements_to_sample, element_error='s
 	            assert 1 == 0, "Improper element_error provided"
 	sampled_abundances = sample_stars_all_elements(abundances['weights'][1:], selection[1:], elements, errors, nsample)
 	sampled_abundances = {y: z for y, z in zip(elements_to_sample, sampled_abundances)}
+	for i, element in enumerate(elements_to_sample):
+		sampled_abundances[element+'_err'] = np.ones(nsample) * errors[i]
 
 	return(sampled_abundances)
 

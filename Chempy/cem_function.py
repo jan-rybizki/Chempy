@@ -128,6 +128,7 @@ def shorten_sfr(a):
 	sfr_at_end = float(basic_sfr.sfr[cut] / basic_sfr.dt)
 	fraction_of_mean_sfr = sfr_at_end / mean_sfr 	
 	assert fraction_of_mean_sfr > 0.05, ('The total SFR of the last age bin is below 5% of the mean SFR', 'stellar identifier = ', a.stellar_identifier, 'star time = ', star_time, 'model time = ', time_model ) 
+	a.shortened_sfr_rescaling = a.total_mass / mass_normalisation	
 	return a
 
 def cem(changing_parameter,a):
@@ -158,68 +159,8 @@ def cem_real(changing_parameter,a):
 	'''
 	real chempy function. description can be found in cem
 	'''
-	for i,item in enumerate(a.to_optimize):
-		setattr(a, item, changing_parameter[i])
-		val = getattr(a, item)
-
-	start_time = time.time()
-	### PRIOR calculation, values are stored in parameter.py
-	prior_names = []
-	prior = []
-	for name in a.to_optimize:
-		(mean, std, functional_form) = a.priors.get(name)
-		val = getattr(a, name)
-		prior_names.append(name)
-		if functional_form == 0:
-			prior.append(gaussian_log(val, mean, std))
-		elif functional_form == 1:
-			prior.append(lognorm_log(val, mean, std))
-	a.prior = prior
-
-	for name in a.to_optimize:
-		(lower, upper) = a.constraints.get(name)
-		val = getattr(a, name)
-		if lower is not None and val<lower:
-			print('%s lower border is violated' %(name))
-			return -np.inf, [0]
-		if upper is not None and val>upper:
-			print('%s upper border is violated' %(name))
-			return -np.inf, [0]
-
-	if not a.testing_output:
-		print(changing_parameter,mp.current_process()._identity[0])#,a.observational_constraints_index
-	else:
-		print(changing_parameter)
+	a = extract_parameters_and_priors(changing_parameter, a)
 	
-	### So that the parameter can be plotted in linear space
-	if 'log10_N_0' in a.to_optimize:
-		a.N_0 = np.power(10,a.log10_N_0)
-	if 'log10_sn1a_time_delay' in a.to_optimize:
-		a.sn1a_time_delay = np.power(10,a.log10_sn1a_time_delay)
-	if 'log10_starformation_efficiency' in a.to_optimize:
-		a.starformation_efficiency = np.power(10,a.log10_starformation_efficiency)
-	if 'log10_gas_reservoir_mass_factor' in a.to_optimize:
-		a.gas_reservoir_mass_factor = np.power(10,a.log10_gas_reservoir_mass_factor)
-	if 'log10_sfr_scale' in a.to_optimize:
-		a.sfr_scale = np.power(10,a.log10_sfr_scale)
-	if 'log10_beta_parameter' in a.to_optimize:
-		a.beta_error_distribution[2] = np.power(10,a.log10_beta_parameter)
-
-	if a.imf_type_name == 'salpeter':
-		a.imf_parameter = (a.high_mass_slope)
-	elif a.imf_type_name == 'Chabrier_2':
-		a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.chabrier_para3,a.high_mass_slope)
-	elif a.imf_type_name == 'Chabrier_1':
-		a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.high_mass_slope)
-	elif a.imf_type_name == 'normed_3slope':	
-		a.imf_parameter = (a.imf_slope_1,a.imf_slope_2,a.high_mass_slope,a.imf_break_1,a.imf_break_2)
-	if a.time_delay_functional_form == 'maoz':
-		a.sn1a_parameter = [a.N_0,a.sn1a_time_delay,a.sn1a_exponent,a.dummy]
-	elif a.time_delay_functional_form == 'normal':
-		a.sn1a_parameter = [a.number_of_pn_exlopding,a.sn1a_time_delay,a.sn1a_timescale,a.sn1a_gauss_beginning]
-	elif a.time_delay_functional_form == 'gamma_function':
-		a.sn1a_parameter = [a.sn1a_norm,a.sn1a_a_parameter,a.sn1a_beginning,a.sn1a_scale]
-
 	basic_solar = solar_abundances()
 	getattr(basic_solar, a.solar_abundance_name)()
 	elements_to_trace = a.elements_to_trace
@@ -227,6 +168,8 @@ def cem_real(changing_parameter,a):
 	directory = 'model_temp/'
 	### Model is calculated
 	if a.calculate_model:
+		#for item in dir(a):
+    		#	print(item,getattr(a,item))
 		cube, abundances = Chempy(a)
 		cube1 = cube.cube
 		gas_reservoir = cube.gas_reservoir
@@ -296,7 +239,12 @@ def cem_real(changing_parameter,a):
 	a.names += ['m-%s' %(item) for item in a.names]
 	a.abundance_list = [item for sublist in a.abundance_list for item in sublist]
 	a.probability = [item for sublist in a.probability for item in sublist]
+	#make prior names because they were refactored into extract_parameters	
+	prior_names = []
+	for name in a.to_optimize:
+		prior_names.append(name)		
 	a.names += prior_names
+	a.prior = np.log(a.prior)
 	if a.testing_output:
 		#print a.names
 		np.save("model_temp/blobs_name_list", a.names)
@@ -343,6 +291,8 @@ def cem_real2(a):
 	directory = 'model_temp/'
 	### Model is calculated
 	if a.calculate_model:
+		#for item in dir(a):
+    		#	print(item,getattr(a,item))
 		cube, abundances = Chempy(a)
 		cube1 = cube.cube
 		gas_reservoir = cube.gas_reservoir
@@ -406,17 +356,12 @@ def posterior_function_real(changing_parameter,a):
 	This is the actual posterior function. But the functionality is explained in posterior_function.
 	'''
 	
-	start_time = time.time()
 	# the values in a are updated according to changing_parameters and the prior list is appended
 	a = extract_parameters_and_priors(changing_parameter, a)
 	
 
 	# the log prior is calculated
 	prior = sum(np.log(a.prior))
-
-	
-	precalculation = time.time()
-	#print('precalculation: ', start_time - precalculation)
 
 	# The endtime is changed for the actual calculation but restored to default afterwards
 	backup = a.end ,a.time_steps, a.total_mass
@@ -428,21 +373,18 @@ def posterior_function_real(changing_parameter,a):
 		# call Chempy and return the abundances at the end of the simulation = time of star's birth and the corresponding element names as a list
 		abundance_list,elements_to_trace = cem_real2(a)	
 		a.end ,a.time_steps, a.total_mass = backup
+		a.shortened_sfr_rescaling = 1. # Restore in order to not rescale all the time?
 		
 		# The last two entries of the abundance list are the Corona metallicity and the SN-ratio
 		abundance_list = abundance_list[:-2]
 		elements_to_trace = elements_to_trace[:-2]
 
-		model = time.time()
-		#print('model: ', precalculation - model)
 
 		# a likelihood is calculated where the model error is optimized analytically if you do not want model error uncomment one line in the likelihood function
-		likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)
+		likelihood, element_list, model_error, star_error_list, abundance_list, star_abundance_list = likelihood_function(a.stellar_identifier, abundance_list, elements_to_trace)		
 		#likelihood = 0.
 		#abundance_list = [0]
 
-	error_optimization = time.time()
-	#print('error optimization: ', model - error_optimization)
 	if a.verbose:
 		if not a.testing_output:
 			print('prior = ', prior, 'likelihood = ', likelihood, mp.current_process()._identity[0])
@@ -678,7 +620,6 @@ def extract_parameters_and_priors(changing_parameter, a):
 		setattr(a, item, changing_parameter[i])
 		val = getattr(a, item)
 
-	start_time = time.time()
 	### PRIOR calculation, values are stored in parameter.py
 	prior_names = []
 	prior = []

@@ -3,7 +3,7 @@ import numpy as np
 
 def gaussian(x,x0,xsig):
 	'''
-	function to calculate the gaussian probability (its normed to Pmax and given in log)
+	function to calculate the gaussian probability
 
 	INPUT:
 
@@ -229,8 +229,8 @@ def mock_abundances(a, nsample, abundances, elements_to_sample, element_error='s
 
 	return(sampled_abundances)
 
-def gaussian_1d_log(x,x0,xsig):
-	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
+#def gaussian_1d_log(x,x0,xsig):
+#	return -np.divide((x-x0)*(x-x0),2*xsig*xsig)
 
 def yield_plot(name_string, yield_class, solar_class, element):
 	'''
@@ -1447,7 +1447,7 @@ def wildcard_likelihood_function(summary_pdf, stellar_identifier, abundances):
                 abundance = abundances['Fe'][cut]
             element_list.append(item)
             abundance_list.append(float(abundance))
-            probabilities.append(float(gaussian_1d_log(abundance,wildcard[item][0],wildcard[item][1])))
+            probabilities.append(np.log(float(gaussian(abundance,wildcard[item][0],wildcard[item][1]))))
     if summary_pdf:
         plot_abundance_wildcard(stellar_identifier,wildcard,abundance_list, element_list, probabilities, time_model)
     return probabilities, abundance_list, element_list
@@ -1484,13 +1484,20 @@ def likelihood_function(stellar_identifier, list_of_abundances, elements_to_trac
 		wildcard = np.load(localpath + 'input/stars/' + stellar_identifier + '.npy')
 	# Brings the model_abundances, the stellar abundances and the associated error into the same sequence
 	abundance_list = []
+	assert('Fe' in elements_to_trace)
+	for i,item in enumerate(elements_to_trace):
+		if item == 'Fe':
+			fe_index = i	
 	element_list = []
 	star_abundance_list = []
 	star_error_list = []
 	for i,item in enumerate(elements_to_trace):
 		if item in list(wildcard.dtype.names):
 			element_list.append(item)
-			abundance_list.append(float(list_of_abundances[i]))
+			if item == 'Fe':			
+				abundance_list.append(float(list_of_abundances[i]))
+			else:
+				abundance_list.append(float(list_of_abundances[i])-float(list_of_abundances[fe_index]))			
 			star_abundance_list.append(float(wildcard[item][0]))
 			star_error_list.append(float(wildcard[item][1]))
 	abundance_list = np.hstack(abundance_list)

@@ -6,7 +6,8 @@ class ABUNDANCE_MATRIX(object):
 	
 	It calculates the mass flow between the different components. And can advance the chemical evolution when the enrichment from the SSP is provided.
 	'''
-	def __init__(self, time, sfr, infall, list_of_elements,infall_symbols,infall_fractions,gas_at_start,gas_at_start_symbols,gas_at_start_fractions,gas_reservoir_mass_factor,outflow_feedback_fraction,check_processes,starformation_efficiency,gas_power, sfr_factor_for_cosmic_accretion, cosmic_accretion_elements, cosmic_accretion_element_fractions):
+	def __init__(self, time, sfr, infall, list_of_elements,infall_symbols,infall_fractions,gas_at_start,gas_at_start_symbols,gas_at_start_fractions,gas_reservoir_mass_factor,
+outflow_feedback_fraction,check_processes,starformation_efficiency,gas_power, sfr_factor_for_cosmic_accretion, cosmic_accretion_elements, cosmic_accretion_element_fractions):
 		'''
 		Upon initialization the provided information is stored and initial conditions as provided by the other chempy classes are calculated.
 		

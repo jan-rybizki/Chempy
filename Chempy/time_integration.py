@@ -240,13 +240,13 @@ outflow_feedback_fraction,check_processes,starformation_efficiency,gas_power, sf
 			infall_needed *= 1.00000001 # to avoid less gas being requested than needed due to rounding errors (not sure what results from that, too little gas in the corona could be a result. lets see)
 			if infall_needed < 0. :
 				infall_needed = 0.
-			## for few parameter values of gas_power and SFE the infall_needed value could be too small
+			## for high SFR and high SFE and large time-steps the requested gas might be less than the sfr for the time-step, therefore we arbitrarily increase the infall.
 			if infall_needed + gas_there <= self.sfr[index]:
-				print('too few gas requested', 'infall needed= ', infall_needed, 'gas there = ', gas_there, 'total SFR = ', self.sfr, 'gas needed = ', gas_needed, 'corona = ', self.gas_reservoir['gas'][index], 'sfe = ', self.starformation_efficiency , 'dt = ', self.dt) 
+				print('too few gas requested, so we decrease the SFE for this time-step, just to get enough gas.', 'infall needed= ', infall_needed, 'gas there = ', gas_there, 'total SFR = ', self.sfr, 'gas needed = ', gas_needed, 'corona = ', self.gas_reservoir['gas'][index], 'sfe = ', self.starformation_efficiency , 'dt = ', self.dt) 
 				infall_needed = self.sfr[index] - gas_there
 				infall_needed *= 1.01 # to avoid the ISM being empty
 			if infall_needed > self.gas_reservoir['gas'][index]:
-				print('gas reservoir is empty')
+				print('gas reservoir is empty, therefore SFE is increased for this time-step')
 				infall_needed = float(self.gas_reservoir['gas'][index])
 			self.infall[index] = float(infall_needed)
 			self.cube['infall'][index] = float(infall_needed)

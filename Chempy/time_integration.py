@@ -242,7 +242,7 @@ outflow_feedback_fraction,check_processes,starformation_efficiency,gas_power, sf
 				infall_needed = 0.
 			## for high SFR and high SFE and large time-steps the requested gas might be less than the sfr for the time-step, therefore we arbitrarily increase the infall.
 			if infall_needed + gas_there <= self.sfr[index]:
-				print('too few gas requested, so we decrease the SFE for this time-step, just to get enough gas.', 'infall needed= ', infall_needed, 'gas there = ', gas_there, 'total SFR = ', self.sfr, 'gas needed = ', gas_needed, 'corona = ', self.gas_reservoir['gas'][index], 'sfe = ', self.starformation_efficiency , 'dt = ', self.dt) 
+				print('too few gas requested, so we decrease the SFE for this time-step, just to get enough gas.')
 				infall_needed = self.sfr[index] - gas_there
 				infall_needed *= 1.01 # to avoid the ISM being empty
 			if infall_needed > self.gas_reservoir['gas'][index]:

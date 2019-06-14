@@ -70,6 +70,7 @@ class SFR(object):
 		# Decreased the minimum value because the renormalisation coming with shorten_sfr function was affected
 		self.sfr[np.where(self.sfr == 0.)] = 1e-10#np.min(self.sfr[np.where(self.sfr != 0.)])*0.01 ## So that no 0 sfr is there because sfr-related infall prescription fails in that case
 		self.sfr = np.divide(self.sfr,sum(self.sfr)/(np.divide(1.,self.dt)*S0))
+
 	def prescribed(self, mass_factor,name_of_file):
 		'''
 		a method to read in prescribed SFR from textfile
@@ -90,4 +91,13 @@ class SFR(object):
 		self.sfr = np.interp(self.t,time_temp/1e9,sfr)
 		self.sfr = np.divide(self.sfr * total_sfr, sum(self.sfr))[::-1]
 		self.sfr /= 10000
+
+	def normal(self, S0=45.07488, loc=2, scale=1):
+		'''
+		gaussian SFH centered at loc (Gyr) with a width of scale (Gyr)
+		'''
+		from scipy.stats import norm
+		self.sfr = norm.pdf(self.t, loc, scale)
+		self.sfr[np.where(self.sfr == 0.)] = 1e-10
+		self.sfr = np.divide(self.sfr, sum(self.sfr) / (np.divide(1., self.dt) * S0))
 

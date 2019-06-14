@@ -61,7 +61,7 @@ class ModelParameters(object):
 	parameter_names = [r'$\alpha_\mathrm{IMF}$',r'$\log_{10}\left(\mathrm{N}_\mathrm{Ia}\right)$',r'$\log_{10}\left(\tau_\mathrm{Ia}\right)$',r'$\log_{10}\left(\mathrm{SFE}\right)$',r'$\log_{10}\left(\mathrm{SFR}_\mathrm{peak}\right)$',r'$\mathrm{x}_\mathrm{out}$']
 	# SFR still model A from Just&Jahreiss 2010 should be changed
 	# arbitrary function can be implemented here
-	basic_sfr_name_list = ['model_A','gamma_function','prescribed', 'doubly_peaked']
+	basic_sfr_name_list = ['model_A', 'gamma_function', 'prescribed', 'doubly_peaked', 'normal']
 	basic_sfr_index = 1
 	basic_sfr_name = basic_sfr_name_list[basic_sfr_index]
 	if basic_sfr_name == 'model_A':
@@ -86,6 +86,11 @@ class ModelParameters(object):
 		sfr_t0 = 2.
 		peak1t0 = 0.8
 		peak1sigma = 0.8
+	elif basic_sfr_name == 'normal':
+		mass_factor = 1.
+		S_0 = 45.07488
+		sfr_peak = 2
+		sfr_scale = 0.5
 
 	basic_infall_name_list = ["exponential","constant","sfr_related","peaked_sfr","gamma_function"]
 	basic_infall_index = 2

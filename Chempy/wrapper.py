@@ -101,6 +101,8 @@ def initialise_stuff(a):
 		basic_sfr.prescribed(a.mass_factor, a.name_of_file)
 	elif a.basic_sfr_name == 'doubly_peaked':
 		basic_sfr.doubly_peaked(S0 = a.mass_factor*a.S_0, peak_ratio = a.peak_ratio, decay = a.sfr_decay, t0 = a.sfr_t0, peak1t0 = a.peak1t0, peak1sigma = a.peak1sigma)
+	elif a.basic_sfr_name == 'normal':
+		basic_sfr.normal(S0=a.mass_factor*a.S_0, loc=a.sfr_peak, scale=a.sfr_scale)
 	basic_sfr.sfr = a.total_mass * np.divide(basic_sfr.sfr,sum(basic_sfr.sfr))
 	basic_infall = INFALL(np.copy(basic_sfr.t),np.copy(basic_sfr.sfr))
 	if a.basic_infall_name == 'exponential':

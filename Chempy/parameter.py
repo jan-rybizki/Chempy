@@ -91,6 +91,15 @@ class ModelParameters(object):
 		S_0 = 45.07488
 		sfr_peak = 2
 		sfr_scale = 0.5
+	elif basic_sfr_name == 'step':
+		mass_factor = 1.
+		S_0 = 45.07488
+		sfr_cutoff = 2
+	elif basic_sfr_name == 'non_parametric':
+		mass_factor = 1.
+		S_0 = 45.07488
+		sfr_breaks = (1, 2, 3)
+		sfr_weights = (1, 2, 1)
 
 	basic_infall_name_list = ["exponential","constant","sfr_related","peaked_sfr","gamma_function"]
 	basic_infall_index = 2

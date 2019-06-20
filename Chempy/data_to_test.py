@@ -93,7 +93,7 @@ def sample_stars(weight,selection,element1,element2,error1,error2,nsample):
 	sun_mgfe += perturbation
 	return sun_feh,sun_mgfe
 
-def sample_stars_all_elements(weight, selection, elements, errors, nsample):
+def sample_stars_all_elements(weight, selection, elements, errors, nsample, random_seed=None):
 	'''
 	This function samples stars along a chemical evolution track properly taking into account the SFR and the selection function of the stellar population (e.g. red-clump stars). It can be used to produce mock observations which can be compared to survey data.
 
@@ -111,6 +111,8 @@ def sample_stars_all_elements(weight, selection, elements, errors, nsample):
 
 	   nsample = number of stars that should be realized
 	'''
+	if random_seed:
+		np.random.seed(random_seed)
 	weight = np.cumsum(weight*selection)
 	weight /= weight[-1]
 	sample = np.random.random(nsample)
@@ -138,7 +140,8 @@ def sample_stars_all_elements(weight, selection, elements, errors, nsample):
 	    abundances[i] += perturbation
 	return abundances
 
-def mock_abundances(a, nsample, abundances, elements_to_sample, element_error='solar', tracer='red_clump'):
+def mock_abundances(a, nsample, abundances, elements_to_sample,
+					element_error='solar', tracer='red_clump', random_seed=None):
 	'''
 	This function provides a convenient wrapper for the SampleStars() function.
 	1) Loads selection function and interpolates to time steps of Chempy run.
@@ -222,7 +225,7 @@ def mock_abundances(a, nsample, abundances, elements_to_sample, element_error='s
 	            errors.append(element_error[element])
 	        else:
 	            assert 1 == 0, "Improper element_error provided"
-	sampled_abundances = sample_stars_all_elements(abundances['weights'][1:], selection[1:], elements, errors, nsample)
+	sampled_abundances = sample_stars_all_elements(abundances['weights'][1:], selection[1:], elements, errors, nsample, random_seed)
 	sampled_abundances = {y: z for y, z in zip(elements_to_sample, sampled_abundances)}
 	for i, element in enumerate(elements_to_sample):
 		sampled_abundances[element+'_err'] = np.ones(nsample) * errors[i]

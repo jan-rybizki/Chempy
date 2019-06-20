@@ -101,3 +101,22 @@ class SFR(object):
 		self.sfr[np.where(self.sfr == 0.)] = 1e-10
 		self.sfr = np.divide(self.sfr, sum(self.sfr) / (np.divide(1., self.dt) * S0))
 
+	def step(self, S0=45.07488, loc=2):
+		'''
+		Constant SFH ending at loc (Gyr)
+		'''
+		self.sfr = np.ones_like(self.t)
+		self.sfr[self.t >= loc] = 1e-10
+		self.sfr = np.divide(self.sfr, sum(self.sfr) / (np.divide(1., self.dt) * S0))
+
+	def non_parametric(self, S0=45.07488, breaks=(1, 2, 3), weights=(1, 2, 1)):
+		'''
+		non-parametric SFH
+		'''
+		self.sfr = np.zeros_like(self.t)
+		for i in range(len(breaks)):
+			if i == 0:
+				self.sfr[(0 <= self.t) & (self.t < breaks[i])] = weights[i]
+			else:
+				self.sfr[(breaks[i-1] <= self.t) & (self.t < breaks[i])] = weights[i]
+		self.sfr = np.divide(self.sfr, sum(self.sfr) / (np.divide(1., self.dt) * S0))

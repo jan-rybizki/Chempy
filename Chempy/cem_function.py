@@ -667,20 +667,21 @@ def extract_parameters_and_priors(changing_parameter, a):
 	if 'log10_beta_parameter' in a.to_optimize:
 		a.beta_error_distribution[2] = np.power(10,a.log10_beta_parameter)
 
-	if a.imf_type_name == 'salpeter':
-		a.imf_parameter = (a.high_mass_slope)
-	elif a.imf_type_name == 'Chabrier_2':
-		a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.chabrier_para3,a.high_mass_slope)
-	elif a.imf_type_name == 'Chabrier_1':
-		a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.high_mass_slope)
-	elif a.imf_type_name == 'normed_3slope':	
-		a.imf_parameter = (a.imf_slope_1,a.imf_slope_2,a.high_mass_slope,a.imf_break_1,a.imf_break_2)
-	if a.time_delay_functional_form == 'maoz':
-		a.sn1a_parameter = [a.N_0,a.sn1a_time_delay,a.sn1a_exponent,a.dummy]
-	elif a.time_delay_functional_form == 'normal':
-		a.sn1a_parameter = [a.number_of_pn_exlopding,a.sn1a_time_delay,a.sn1a_timescale,a.sn1a_gauss_beginning]
-	elif a.time_delay_functional_form == 'gamma_function':
-		a.sn1a_parameter = [a.sn1a_norm,a.sn1a_a_parameter,a.sn1a_beginning,a.sn1a_scale]
+	if 'high_mass_slope' in a.to_optimize:
+		if a.imf_type_name == 'salpeter':
+			a.imf_parameter = (a.high_mass_slope)
+		elif a.imf_type_name == 'Chabrier_2':
+			a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.chabrier_para3, a.high_mass_slope)
+		elif a.imf_type_name == 'Chabrier_1':
+			a.imf_parameter = (a.chabrier_para1, a.chabrier_para2, a.high_mass_slope)
+		elif a.imf_type_name == 'normed_3slope':
+			a.imf_parameter = (a.imf_slope_1, a.imf_slope_2, a.high_mass_slope, a.imf_break_1, a.imf_break_2)
+		if a.time_delay_functional_form == 'maoz':
+			a.sn1a_parameter = [a.N_0, a.sn1a_time_delay, a.sn1a_exponent, a.dummy]
+		elif a.time_delay_functional_form == 'normal':
+			a.sn1a_parameter = [a.number_of_pn_exlopding, a.sn1a_time_delay, a.sn1a_timescale, a.sn1a_gauss_beginning]
+		elif a.time_delay_functional_form == 'gamma_function':
+			a.sn1a_parameter = [a.sn1a_norm, a.sn1a_a_parameter, a.sn1a_beginning, a.sn1a_scale]
 	return(a)
 
 def posterior_function_local_for_minimization(changing_parameter, stellar_identifier, global_parameters, errors, elements):

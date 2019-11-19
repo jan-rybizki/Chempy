@@ -5,6 +5,10 @@ Flexible one-zone open-box chemical evolution modeling. Abundance fitting and st
 
 [Oliver Philcox](https://github.com/oliverphilcox), during his 2017 summer internship at MPIA coded a [NeuralNet add-on of Chempy](https://github.com/oliverphilcox/ChempyScoring) (together with a very nice jupyter tutorial), which is orders of magnitudes faster than the original version and used it to score different yield-tables from the literature which lead to this [publication](http://adsabs.harvard.edu/abs/2018ApJ...861...40P). He also included many more CC-SN yieldsets.
 
+[Oliver Philcox](https://github.com/oliverphilcox), in 2019 produced another Chempy [paper](https://ui.adsabs.harvard.edu/abs/2019arXiv190900812P/abstract) focusing on multi-star inference
+
+Kirsten Blancato in this [paper](https://ui.adsabs.harvard.edu/abs/2019ApJ...883...34B/abstract) used single zone models per star and got varying IMF high mass slopes across the chemical abundance space.
+
 [Nathan Sandford](https://github.com/NathanSandford), produced an interactive and very instructive [Widget](https://hub.mybinder.org/user/nathansandford-chempy-widget-ibik9tdn/notebooks/chempy_widget.ipynb) which you can run in your browser to see the effect that the star formation history has on abundance patterns.
 
 ## Installation

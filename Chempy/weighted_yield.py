@@ -74,7 +74,7 @@ class SSP(object):
 	'''
 	The simple stellar population class can calculate the enrichment over time for an SSP from a few assumptions and input yield tables.
 	'''
-	def __init__(self,output, z, imf_x, imf_dm, imf_dn, time_steps, elements_to_trace,  stellar_lifetimes, interpolation_scheme,only_net_yields_in_process_tables):
+	def __init__(self,output, z, imf_x, imf_dm, imf_dn, time_steps, elements_to_trace,  stellar_lifetimes, interpolation_scheme,only_net_yields_in_process_tables,log_time=False):
 		'''
 		Upon initialisation the table for the SSP evolution and enrichment over time is created. Interpolation from yield tables in mass is made linear.
 
@@ -100,6 +100,8 @@ class SSP(object):
 		
 		   only_net_yields_in_process_tables = Should the total yields or only the net yields be stored in the nucleosynthetic enrichment tables, bool
 
+		   log_time = are the time steps in log space or linear space, bool
+
 		OUTPUT:
 		
 		the ssp_class.table holds key values of the evolution of the SSP all normalised to a mass of unity (which is the starting mass of the SSP).
@@ -114,7 +116,13 @@ class SSP(object):
 		self.dm = imf_dm
 		self.dn = imf_dn
 		self.t = time_steps
-		self.dt = time_steps[1] - time_steps[0]
+		self.log_time = log_time
+		self.tmin = time_steps[0]
+		if self.log_time:
+			# logarithmically spaced time steps
+			self.dt = np.log10(time_steps[1]) - np.log10(time_steps[0])
+		else:
+			self.dt = time_steps[1] - time_steps[0]
 		self.elements = elements_to_trace
 		self.interpolation_scheme = interpolation_scheme
 		self.stellar_lifetimes = stellar_lifetimes
@@ -510,7 +518,7 @@ class SSP(object):
 					else:
 						self.agb_table[element_name] += tables_to_interpolate[i][element_name] * metallicity_weight[i]
 
-	def sn1a_feedback(self, sn1a_elements, sn1a_metallicities, sn1a_yields, time_delay_functional_form, sn1a_min, sn1a_max, time_delay_parameter,ssp_mass, stochastic_IMF):
+	def sn1a_feedback(self, sn1a_elements, sn1a_metallicities, sn1a_yields, time_delay_functional_form, sn1a_min, sn1a_max, time_delay_parameter, ssp_mass, stochastic_IMF):
 		'''
 		Calculating the SN1a feedback over time
 
@@ -577,7 +585,10 @@ class SSP(object):
 			#norm = sum(self.sfr)*number_factor
 			#self.infall = np.divide(self.infall*norm,sum(self.infall))
 			
-			full_time = np.linspace(0, end_of_time, (end_of_time/self.dt)+1)
+			if self.log_time:
+				full_time = np.logspace(np.log10(self.tmin), np.log10(end_of_time), (np.log10(end_of_time)-np.log10(self.tmin))/self.dt+1)
+			else:
+				full_time = np.linspace(0, end_of_time, (end_of_time/self.dt)+1)
 			feedback_number = gamma.pdf(full_time,a_parameter,loc,scale)
 
 			#for i in range(len(full_time)):
@@ -611,13 +622,22 @@ class SSP(object):
 
 			full_time = list(self.t)
 			while full_time[-1] < end_of_time:
-				full_time.append(full_time[-1]+self.dt)
+				if self.log_time:
+					full_time.append(10**(np.log10(full_time[-1])+self.dt))
+				else:
+					full_time.append(full_time[-1]+self.dt)
 			full_time = np.array(full_time)
 			feedback_number = np.zeros_like(full_time)
 			for i in range(len(full_time)):
 				if full_time[i]>=tau_8:
 					feedback_number[i] = np.power(np.divide(full_time[i],tau_8),-1*s_exponent) * np.divide(s_exponent-1,tau_8)# * N_0 * number_of_stars_in_mass_range_for_remnant
-			feedback_number = np.divide(feedback_number,sum(feedback_number)) * N_0# * number_of_stars_in_mass_range_for_remnant
+			if self.log_time:
+				import scipy
+				print(scipy.integrate.cumtrapz(feedback_number,full_time,initial=0)[-1])
+				feedback_number = np.divide(feedback_number,scipy.integrate.cumtrapz(feedback_number,full_time,initial=0)[-1]) * N_0
+				#np.divide(feedback_number,sum(feedback_number)) * N_0# * number_of_stars_in_mass_range_for_remnant
+			else:
+				feedback_number = np.divide(feedback_number,sum(feedback_number)) * N_0# * number_of_stars_in_mass_range_for_remnant
 			#N_0 now is the number of SN1a per 1Msun
 			if stochastic_IMF:
 				number_of_potential_sn1a_explosions = int(round(ssp_mass))#int(round(number_of_stars_in_mass_range_for_remnant * ssp_mass) )
@@ -653,7 +673,10 @@ class SSP(object):
 			self.sn1a_feedback_number = feedback_number
 
 		def normal_timedelay():
-			full_time = np.linspace(0, end_of_time, (end_of_time/self.dt)+1)
+			if self.log_time:
+				full_time = np.logspace(np.log10(self.tmin), np.log10(end_of_time), (np.log10(end_of_time)-np.log10(self.tmin))/self.dt+1)
+			else:
+				full_time = np.linspace(0, end_of_time, (end_of_time/self.dt)+1)
 			feedback_mass = np.zeros_like(full_time)
 			for i in range(len(full_time)):
 				feedback_mass[i] = np.exp(np.divide(-(full_time[i]-time_delay_peak),time_delay_time_scale))

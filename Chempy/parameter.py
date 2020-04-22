@@ -227,6 +227,8 @@ class ModelParameters(object):
 	sn1ammax = 8#float(sagbmmax)
 	gas_at_start = 0. #*dt yields the Msun/pc^2 value
 
+	log_time=False
+
 	gas_reservoir_mass_factor = np.power(10,0.0)#3.0
 	sfr_factor_for_cosmic_accretion = 1.
 	#shortened_sfr = False # is needed in order to renormalise the gas reservoir mass factor and the cosmic accretion so that chempy produces consistent results with full run and shortened run. 	

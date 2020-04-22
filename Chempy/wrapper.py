@@ -68,7 +68,7 @@ class SSP_wrap():
 			imf_copy.stochastic_sampling(ssp_mass)
 		else:
 			imf_copy = copy.copy(self.imf)
-		basic_ssp = SSP(False, float(z), imf_copy.x, imf_copy.dm, imf_copy.dn, np.copy(time_steps), list(elements), str(self.a.stellar_lifetimes), str(self.a.interpolation_scheme), bool(self.a.only_net_yields_in_process_tables))
+		basic_ssp = SSP(False, float(z), imf_copy.x, imf_copy.dm, imf_copy.dn, np.copy(time_steps), list(elements), str(self.a.stellar_lifetimes), str(self.a.interpolation_scheme), bool(self.a.only_net_yields_in_process_tables), bool(self.a.log_time))
 		basic_ssp.sn2_feedback(list(self.sn2.elements), dict(self.sn2.table), np.copy(self.sn2.metallicities), float(self.a.sn2mmin), float(self.a.sn2mmax),list(element_fractions))
 		basic_ssp.agb_feedback(list(self.agb.elements), dict(self.agb.table), list(self.agb.metallicities), float(self.a.agbmmin), float(self.a.agbmmax),np.hstack(element_fractions))
 		basic_ssp.sn1a_feedback(list(self.sn1a.elements), list(self.sn1a.metallicities), dict(self.sn1a.table), str(self.a.time_delay_functional_form), float(self.a.sn1ammin), float(self.a.sn1ammax), self.a.sn1a_parameter, ssp_mass, bool(self.a.stochastic_IMF))

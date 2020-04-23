@@ -1,0 +1,78 @@
+Yields are provided for the following models:
+   01 G015z14S013/
+   02 G015z14S413/
+   03 G015z01S013/
+   04 G015z01S413/
+   05 G015zm5S003/
+   06 G015zm5S413/
+   07 G020z14S013/
+   08 G020z14S413/
+   09 G020z01S013/
+   10 G020z01S413/
+   11 G020zm5S003/
+   12 G020zm5S413/
+   13 G025z14S013/
+   14 G025z14S413/
+   15 G025z01S013/
+   16 G025z01S413/
+   17 G025zm5S003/
+   18 G025zm5S413/
+   19 G025zm5S404/
+   20 G025zm5S513/
+   21 G025zm5S504/
+   22 G025zm7S003/
+   23 G025zm7S403/
+   24 G025zm7S404/
+   25 G025zm7S603/
+   26 G025zm7S604/
+   27 G040z14S413/
+   28 G040z01S413/
+   29 G040zm5S418/
+
+Meaning of GXXXzYYSlmn
+XXX is the initial mass
+YY is the metallicity: 14 = solar; 01:Z=0.001; m5: Z=10e-5; m7: Z=10e-7
+ini-composition:   Asplund 2005 + Cunha 2006, low Z - ALPHA - ENHANCED
+Initial abundance files are given in:
+iniab1.0E-03As05.gva
+iniab1.0E-05As05.gva
+iniab1.0E-07As05.gva
+iniab1.4E-02As05.gva
+reaclib:           reaclib-new.sproc (NACRE rates + update for light element reactions)
+
+
+Slmn is for rotation/different input physics:
+Sl meaning:
+l=0,4,5,6: v/v_crit= 0, 0.4, 0.5, 0.6 (S0: no rotation, S4 standard rotation, see discussion, e.g. link between Vini and v/v_crit, in Hirschi 2007) 
+mn meaning:
+03 - basel dual network (basnet=2) - Ne22(a,n) Jaeger et al 2001
+13 - restarted 03 models from end of He-burning with a larger network (736 isotopes)
+04 - identical to 03 up to start of He, CF88/10 O17ag adopted
+
+
+Then there is some more info about the models:
+ mod  Mfinal Ma50  Ma75  Mco01 Mrem [X/Y]
+
+Mfinal: total final mass
+Ma75: alpha core mass (defined at point where mass fraction of helium drops below 75% outwards; Ma50 is where it drops below 50%)
+Mco01: CO core mass (defined at point where mass fraction of helium drops below 1% inwards)
+Mrem: remnant mass determined according to Mco-Mrem relation of Arnett. 
+
+[X/Y]: Concerning the bracket ratios:
+max[X/Fe] ratios: assuming that the SN does not produce additional Fe during the explosion (e.g. due to significant fall-back or via an asymmetric explosion)
+min[X/Fe] ratios: assuming the the SN produces 0.1 solar mass of Fe during the explosion
+
+
+Formulae for yield (and Mrem) calculations are given in Hirschi, Meynet and Maeder 2005 (paper on yields)
+
+
+Important Notes: 
+- These are net yields (final - initial) so can be negative, especially for p, He3.
+- Initial abundances are in mass fraction (not solar masses) so to calculate ejected masses for an element, one needs to do the following:
+
+ejected_mass_i = yield_i + initial_mass_fraction_i*initial_mass
+
+- initial abundance for lithium and berylium is not correct. This is my fault. Do not use these values!
+
+
+

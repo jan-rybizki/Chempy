@@ -633,9 +633,10 @@ class SSP(object):
 					feedback_number[i] = np.power(np.divide(full_time[i],tau_8),-1*s_exponent) * np.divide(s_exponent-1,tau_8)# * N_0 * number_of_stars_in_mass_range_for_remnant
 			if self.log_time:
 				import scipy
-				print(scipy.integrate.cumtrapz(feedback_number,full_time,initial=0)[-1])
-				feedback_number = np.divide(feedback_number,scipy.integrate.cumtrapz(feedback_number,full_time,initial=0)[-1]) * N_0
-				#np.divide(feedback_number,sum(feedback_number)) * N_0# * number_of_stars_in_mass_range_for_remnant
+				feedback_number[0] *= full_time[0]
+				feedback_number[1:] *= (full_time[1:]-full_time[:-1])
+				feedback_number =  np.divide(feedback_number,sum(feedback_number)) * N_0 #np.divide(feedback_number,scipy.integrate.cumtrapz(feedback_number,full_time,initial=0)[-1]) * N_0 * 
+				# * number_of_stars_in_mass_range_for_remnant
 			else:
 				feedback_number = np.divide(feedback_number,sum(feedback_number)) * N_0# * number_of_stars_in_mass_range_for_remnant
 			#N_0 now is the number of SN1a per 1Msun

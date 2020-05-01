@@ -806,27 +806,36 @@ class SSP(object):
 			list_of_arrays.append(base)
 		self.bh_table = np.core.records.fromarrays(list_of_arrays,names=names)
 		
-		self.table['mass_in_remnants'][1] += percentage_of_bh_mass*weight
-		self.bh_table['mass_in_remnants'][1] += percentage_of_bh_mass*weight
-		
 		####### counting the BH events
 		for i,item in enumerate(self.inverse_imf[:-1]):
+			if self.inverse_imf[i+1]<self.bhmmin:
+				break
+			
 			lower_cut = max(self.inverse_imf[i+1],self.bhmmin)
 			upper_cut = min(self.inverse_imf[i],self.bhmmax)
-			self.table['bh'][i+1] += imf_mass_fraction_non_nativ(self.dn,self.x,lower_cut,upper_cut)
-			self.bh_table['number_of_events'][i+1] += imf_mass_fraction_non_nativ(self.dn,self.x,lower_cut,upper_cut)
-			if upper_cut<lower_cut and self.inverse_imf[i+1]<self.bhmmin:
-				break
-		
-		for i,item in enumerate(element_list):
-			self.table[item][1] += (1 - percentage_of_bh_mass)*weight*fractions_in_gas[i]
-			if self.net_yields:
-				self.bh_table[item][1] += 0.
+			if upper_cut < lower_cut:
+				weights = 0.
+				continue
 			else:
-				self.bh_table[item][1] += (1-percentage_of_bh_mass)*weight*fractions_in_gas[i]
-		self.bh_table['unprocessed_ejecta'][1] += (1-percentage_of_bh_mass)*weight
-		self.table['unprocessed_ejecta'][1] += (1-percentage_of_bh_mass)*weight
-		self.table['bh'][1] = imf_mass_fraction_non_nativ(self.dn,self.x,bhmmin,bhmmax)	
+				cut = np.where(np.logical_and(self.x<upper_cut,self.x>=lower_cut))
+				weights = sum(self.dm[cut]) 
+
+			self.table['bh'][i+1] = imf_mass_fraction_non_nativ(self.dn,self.x,lower_cut,upper_cut)
+			self.bh_table['number_of_events'][i+1] = imf_mass_fraction_non_nativ(self.dn,self.x,lower_cut,upper_cut)
+
+			self.table['mass_in_remnants'][i+1] = percentage_of_bh_mass*weights
+			self.bh_table['mass_in_remnants'][i+1] = percentage_of_bh_mass*weights
+		
+			for j,jtem in enumerate(element_list):
+				self.table[jtem][i+1] = (1 - percentage_of_bh_mass)*weights*fractions_in_gas[i]
+				if self.net_yields:
+					self.bh_table[jtem][i+1] = 0.
+				else:
+					self.bh_table[jtem][i+1] = (1-percentage_of_bh_mass)*weights*fractions_in_gas[i]
+
+			self.bh_table['unprocessed_ejecta'][i+1] = (1-percentage_of_bh_mass)*weights
+			self.table['unprocessed_ejecta'][i+1] = (1-percentage_of_bh_mass)*weights
+			#self.table['bh'][i+1] = imf_mass_fraction_non_nativ(self.dn,self.x,bhmmin,bhmmax)	
 
 
 

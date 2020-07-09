@@ -233,7 +233,7 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False, only_first_
 	if set_scale:
 		borders = []
 	if use_scale:
-		borders = np.load(directory + 'prior_borders.npy', encoding='bytes')
+		borders = np.load(directory + 'prior_borders.npy', encoding='bytes', allow_pickle=True)
 	t = 0
 
 	for i in range(nparameter):
@@ -245,7 +245,7 @@ def plot_mcmc_chain(directory, set_scale = False, use_scale = False, only_first_
 				counts, edges = np.histogram(positions[:,j], bins=10)
 				max_count = float(np.max(counts))
 				counts = np.divide(counts,max_count)
-				axes[i,j].bar(left = edges[:-1], height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
+				axes[i,j].bar(edges[:-1], align='edge', height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
 				if use_scale:
 					axes[i,j].set_xlim(borders[t][0])
 					axes[i,j].plot( borders[t][2], borders[t][3], c="k", linestyle = '--', alpha=1, lw=lw )
@@ -385,7 +385,7 @@ def plot_mcmc_chain_with_prior(directory, use_prior = False, only_first_star = T
 				counts, edges = np.histogram(positions[:,j], bins=20)
 				max_count = float(np.max(counts))
 				counts = np.divide(counts,max_count)
-				axes[i,j].bar(left = edges[:-1], height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
+				axes[i,j].bar(edges[:-1], align='edge', height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
 
 				if use_prior:
 					xmin = prior[i][0]-3.5*prior[i][1]
@@ -529,7 +529,7 @@ def plot_element_correlation(directory):
 				counts, edges = np.histogram(positions[:,j], bins=10)
 				max_count = float(np.max(counts))
 				counts = np.divide(counts,max_count)
-				axes[i,j].bar(left = edges[:-1], height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
+				axes[i,j].bar(edges[:-1], align='edge', height = counts, width = edges[1]-edges[0], color = 'grey', alpha = alpha, linewidth = 0, edgecolor = 'blue')
 				axes[i,j].set_xlim(min(positions[:,j]),max(positions[:,j]))
 				axes[i,j].set_ylim(0,1.05)
 				if j != 0:

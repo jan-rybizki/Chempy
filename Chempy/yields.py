@@ -953,7 +953,7 @@ class SN2_feedback(object):
 		indexing['Ge'] =  ['Ge70', 'Ge72', 'Ge73', 'Ge74', 'Ge76']
 			  
 		# Load data
-		data = np.genfromtxt('Chempy/input/yields/West17/ertl.txt',skip_header=102,names=True)
+		data = np.genfromtxt(localpath+'input/yields/West17/ertl.txt',skip_header=102,names=True)
 		
 		# Load model parameters
 		z_solar = 0.0153032
@@ -971,8 +971,8 @@ class SN2_feedback(object):
 		
 		import os
 		
-		if os.path.exists('Chempy/input/yields/West17/init_abun.npz'):
-			init_file = np.load('Chempy/input/yields/West17/init_abun.npz')
+		if os.path.exists(localpath+'input/yields/West17/init_abun.npz'):
+			init_file = np.load(localpath+'input/yields/West17/init_abun.npz')
 			for z_in,sc_z in enumerate(scaled_z):
 				init_abun[sc_z] = {}
 				for k,key in enumerate(init_file['keys']):
@@ -980,7 +980,7 @@ class SN2_feedback(object):
 		else: # If not already saved
 			
 			# Import initial abundance package
-			os.chdir('Chempy/input/yields/West17')
+			os.chdir(localpath+'input/yields/West17')
 			import gch_wh13
 			os.chdir('../../../../')
 			
@@ -990,7 +990,7 @@ class SN2_feedback(object):
 			for sc_z in scaled_z:
 				init_abun[sc_z] = gch_wh13.GCHWH13(sc_z)
 				init_dat.append(init_abun[sc_z].abu)
-			np.savez('Chempy/input/yields/West17/init_abun.npz',datfile=init_dat,keys=all_isotopes)
+			np.savez(localpath+'input/yields/West17/init_abun.npz',datfile=init_dat,keys=all_isotopes)
 		
 		for z_index,z in enumerate(self.metallicities): # Define table for each metallicity
 		

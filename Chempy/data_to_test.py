@@ -552,7 +552,7 @@ def cosmic_abundance_standard(summary_pdf,name_string,abundances,cube,elements_t
 
 
 	for i,item in enumerate(elements_list):
-		probabilities.append(float(gaussian_1d_log(model_abundances[i],cas_abundances[i],error_list[i])))
+		probabilities.append(float(gaussian(model_abundances[i],cas_abundances[i],error_list[i])))
 	probability = np.sum(probabilities)
 
 
@@ -677,7 +677,7 @@ def sol_norm(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 		sun_list = np.load('mock_data_temp/solar_abundances.npy')
 
 	for i,item in enumerate(elements_to_trace):
-		probabilities.append(float(gaussian_1d_log(abundance_list[i],sun_list[i],error_list[i])))
+		probabilities.append(float(gaussian(abundance_list[i],sun_list[i],error_list[i])))
 
 	probability = np.sum(probabilities)
 
@@ -809,7 +809,7 @@ def arcturus(summary_pdf,name_string,abundances,cube,elements_to_trace, element_
 
 	probabilities = []
 	for i,item in enumerate(elements_in_common):
-		probabilities.append(float(gaussian_1d_log(abundance_list[i],arcturus_list[i],error_list[i])))
+		probabilities.append(float(gaussian(abundance_list[i],arcturus_list[i],error_list[i])))
 
 	probability = np.sum(probabilities)
 
@@ -910,7 +910,7 @@ def gas_reservoir_metallicity(summary_pdf,name_string,abundances,cube,elements_t
 		log10_std *= error_inflation
 		log10_metallicity_at_end = np.load('mock_data_temp/metallicity_at_end.npy')
 
-	probability = gaussian_1d_log(np.log10(gas_reservoir['Z'][-1]/solZ),log10_metallicity_at_end,log10_std)
+	probability = gaussian(np.log10(gas_reservoir['Z'][-1]/solZ),log10_metallicity_at_end,log10_std)
 
 
 	if number_of_models_overplotted > 1:
@@ -1015,7 +1015,7 @@ def ratio_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas
 		log10_std *= error_inflation
 		log10_ratio_at_end = np.load('mock_data_temp/sn_ratio.npy')
 
-	probability = gaussian_1d_log( np.log10(np.divide(np.diff(cube['sn2'])[1:],np.diff(cube['sn1a'])[1:])[-1]),log10_ratio_at_end,log10_std)
+	probability = gaussian( np.log10(np.divide(np.diff(cube['sn2'])[1:],np.diff(cube['sn1a'])[1:])[-1]),log10_ratio_at_end,log10_std)
 	if number_of_models_overplotted > 1:
 		if os.path.isfile('output/comparison/ratio.npy'):
 			old = np.load('output/comparison/ratio.npy')
@@ -1083,7 +1083,7 @@ def star_function(summary_pdf,name_string,abundances,cube,elements_to_trace,gas_
 	stars_at_end = 28.
 	std = 2.
 	dt = cube['time'][1] - cube['time'][0]
-	probability = gaussian_1d_log(cube['stars'][-1],stars_at_end,std)
+	probability = gaussian(cube['stars'][-1],stars_at_end,std)
 	if number_of_models_overplotted > 1:
 		if os.path.isfile('output/comparison/sfr.npy'):
 			old = np.load('output/comparison/sfr.npy')

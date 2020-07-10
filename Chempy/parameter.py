@@ -121,7 +121,7 @@ class ModelParameters(object):
 		infall_beginning = 0
 		infall_scale = 3.3
 
-	yield_table_name_sn2_list = ['chieffi04','Nugrid','Nomoto2013','Portinari_net', 'chieffi04_net', 'Nomoto2013_net','NuGrid_net','West17_net','TNG_net','CL18_net']#'Frischknecht16_net'
+	yield_table_name_sn2_list = ['chieffi04','OldNugrid','Nomoto2013','Portinari_net','francois', 'chieffi04_net', 'Nomoto2013_net','NuGrid_net','West17_net','TNG_net','CL18_net','Frischknecht16_net']
 	yield_table_name_sn2_index = 2
 	yield_table_name_sn2 = yield_table_name_sn2_list[yield_table_name_sn2_index]
 
@@ -130,7 +130,7 @@ class ModelParameters(object):
 	yield_table_name_hn = yield_table_name_hn_list[yield_table_name_hn_index]
 
 	##### Karakas2016 needs much more calculational resources (order of magnitude) using 2010 net yields from Karakas are faster and only N is significantly underproduced
-	yield_table_name_agb_list = ['Karakas','Nugrid','Karakas_net_yield','Ventura_net','Karakas16_net','TNG_net'] 
+	yield_table_name_agb_list = ['Karakas','Nugrid','Karakas_net_yield','Ventura_net','Karakas16_net','TNG_net','Nomoto2013'] 
 	yield_table_name_agb_index = 2
 	yield_table_name_agb = yield_table_name_agb_list[yield_table_name_agb_index]
 
@@ -226,6 +226,8 @@ class ModelParameters(object):
 	sn1ammin = 1#float(agbmmin) #Maoz Timedelay should be independent of sn1a_mmin and sn1a_mmax. N_0 just determines the number of SN1a exploding per 1Msun over the time of 15Gyr
 	sn1ammax = 8#float(sagbmmax)
 	gas_at_start = 0. #*dt yields the Msun/pc^2 value
+
+	log_time=False
 
 	gas_reservoir_mass_factor = np.power(10,0.0)#3.0
 	sfr_factor_for_cosmic_accretion = 1.

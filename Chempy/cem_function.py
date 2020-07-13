@@ -6,7 +6,7 @@ import time
 from .data_to_test import likelihood_function, wildcard_likelihood_function, elements_plot, arcturus, sol_norm, plot_processes, save_abundances,  cosmic_abundance_standard, ratio_function, star_function, gas_reservoir_metallicity
 import multiprocessing as mp
 from .wrapper import initialise_stuff, Chempy
-from scipy.misc import logsumexp
+from scipy.special import logsumexp
 
 def gaussian_log(x,x0,xsig):
 	'''

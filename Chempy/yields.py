@@ -954,7 +954,6 @@ class SN2_feedback(object):
 			  
 		# Load data
 		data = np.genfromtxt(localpath + '/input/yields/West17/ertl.txt',skip_header=102,names=True)
-		
 		# Load model parameters
 		z_solar = 0.0153032
 		self.masses = np.unique(data['mass'])

@@ -110,7 +110,7 @@ def initialise_stuff(a):
 	basic_sfr.sfr = a.total_mass * np.divide(basic_sfr.sfr, sum(basic_sfr.sfr))
 	basic_infall = INFALL(np.copy(basic_sfr.t), np.copy(basic_sfr.sfr))
 	if a.basic_infall_name == 'exponential':
-		getattr(basic_infall, a.basic_infall_name)((a.infall_amplitude,a.tau_infall,a.infall_time_offset,a.c_infall,a.norm_infall))
+		getattr(basic_infall, a.basic_infall_name)((a.infall_amplitude,a.tau_infall,a.infall_time_offset)) #,a.c_infall,a.norm_infall))
 	elif a.basic_infall_name == 'gamma_function':
 		getattr(basic_infall, a.basic_infall_name)(mass_factor = a.norm_infall, a_parameter = a.infall_a_parameter, loc = a.infall_beginning, scale = a.infall_scale)
 	elif a.basic_infall_name == 'sfr_related':

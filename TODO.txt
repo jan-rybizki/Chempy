@@ -1,8 +1,5 @@
 - include Neutron Star merger process + yieldsets (similar to SN1a, yields from Andreas Bauswein, implementation Benoit Cote)
 - include sub Chanrdasekhar SNIa process + yieldsets (yields from Fritz Roepcke)
-- include yields that Oliver implemented
-- implement Gibbs Sampler
-- Let Chempy return -inf if SFR is below 5% of global mean (last time steps for too early peak with current parametrization)
 - Chempy Likelihood by fit to an abundance track in time
 - Optimize the measure for the likelihood (i.e. X/H or X/Fe or X/Mn or X/Mg or some PCA)
 - Optimize the elements used for inference

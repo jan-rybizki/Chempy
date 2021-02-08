@@ -357,7 +357,8 @@ def mcmc(a):
 	import multiprocessing as mp
 	from .optimization import creating_chain, posterior_probability
 	import emcee
-
+	from multiprocessing import Pool
+	
 	start1 = time.time()
 	directory = 'mcmc/'
 	if os.path.exists(directory):
@@ -372,11 +373,9 @@ def mcmc(a):
 	a.testing_output = False
 	a.summary_pdf = False
 	a.nthreads = mp.cpu_count()
-	if a.nthreads == 4:
-		a.nthreads = 2
 
 	chain = creating_chain(a,np.copy(a.p0))
-	sampler = emcee.EnsembleSampler(a.nwalkers,a.ndim,posterior_probability,threads=a.nthreads, args = [a])
+	sampler = emcee.EnsembleSampler(a.nwalkers,a.ndim,posterior_probability, args = [a])
 	pos,prob,state,blobs = sampler.run_mcmc(chain,a.mburn)
 
 	mean_prob = mean_prob_beginning = np.zeros((a.m))
@@ -384,10 +383,10 @@ def mcmc(a):
 	posterior_std_list = []
 	for i in range(a.m):
 		print('step ', i+1 , 'of ',a.m)
-		pos, prob, state, blobs = sampler.run_mcmc(pos, a.save_state_every, rstate0=state, lnprob0=prob, blobs0 = blobs, storechain = True)
-		np.save('%s/flatchain' %(directory),sampler.chain)
-		np.save('%s/flatlnprobability' %(directory),sampler.lnprobability)
-		np.save('%s/flatblobs' %(directory),sampler.blobs)
+		pos, prob, state, blobs = sampler.run_mcmc(pos, a.save_state_every, rstate0=state, log_prob0=prob, blobs0 = blobs, store = True)
+		np.save('%s/flatchain' %(directory),sampler.get_chain(flat=False))
+		np.save('%s/flatlnprobability' %(directory),sampler.get_log_prob(flat=False))
+		np.save('%s/flatblobs' %(directory),sampler.get_blobs(flat=False))
 		posterior = np.load('%s/flatlnprobability.npy' %(directory))
 		posterior_list.append(np.mean(posterior, axis = 0)[-1])
 		posterior_std_list.append(np.std(posterior, axis = 0)[-1])
@@ -445,8 +444,6 @@ def mcmc_multi(changing_parameter, error_list, elements):
 		os.makedirs(directory)
 
 	nthreads = mp.cpu_count()
-	if nthreads == 4:
-		nthreads = 2
 	ndim = len(changing_parameter)
 	a.nwalkers = max(a.nwalkers, int(ndim*2))
 	chain = np.empty(shape = (a.nwalkers,ndim))
@@ -457,7 +454,7 @@ def mcmc_multi(changing_parameter, error_list, elements):
 			result, dummy = posterior_function_many_stars(changing_parameter + jitter,error_list,elements)
 		chain[i] = changing_parameter + jitter
 
-	sampler = emcee.EnsembleSampler(a.nwalkers,ndim,posterior_function_many_stars,threads=nthreads, args = [error_list,elements])
+	sampler = emcee.EnsembleSampler(a.nwalkers,ndim,posterior_function_many_stars, args = [error_list,elements])
 	pos,prob,state,blobs = sampler.run_mcmc(chain,a.mburn)
 
 	mean_prob = mean_prob_beginning = np.zeros((a.m))
@@ -465,10 +462,10 @@ def mcmc_multi(changing_parameter, error_list, elements):
 	posterior_std_list = []
 	for i in range(a.m):
 		print('step ', i+1 , 'of ',a.m)
-		pos, prob, state, blobs = sampler.run_mcmc(pos, a.save_state_every, rstate0=state, lnprob0=prob, blobs0 = blobs, storechain = True)
-		np.save('%s/flatchain' %(directory),sampler.chain)
-		np.save('%s/flatlnprobability' %(directory),sampler.lnprobability)
-		np.save('%s/flatblobs' %(directory),sampler.blobs)
+		pos, prob, state, blobs = sampler.run_mcmc(pos, a.save_state_every, rstate0=state, log_prob0=prob, blobs0 = blobs, store = True)
+		np.save('%s/flatchain' %(directory),sampler.get_chain(flat=False))
+		np.save('%s/flatlnprobability' %(directory),sampler.get_log_prob(flat=False))
+		np.save('%s/flatblobs' %(directory),sampler.get_blobs(flat=False))
 		posterior = np.load('%s/flatlnprobability.npy' %(directory))
 		posterior_list.append(np.mean(posterior, axis = 0)[-1])
 		posterior_std_list.append(np.std(posterior, axis = 0)[-1])

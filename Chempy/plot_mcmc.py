@@ -42,7 +42,7 @@ def restructure_chain(directory , parameter_names = [r'$\alpha_\mathrm{IMF}$',r'
 	std_posterior = np.load('%sflatstdposterior.npy' %(directory))
 	if with_blobs:
 		blobs = np.load('%sflatblobs.npy' %(directory))
-		blobs = np.swapaxes(blobs,0,1)
+		#blobs = np.swapaxes(blobs,0,1)
 	if len(blobs.shape)!=3:
 		print('blob shape = ', blobs.shape, 'probably some runs did not return results and were stored anyway.')
 		with_blobs = False
